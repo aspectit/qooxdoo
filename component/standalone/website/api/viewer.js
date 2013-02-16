@@ -71,14 +71,16 @@ q.ready(function() {
       if (location.hash) {
         location.href = location.href;
       }
-      // force a scroll event so the topmost module's samples are loaded
-      window.setTimeout(function() {
-        var cont = document.getElementById("content");
-        if (cont.scrollTop == 0) {
-          cont.scrollTop = 1;
-          cont.scrollTop = 0;
-        }
-      }, 100);
+      else {
+        // force a scroll event so the topmost module's samples are loaded
+        window.setTimeout(function() {
+          var cont = document.getElementById("content");
+          if (cont.scrollTop == 0) {
+            cont.scrollTop = 1;
+            cont.scrollTop = 0;
+          }
+        }, 100);
+      }
 
     } else {
       q("#warning").setStyle("display", "block");
@@ -623,18 +625,17 @@ q.ready(function() {
   };
 
   var attachOnScroll = function() {
-    var modules = q(".module");
-    var content = q("#content");
     var lastCheck;
 
     var onScroll = function(ev) {
       if (lastCheck && Date.now() - lastCheck < 500) {
         return;
       }
-      modules.forEach(function(item, index) {
+      q(".module").forEach(function(item, index, modules) {
         var module = modules.eq(index);
         if (seenModules.indexOf(module[0]) == -1) {
           var pos = module.getPosition();
+          var content = q("#content");
           var isVisible = pos.top < content.getHeight() && (pos.bottom > 0 ||
             (pos.bottom + content.getHeight()) > 0);
           if (isVisible) {
