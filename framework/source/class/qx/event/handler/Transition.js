@@ -76,10 +76,10 @@ qx.Class.define("qx.event.handler.Transition",
 
   statics :
   {
-    /** {Integer} Priority of this handler */
+    /** @type {Integer} Priority of this handler */
     PRIORITY : qx.event.Registration.PRIORITY_NORMAL,
 
-    /** {Map} Supported event types */
+    /** @type {Map} Supported event types */
     SUPPORTED_TYPES :
     {
       transitionEnd : 1,
@@ -88,55 +88,17 @@ qx.Class.define("qx.event.handler.Transition",
       animationIteration : 1
     },
 
-    /** {Integer} Which target check to use */
+    /** @type {Integer} Which target check to use */
     TARGET_CHECK : qx.event.IEventHandler.TARGET_DOMNODE,
 
-    /** {Integer} Whether the method "canHandleEvent" must be called */
+    /** @type {Integer} Whether the method "canHandleEvent" must be called */
     IGNORE_CAN_HANDLE : true,
 
     /** Mapping of supported event types to native event types */
-    TYPE_TO_NATIVE : qx.core.Environment.select("engine.name",
-    {
-      "webkit" :
-      {
-        transitionEnd : "webkitTransitionEnd",
-        animationEnd : "webkitAnimationEnd",
-        animationStart : "webkitAnimationStart",
-        animationIteration : "webkitAnimationIteration"
-      },
-
-      "gecko" :
-      {
-        transitionEnd : "transitionend",
-        animationEnd : "animationend",
-        animationStart : "animationstart",
-        animationIteration : "animationiteration"
-      },
-
-      "default" : null
-    }),
+    TYPE_TO_NATIVE : null,
 
     /** Mapping of native event types to supported event types */
-    NATIVE_TO_TYPE : qx.core.Environment.select("engine.name",
-    {
-      "webkit" :
-      {
-        webkitTransitionEnd : "transitionEnd",
-        webkitAnimationEnd : "animationEnd",
-        webkitAnimationStart : "animationStart",
-        webkitAnimationIteration : "animationIteration"
-      },
-
-      "gecko" :
-      {
-        transitionend : "transitionEnd",
-        animationend : "animationEnd",
-        animationstart : "animationStart",
-        animationiteration : "animationIteration"
-      },
-
-      "default" : null
-    })
+    NATIVE_TO_TYPE : null
   },
 
 
@@ -291,6 +253,22 @@ qx.Class.define("qx.event.handler.Transition",
   */
 
   defer : function(statics) {
+    var aniEnv = qx.core.Environment.get("css.animation") || {};
+    var transEnv = qx.core.Environment.get("css.transition") || {};
+
+    var n2t = qx.event.handler.Transition.NATIVE_TO_TYPE = {};
+    var t2n = qx.event.handler.Transition.TYPE_TO_NATIVE = {
+      transitionEnd : transEnv["end-event"] || null,
+      animationStart : aniEnv["start-event"] || null,
+      animationEnd : aniEnv["end-event"] || null,
+      animationIteration : aniEnv["iteration-event"] || null
+    };
+
+    for (var type in t2n) {
+      var nate = t2n[type];
+      n2t[nate] = type;
+    }
+
     qx.event.Registration.addHandler(statics);
   }
 });

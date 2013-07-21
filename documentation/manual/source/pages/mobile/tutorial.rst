@@ -7,6 +7,8 @@ In this tutorial you will learn how to create a simple tweets app with the `qoox
 
 `Twitter <http://twitter.com>`_ itself made its authorization scheme more complex, as it starts requiring OAuth even to read public tweets. For this basic tutorial it would be too complex to handle such advanced authorization. If your are interested in OAuth, check out how you could handle that in a qooxdoo app by looking at the `Github demo <http://demo.qooxdoo.org/%{version}/demobrowser/#data~Github.html>`_.
 
+We use a mock for the identica service to be sure this tutorial always works.
+
 The app that is to be created in this tutorial should display all
 tweets of a certain user. When a tweet is selected, the details of the
 tweet should be shown. You can find the code of the tutorial `here`_.
@@ -61,13 +63,12 @@ action buttons, and a scrollable content area. In the constructor of the
 class we set the title of the page to "Identica Client".
 
 To show the "Input" page, we have to create an instance of the class and a page manager.
-The manager does the layouting and displays our page on screen.
+The manager does the layouting and displays our page on the screen.
 Additionally the manager gives us the possibility to use our application in a mobile or tablet device context.
 For our example, we just want to work in a mobile device context. That is why, we construct the manager with
 ``false``.
 
-After creation of manager, we have to add the "Input" page into the manager. 
-Then we call ``show`` method of "Input" page, to display this page on start. 
+After creation of the new manager, we have to add the "Input" page to it. In order to display the "Input" page on start, we then call its ``show`` method. 
 
 Open the "source/class/mobiletweets/Application.js" class file. You will find a comment in the ``main`` method "*Below is your actual
 application code...*" with example code below. As we don't need this
@@ -150,14 +151,15 @@ Lets try it! Create another page class "Tweets" in the
       }
     });
 
-In the constructor we show the back button and set the text to "Back" .
-The title will be replaced later by the given username.
+
+In the constructor we setup setup the back button and set its text to "Back".
+The title will be replaced by the given username later.
 
 Now we need a button on the "Input" page, so that we can navigate between the two
 pages. Create a new instance of a ``qx.ui.mobile.form.Button`` in the
 "Input" class and add it to the content of the page. By listening to the
 ``tap`` event of the button, the application can handle when the user
-taps on the button. Add a new ``member`` section to the class definition
+taps on the button. Add a new ``member`` section to the class definition of the "Input" class
 and override the protected lifecycle method ``_initialize`` to do that:
 ::
 
@@ -236,15 +238,17 @@ your mobile applications as well. Extend the ``members`` section of the
 ::
 
         __loadTweets : function() {
-          // Public identica Tweets API
-          var url = "http://identi.ca/api/statuses/user_timeline/" + this.getUsername() + ".json";
+          // Mocked Identica Tweets API
           // Create a new JSONP store instance with the given url
-          var store = new qx.data.store.Jsonp(url);
+          var self = this;
+          var url = "http://demo.qooxdoo.org/" + qx.core.Environment.get("qx.version") + "/tweets_step4.5/resource/tweets/service.js";
+
+          var store = new qx.data.store.Jsonp();
+          store.setCallbackName("callback");
+          store.setUrl(url);
+
           // Use data binding to bind the "model" property of the store to the "tweets" property
           store.bind("model", this, "tweets");
-          store.addListener("error", function(evt) {
-            // you can add error handling here, e.g. display a dialog or navigate back to the input page
-          }, this);
         }
 
 In the ``__loadTweets`` method we create a new `JSONP`_ store which will
@@ -317,9 +321,9 @@ the ``_initialize`` method:
     input.setRequired(true);
     form.add(input, "Username");
 
-    // Add the form to the content of the page, using the SinglePlaceholder to render
+    // Add the form to the content of the page, using the Single to render
     // the form.
-    this.getContent().add(new qx.ui.mobile.form.renderer.SinglePlaceholder(form));
+    this.getContent().add(new qx.ui.mobile.form.renderer.Single(form));
 
 First we add an instance of ``qx.ui.mobile.form.Title`` to the content
 of the page. To an instance of ``qx.ui.mobile.form.Form``, a
@@ -328,7 +332,7 @@ instances are assigned to member variables as well, for further reuse. A
 text is set for the ``placeholder`` property of the textfield. By
 setting the property ``required`` to true we indicate that the textfield
 requires an input. Finally we add the form instance to the page content,
-by using a `` qx.ui.mobile.form.renderer.SinglePlaceholder`` renderer.
+by using a ``qx.ui.mobile.form.renderer.SinglePlaceholder`` renderer.
 The renderer is responsible for the look and feel of the form. In this
 case only the input fields with their placeholders are displayed.
 
@@ -352,7 +356,7 @@ line to the event listener:
 
     this.setUsername(evt.getData());
 
-We've come full circle. By setting the username the data will be loaded
+We've come full circle. By setting the username, the data will be loaded
 and we can proceed to display the data. Rebuild the application and
 refresh it in the browser. Type in a valid identica username (e.g.
 "qooxdoo") and click the "Show" button. Press the ``F7`` key to display
@@ -388,8 +392,7 @@ First we have to add the following ``_initialize`` method to the members section
             // set the data of the model
             item.setTitle(value.getText());
             // we use the dataFormat instance to format the data value of the identica API
-            item.setSubtitle(value.getUser().getName() + ", " 
-                + dateFormat.format(new Date(value.getCreated_at())));
+            item.setSubtitle(dateFormat.format(new Date(value.getCreated_at())));
             item.setImage(value.getUser().getProfile_image_url());
             // we have more data to display, show an arrow
             item.setShowArrow(true);
@@ -418,7 +421,7 @@ In this case the list item renderer is the
 ``qx.ui.mobile.list.renderer.Default``. This renderer has a ``title``,
 ``subtitle`` and a ``image`` property, which can be set individually per
 row. In addition to those properties, the ``showArrow`` property shows
-an arrow on the left corner of the row, indicating that we have more
+an arrow on the right side of the row, indicating that we have more
 data to display.
 
 Finally the model of the list instance is bound to the
@@ -463,7 +466,7 @@ can happen that a tweet is too long for a list entry. Ellipses are then
 shown at the end of the tweet. That is why we want to give the user a
 chance to display the whole tweet. Lets create a simple "Tweet" page
 that only shows a ``qx.ui.mobile.basic.Label`` with the selected tweet
-text. To do so, we bind the ``text`` property of the tweet to the label
+text. To do so, we bind the ``text`` property of the tweet to the label's
 ``value`` property. Create the page, like you have done before, in the
 "source/class/mobiletweets/page" folder. The code of the page shouldn't
 be something new for you:

@@ -29,6 +29,13 @@ qx.Class.define("qx.theme.manager.Decoration",
 
 
 
+  construct : function() {
+    this.base(arguments);
+    this.__rules = [];
+    this.__legacyIe = (qx.core.Environment.get("engine.name") == "mshtml" &&
+      qx.core.Environment.get("browser.documentmode") < 9);
+  },
+
 
   /*
   *****************************************************************************
@@ -60,6 +67,81 @@ qx.Class.define("qx.theme.manager.Decoration",
   members :
   {
     __dynamic : null,
+    __rules : null,
+    __legacyIe : false,
+
+
+    /**
+     * Returns the name which will be / is used as css class name.
+     * @param value {Decorator} The decorator string or instance.
+     * @return {String} The css class name.
+     */
+    getCssClassName : function(value) {
+      if (qx.lang.Type.isString(value)) {
+        return "qx-" + value;
+      } else {
+        return "qx-" + value.toHashCode();
+      }
+    },
+
+
+    /**
+     * Adds a css class to the global stylesheet for the given decorator.
+     * This includes resolving the decorator if it's a string.
+     * @param value {Decorator} The decorator string or instance.
+     * @return {String} the css class name.
+     */
+    addCssClass : function(value) {
+      var sheet = qx.ui.style.Stylesheet.getInstance();
+
+      var instance = value;
+
+      value = this.getCssClassName(value);
+      var selector = "." + value;
+
+      if (sheet.hasRule(selector)) {
+        return value;
+      }
+
+      if (qx.lang.Type.isString(instance)) {
+        instance = this.resolve(instance);
+      }
+
+      if (!instance) {
+        throw new Error("Unable to resolve decorator '" + value + "'.");
+      }
+
+      // create and add a CSS rule
+      var css = "";
+      var styles = instance.getStyles(true);
+      for (var key in styles) {
+
+        // if we find a map value, use it as pseudo class
+        if (qx.Bootstrap.isObject(styles[key])) {
+          var innerCss = "";
+          var innerStyles = styles[key];
+          var inner = false;
+          for (var innerKey in innerStyles) {
+            inner = true;
+            innerCss += innerKey + ":" + innerStyles[innerKey] + ";";
+          }
+          var innerSelector = this.__legacyIe ? selector :
+            selector + (inner ? ":" : "");
+          this.__rules.push(innerSelector + key);
+          sheet.addRule(innerSelector + key, innerCss);
+          continue;
+        }
+        css += key + ":" + styles[key] + ";";
+      }
+
+      if (css) {
+        sheet.addRule(selector, css);
+        this.__rules.push(selector);
+      }
+
+      return value;
+    },
+
 
     /**
      * Returns the dynamically interpreted result for the incoming value
@@ -121,31 +203,7 @@ qx.Class.define("qx.theme.manager.Decoration",
         }
       }
 
-      var clazz = entry.decorator;
-      if (clazz == null) {
-        throw new Error(
-          "Missing definition of which decorator to use in entry: "
-           + value + "!"
-        );
-      }
-
-      // check if an array is given and the decorator should be build on runtime
-      if (clazz instanceof Array) {
-        var names = clazz.concat([]);
-        for (var i=0; i < names.length; i++) {
-          names[i] = names[i].basename.replace(".", "");
-        }
-        var name = "qx.ui.decoration.dynamic." + names.join("_");
-        if (!qx.Class.getByName(name)) {
-          qx.Class.define(name, {
-            extend : qx.ui.decoration.DynamicDecorator,
-            include : clazz
-          });
-        }
-        clazz = qx.Class.getByName(name);
-      }
-
-      return cache[value] = (new clazz).set(entry.style);
+      return cache[value] = (new qx.ui.decoration.Decorator()).set(entry.style);
     },
 
 
@@ -174,8 +232,8 @@ qx.Class.define("qx.theme.manager.Decoration",
     /**
      * Whether a value is interpreted dynamically
      *
-     * @param value {String} dynamically interpreted idenfier
-     * @return {Boolean} returns true if the value is interpreted dynamically
+     * @param value {String} dynamically interpreted identifier
+     * @return {Boolean} returns <code>true</code> if the value is interpreted dynamically
      */
     isDynamic : function(value)
     {
@@ -210,6 +268,13 @@ qx.Class.define("qx.theme.manager.Decoration",
     _applyTheme : function(value, old)
     {
       var aliasManager = qx.util.AliasManager.getInstance();
+
+      // remove old rules
+      for (var i=0; i < this.__rules.length; i++) {
+        var selector = this.__rules[i];
+        qx.ui.style.Stylesheet.getInstance().removeRule(selector);
+      };
+      this.__rules = [];
 
       if (old)
       {

@@ -117,19 +117,19 @@ qx.Class.define("qx.ui.form.VirtualComboBox",
 
   members :
   {
-    /** {var} Binding id between local value and text field value. */
+    /** @type {var} Binding id between local value and text field value. */
     __localBindId : null,
 
 
-    /** {var} Binding id between text field value and local value. */
+    /** @type {var} Binding id between text field value and local value. */
     __textFieldBindId : null,
 
 
-    /** {qx.data.Array} the drop-down selection. */
+    /** @type {qx.data.Array} the drop-down selection. */
     __selection : null,
 
 
-    /** {Boolean} Indicator to ignore selection changes from the list. */
+    /** @type {Boolean} Indicator to ignore selection changes from the list. */
     __ignoreChangeSelection : null,
 
 
@@ -237,7 +237,7 @@ qx.Class.define("qx.ui.form.VirtualComboBox",
       {
         case "textfield" :
           control = new qx.ui.form.TextField();
-          control.setFocusable(false);
+          control.setFocusable(qx.event.handler.MouseEmulation.ON);
           control.addState("inner");
           this._add(control, {flex : 1});
           break;

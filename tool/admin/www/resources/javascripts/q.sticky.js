@@ -18,7 +18,7 @@ var Sticky = q.define({
 
   members: {
     watch: function() {
-      q.wrap(window)
+      q(window)
         .on("scroll", this.onScroll, this)
         .on("resize", this.onResize, this);
     },
@@ -59,7 +59,7 @@ var Sticky = q.define({
 
 
     getWindowHeight: function() {
-      return q.wrap(window).getHeight();
+      return q(window).getHeight();
     },
 
 
@@ -125,7 +125,7 @@ var Sticky = q.define({
     // The "scroll" event may be fired too late, so that the offset
     // of the current position (determined by fixed positioning) would already
     // cause an overflow. As last resort, work around by limiting offset to highest
-    // offset acceptable. For smooth normal scrolling, still use the the offset calculated
+    // offset acceptable. For smooth normal scrolling, still use the offset calculated
     // from previous fixed position when appropriate.
     fixLateScroll: function(offset) {
       var offsetTopMax = this.getParentHeight() - this.getHeight();
@@ -134,11 +134,11 @@ var Sticky = q.define({
   }
 });
 
-q.attach({
+q.$attach({
   sticky: function(paddingTop, paddingBottom) {
     if (this.length > 1) {
       this.forEach(function(item) {
-        new Sticky(q.wrap(item), paddingTop, paddingBottom);
+        new Sticky(q(item), paddingTop, paddingBottom);
       });
     } else {
       new Sticky(this, paddingTop, paddingBottom);

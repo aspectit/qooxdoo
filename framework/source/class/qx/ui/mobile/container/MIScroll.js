@@ -20,8 +20,6 @@
 
 /* ************************************************************************
 
-#asset(qx/mobile/js/iscroll*.js)
-#ignore(iScroll)
 
 ************************************************************************ */
 
@@ -30,6 +28,9 @@
  * <code>qx.mobile.nativescroll</code> is set to "off". Uses the iScroll script to simulate
  * the CSS position:fixed style. Position fixed is not available in iOS and
  * Android < 2.2.
+ *
+ * @ignore(iScroll)
+ * @asset(qx/mobile/js/iscroll*.js)
  */
 qx.Mixin.define("qx.ui.mobile.container.MIScroll",
 {
@@ -102,13 +103,16 @@ qx.Mixin.define("qx.ui.mobile.container.MIScroll",
     * period.
     *
     * @param elementId {String} the elementId, the scroll container should scroll to.
-    * @param time {Integer} Time slice in which scrolling should be done (in seconds).
+    * @param time {Integer?0} Time slice in which scrolling should be done (in seconds).
     *
     */
     _scrollToElement : function(elementId, time)
     {
+      if(typeof time === "undefined") {
+        time = 0;
+      }
       if (this.__scroll) {
-        this.__scroll.scrollToElement(elementId, time);
+        this.__scroll.scrollToElement("#"+elementId, time);
       }
     },
 
@@ -116,7 +120,7 @@ qx.Mixin.define("qx.ui.mobile.container.MIScroll",
     /**
      * Loads and inits the iScroll instance.
      *
-     * @lint ignoreUndefined(iScroll)
+     * @ignore(iScroll)
      */
     __initScroll : function()
     {
@@ -147,34 +151,54 @@ qx.Mixin.define("qx.ui.mobile.container.MIScroll",
      * Creates the iScroll instance.
      *
      * @return {Object} The iScroll instance
-     * @lint ignoreUndefined(iScroll)
+     * @ignore(iScroll)
      */
     __createScrollInstance : function()
     {
       var defaultScrollProperties = this._getDefaultScrollProperties();
       var customScrollProperties = {};
-      
+
       if(this._scrollProperties != null) {
         customScrollProperties = this._scrollProperties;
       }
-      
+
       var iScrollProperties = qx.lang.Object.mergeWith(defaultScrollProperties, customScrollProperties, true);
-      
+
       return new iScroll(this.getContainerElement(), iScrollProperties);
     },
-    
-    
+
+
     /**
      * Returns a map with default iScroll properties for the iScroll instance.
      * @return {Object} Map with default iScroll properties
      */
     _getDefaultScrollProperties : function() {
+      var container = this;
+
       return {
         hideScrollbar: true,
         fadeScrollbar: true,
         hScrollbar : false,
         scrollbarClass: "scrollbar",
         useTransform: true,
+        onScrollEnd : function() {
+          // Alert interested parties that we scrolled to end of page.
+          if (qx.core.Environment.get("qx.mobile.nativescroll") == false)
+          {
+            if(this.y == this.maxScrollY) {
+              container.fireEvent("pageEnd");
+            }
+          }
+        },
+        onScrollMove : function() {
+          // Alert interested parties that we scrolled to end of page.
+          if (qx.core.Environment.get("qx.mobile.nativescroll") == false)
+          {
+            if(this.y == this.maxScrollY) {
+              container.fireEvent("pageEnd");
+            }
+          }
+        },
         onBeforeScrollStart : function(e) {
           // QOOXDOO ENHANCEMENT: Do not prevent default for form elements
           /* When updating iScroll, please check out that doubleTapTimer is not active (commented out)

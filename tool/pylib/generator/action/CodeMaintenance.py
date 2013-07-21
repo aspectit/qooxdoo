@@ -28,13 +28,15 @@ from misc          import textutil, filetool
 from misc.ExtMap   import ExtMap
 from ecmascript.transform.check      import lint
 from generator     import Context
+from generator.code.HintArgument     import HintArgument
 from generator.runtime.ShellCmd      import ShellCmd
+from ecmascript.frontend.SyntaxException import SyntaxException
 
 def runLint(jobconf, classes):
 
     def getFilteredClassList(classes, includePatt_, excludePatt_):
         # Although lint-check doesn't work with dependencies, we allow
-        # '=' in class pattern for convenience; stripp those now
+        # '=' in class pattern for convenience; strip those now
         intelli, explicit = textutil.splitPrefixedStrings(includePatt_)
         includePatt = intelli + explicit
         intelli, explicit = textutil.splitPrefixedStrings(excludePatt_)
@@ -72,16 +74,79 @@ def runLint(jobconf, classes):
     classesToCheck = list(getFilteredClassList(lib_class_names, opts.include_patts, opts.exclude_patts))
     opts.library_classes  = lib_class_names
     opts.class_namespaces = [x[:x.rfind(".")] for x in opts.library_classes if x.find(".")>-1]
-    # the next requires that the config keys and option attributes be identical (modulo "-"_")
-    for option, value in lintJob.get("lint-check").items():
-        setattr(opts, option.replace("-","_"), value)
-
-    for pos, classId in enumerate(classesToCheck):
-        console.debug("Checking %s" % classId)
-        tree = classes[classId].tree()
-        lint.lint_check(tree, classId, opts)
-
+    opts = add_config_lintopts(opts, lintJob)
+    lint_classes((classes[name] for name in classesToCheck), opts)
     console.outdent()
+
+##
+# Mid-level interface for Generator actions that want lint checking, mainly for
+# the types of the arguments.
+#
+# classesObj  - list of Class() objects
+# opts        - read-to use lint options
+def lint_classes(classesObj, opts):
+    console = Context.console
+    for classObj in classesObj:
+        console.debug("Checking %s" % classObj.id)
+        try:
+            warns = lint_check(classObj, opts)
+        except SyntaxException, e:
+            console.error(e)
+            continue
+
+        ##
+        # @deprecated {3.0} deprecation support for #ignore
+        hash_ignores = classObj.getHints('ignoreDeps')
+        hash_ignores = map(HintArgument, hash_ignores)
+        warns_ = warns[:]
+        warns = []
+        for warn in warns_:
+            if (hasattr(warn, 'name') and
+                warn.name in hash_ignores):
+                continue
+            warns.append(warn)
+
+        for warn in warns:
+            console.warn("%s (%d, %d): %s" % (classObj.id, warn.line, warn.column, 
+                warn.msg % tuple(warn.args)))
+
+##
+# Single interface to the ecmascript 'lint' module; handles caching; doesn't do
+# outputs.
+def lint_check(classObj, opts):
+    tree = classObj.tree()
+    return lint.lint_check(tree, classObj.id, opts)
+
+def lint_comptime_opts():
+    do_check = Context.jobconf.get('compile-options/code/lint-check', True)
+    opts = lint.defaultOptions()
+    opts.ignore_undefined_globals = True # do compile-level checks without unknown globals
+    # add config 'exclude' to allowed_globals
+    opts.allowed_globals = Context.jobconf.get('exclude', [])
+    # and sanitize meta characters
+    opts.allowed_globals = [x.replace('=','').replace('.*','') for x in opts.allowed_globals]
+    # some sensible settings (deviating from defaultOptions)
+    opts.ignore_no_loop_block = True
+    opts.ignore_reference_fields = True
+    opts.ignore_undeclared_privates = True
+    opts.ignore_unused_variables = True
+    # override from config
+    jobConf = Context.jobconf
+    opts = add_config_lintopts(opts, jobConf)
+    return do_check, opts
+        
+##
+# Add/override attributes of <optsObj> from config.
+# Requires that the config keys and option attributes be identical (modulo "-"_")
+def add_config_lintopts(optsObj, jobConf):
+    for option, value in jobConf.get("lint-check", {}).items():
+        opts_name = option.replace("-","_")
+        new_val = value
+        old_val = getattr(optsObj, opts_name, ())  # use tuple as undef
+        if isinstance(old_val, types.ListType):    # e.g. allowed-globals
+            new_val = old_val + value
+        setattr(optsObj, opts_name, new_val)
+    return optsObj
 
 
 def runMigration(jobconf, libs):

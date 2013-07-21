@@ -24,7 +24,6 @@
 
 /* ************************************************************************
 
-#asset(qx/static/blank.html)
 
 ************************************************************************ */
 
@@ -32,8 +31,9 @@
  * Rich text editor widget which encapsulates the low-level {@link qx.bom.htmlarea.HtmlArea}
  * component to offer editing features.
  *
+ * Optimized for the use in a RIA.
  *
- * Optimized for the use at a RIA.
+ * @asset(qx/static/blank.html)
  */
 qx.Class.define("qx.ui.embed.HtmlArea",
 {
@@ -71,6 +71,14 @@ qx.Class.define("qx.ui.embed.HtmlArea",
 
     this._setLayout(new qx.ui.layout.Grow);
 
+    // Wrapper for the Iframe DOM element created by bom.HtmlArea. Needed to
+    // prevent the element queue from removing the Iframe.
+    var tempElement = new qx.html.Element();
+    tempElement.setStyles({
+      width: "100%",
+      height: "100%"
+    });
+    this.getContentElement().add(tempElement);
     this.__addAppearListener();
 
     this.__initValues = { content: value,
@@ -177,22 +185,6 @@ qx.Class.define("qx.ui.embed.HtmlArea",
 
   statics :
   {
-    /**
-     * Checks if the given node is a block node
-     *
-     * @param node {Node} Node
-     * @return {Boolean} whether it is a block node
-     */
-    isBlockNode : function(node)
-    {
-      var deprecatedFunction = qx.ui.embed.HtmlArea.isBlockNode;
-      var deprecationMessage = "Please use the method 'qx.dom.Node.isBlockNode' instead.";
-      qx.log.Logger.deprecatedMethodWarning(deprecatedFunction, deprecationMessage);
-
-      return qx.dom.Node.isBlockNode(node);
-    },
-
-
     /**
      * Checks if one element is in the list of elements that are allowed to contain a paragraph in HTML
      *
@@ -493,7 +485,7 @@ qx.Class.define("qx.ui.embed.HtmlArea",
      */
     __setupEditorComponent : function()
     {
-      var domElement = this.getContentElement().getDomElement();
+      var domElement = this.getContentElement().getChildren()[0].getDomElement();
       this.__editorComponent = new qx.bom.htmlarea.HtmlArea(domElement,
                                                            this.__initValues.content,
                                                            this.__initValues.styleInfo,
@@ -576,7 +568,7 @@ qx.Class.define("qx.ui.embed.HtmlArea",
     {
       this.__onDOMNodeRemoved = qx.lang.Function.bind(this.__invalidateEditor, this);
 
-      var element = this.getContainerElement().getDomElement();
+      var element = this.getContentElement().getDomElement();
       qx.bom.Event.addNativeListener(element, "DOMNodeRemoved", this.__onDOMNodeRemoved);
     },
 
@@ -921,7 +913,7 @@ qx.Class.define("qx.ui.embed.HtmlArea",
      * @param value {String} Color value (supported are Hex,
      * @return {Boolean} Success of operation
      */
-    setTextColor : function(value) {
+    setTextForegroundColor : function(value) {
       return this.__editorComponent != null ? this.__editorComponent.setTextColor(value) : false;
     },
 
@@ -1058,14 +1050,10 @@ qx.Class.define("qx.ui.embed.HtmlArea",
     },
 
 
-    /**
-     * Sets the background color of the editor
-     *
-     * @param value {String} color
-     * @return {Boolean} if succeeded
-     */
-    setBackgroundColor : function(value) {
-      return this.__editorComponent != null ? this.__editorComponent.setBackgroundColor(value) : false;
+    // overridden
+    _applyBackgroundColor : function(value) {
+      this.base(arguments, value);
+      this.__editorComponent != null ? this.__editorComponent.setBackgroundColor(value) : false;
     },
 
 
@@ -1212,10 +1200,10 @@ qx.Class.define("qx.ui.embed.HtmlArea",
     /**
      * Returns the content of the actual range as text
      *
-     * @TODO: need to be implemented correctly
      * @return {String?null} selected text or null if not initialized
      */
     getSelectedHtml : function() {
+      // TODO: need to be implemented correctly
       return this.__editorComponent != null ? this.__editorComponent.getSelectedHtml() : null;
     },
 
@@ -1308,8 +1296,8 @@ qx.Class.define("qx.ui.embed.HtmlArea",
         this._initBlockerElement();
       }
 
-      if (!this.getContainerElement().hasChild(this.__blockerElement)) {
-        this.getContainerElement().add(this.__blockerElement);
+      if (!this.getContentElement().hasChild(this.__blockerElement)) {
+        this.getContentElement().add(this.__blockerElement);
       }
 
       this.__blockerElement.setStyle("display", "block");
@@ -1385,7 +1373,7 @@ qx.Class.define("qx.ui.embed.HtmlArea",
     qx.event.Registration.removeListener(document.body, "mouseup", this.release, this, true);
     qx.event.Registration.removeListener(document.body, "losecapture", this.release, this, true);
 
-    var element = this.getContainerElement().getDomElement();
+    var element = this.getContentElement().getDomElement();
     if (element) {
       qx.bom.Event.removeNativeListener(element, "DOMNodeRemoved", this.__onDOMNodeRemoved);
     }

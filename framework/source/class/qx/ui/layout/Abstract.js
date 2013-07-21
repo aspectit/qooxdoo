@@ -39,15 +39,15 @@ qx.Class.define("qx.ui.layout.Abstract",
 
   members :
   {
-    /** {Map} The cached size hint */
+    /** @type {Map} The cached size hint */
     __sizeHint : null,
 
-    /** {Boolean} Whether the children cache is valid. This field is protected
+    /** @type {Boolean} Whether the children cache is valid. This field is protected
      *    because sub classes must be able to access it quickly.
      */
     _invalidChildrenCache : null,
 
-    /** {qx.ui.core.Widget} The connected widget */
+    /** @type {qx.ui.core.Widget} The connected widget */
     __widget : null,
 
 
@@ -74,8 +74,10 @@ qx.Class.define("qx.ui.layout.Abstract",
      * @abstract
      * @param availWidth {Integer} Final width available for the content (in pixel)
      * @param availHeight {Integer} Final height available for the content (in pixel)
+     * @param padding {Map} Map containing the padding values. Keys:
+     * <code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>
      */
-    renderLayout : function(availWidth, availHeight) {
+    renderLayout : function(availWidth, availHeight, padding) {
       this.warn("Missing renderLayout() implementation!");
     },
 

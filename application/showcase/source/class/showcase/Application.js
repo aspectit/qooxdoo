@@ -20,11 +20,14 @@
 
 /* ************************************************************************
 
-#asset(showcase/*)
-#asset(indigo/css/*)
-#asset(indigo/fonts/*)
 
 ************************************************************************ */
+/**
+ *
+ * @asset(showcase/*)
+ * @asset(indigo/css/*)
+ * @asset(indigo/fonts/*)
+ */
 
 qx.Class.define("showcase.Application",
 {
@@ -51,7 +54,7 @@ qx.Class.define("showcase.Application",
     __currentPage : null,
 
     /**
-     * @lint ignoreUndefined(qxc)
+     * @ignore(qxc)
      */
     main : function()
     {
@@ -104,7 +107,6 @@ qx.Class.define("showcase.Application",
 
       this.__stack = new qx.ui.container.Stack();
       this.__stack.set({
-        appearance: "stack",
         minWidth: 600,
         allowGrowX: true
       });

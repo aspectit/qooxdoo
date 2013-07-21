@@ -71,21 +71,52 @@ qx.Class.define("qx.test.mobile.container.Carousel",
 
       this.getRoot().add(carousel);
 
-      this.assertEquals(0,carousel.getShownPageIndex());
+      this.assertEquals(0,carousel.getCurrentIndex());
 
       carousel.nextPage();
-      this.assertEquals(1, carousel.getShownPageIndex());
+      this.assertEquals(1, carousel.getCurrentIndex());
 
       // OVERFLOW
       carousel.nextPage();
-      this.assertEquals(1, carousel.getShownPageIndex());
+      this.assertEquals(1, carousel.getCurrentIndex());
 
       carousel.previousPage();
-      this.assertEquals(0,carousel.getShownPageIndex());
+      this.assertEquals(0,carousel.getCurrentIndex());
 
       // OVERFLOW
       carousel.previousPage();
-      this.assertEquals(0,carousel.getShownPageIndex());
+      this.assertEquals(0,carousel.getCurrentIndex());
+
+      carousel.destroy();
+      carouselPage1.destroy();
+      carouselPage2.destroy();
+    },
+
+
+    testPageSwitchEvent : function()
+    {
+      var carousel = new qx.ui.mobile.container.Carousel();
+      var carouselPage1 = new qx.ui.mobile.container.Composite();
+      carousel.add(carouselPage1);
+
+      var carouselPage2 = new qx.ui.mobile.container.Composite();
+      carousel.add(carouselPage2);
+
+      this.getRoot().add(carousel);
+
+      this.assertEventFired(carousel, "changeCurrentIndex", function() {
+        carousel.nextPage();
+      }, function(e) {
+        this.assertEquals(1, e.getData());
+        this.assertEquals(0, e.getOldData());
+      }.bind(this));
+
+      this.assertEventFired(carousel, "changeCurrentIndex", function() {
+        carousel.previousPage();
+      }, function(e) {
+        this.assertEquals(0, e.getData());
+        this.assertEquals(1, e.getOldData());
+      }.bind(this));
 
       carousel.destroy();
       carouselPage1.destroy();
@@ -104,11 +135,11 @@ qx.Class.define("qx.test.mobile.container.Carousel",
 
       this.getRoot().add(carousel);
 
-      this.assertEquals(0,carousel.getShownPageIndex());
+      this.assertEquals(0,carousel.getCurrentIndex());
 
-      carousel.scrollToPage(1);
-      this.assertEquals(1, carousel.getShownPageIndex());
-      
+      carousel.setCurrentIndex(1);
+      this.assertEquals(1, carousel.getCurrentIndex());
+
       window.setTimeout(function() {
           carousel.destroy();
           carouselPage1.destroy();

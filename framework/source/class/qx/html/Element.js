@@ -17,10 +17,6 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-#require(qx.module.Animation)
-************************************************************************ */
-
 /**
  * High-performance, high-level DOM element creation and management.
  *
@@ -40,6 +36,8 @@
  * {@link #getParent}, {@link #free},
  * {@link #insertInto}, {@link #insertBefore}, {@link #insertAfter},
  * {@link #moveTo}, {@link #moveBefore}, {@link #moveAfter},
+ *
+ * @require(qx.module.Animation)
  */
 qx.Class.define("qx.html.Element",
 {
@@ -91,27 +89,27 @@ qx.Class.define("qx.html.Element",
     ---------------------------------------------------------------------------
     */
 
-    /** {Boolean} If debugging should be enabled */
+    /** @type {Boolean} If debugging should be enabled */
     DEBUG : false,
 
 
-    /** {Map} Contains the modified {@link qx.html.Element}s. The key is the hash code. */
+    /** @type {Map} Contains the modified {@link qx.html.Element}s. The key is the hash code. */
     _modified : {},
 
 
-    /** {Map} Contains the {@link qx.html.Element}s which should get hidden or visible at the next flush. The key is the hash code. */
+    /** @type {Map} Contains the {@link qx.html.Element}s which should get hidden or visible at the next flush. The key is the hash code. */
     _visibility : {},
 
 
-    /** {Map} Contains the {@link qx.html.Element}s which should scrolled at the next flush */
+    /** @type {Map} Contains the {@link qx.html.Element}s which should scrolled at the next flush */
     _scroll : {},
 
 
-    /** {Array} List of post actions for elements. The key is the action name. The value the {@link qx.html.Element}. */
+    /** @type {Array} List of post actions for elements. The key is the action name. The value the {@link qx.html.Element}. */
     _actions : [],
 
 
-    /**  {Map} List of all selections. */
+    /**  @type {Map} List of all selections. */
     __selection : {},
 
 
@@ -434,16 +432,16 @@ qx.Class.define("qx.html.Element",
 
     __nodeName : null,
 
-    /** {Element} DOM element of this object */
+    /** @type {Element} DOM element of this object */
     __element : null,
 
-    /** {Boolean} Marker for always visible root nodes (often the body node) */
+    /** @type {Boolean} Marker for always visible root nodes (often the body node) */
     __root : false,
 
-    /** {Boolean} Whether the element should be included in the render result */
+    /** @type {Boolean} Whether the element should be included in the render result */
     __included : true,
 
-    /** {Boolean} Whether the element should be visible in the render result */
+    /** @type {Boolean} Whether the element should be visible in the render result */
     __visible : true,
 
     __lazyScrollIntoViewX : null,
@@ -1564,7 +1562,7 @@ qx.Class.define("qx.html.Element",
       // create the element right away
       if (!this.__element) {
         this.__flush();
-        col[0] = this.__element;
+        col.push(this.__element);
       }
       if (this.__element) {
         col.fadeIn(duration);
@@ -2374,6 +2372,32 @@ qx.Class.define("qx.html.Element",
     },
 
 
+
+    /*
+    ---------------------------------------------------------------------------
+      CSS CLASS SUPPORT
+    ---------------------------------------------------------------------------
+    */
+    /**
+     * Adds a css class to the element.
+     * @param name {String} Name of the CSS class.
+     */
+    addClass : function(name) {
+      var value = ((this.getAttribute("class") || "") + " " + name).trim();
+      this.setAttribute("class", value);
+    },
+
+
+    /**
+     * Removes a CSS class from the current element.
+     * @param name {String} Name of the CSS class.
+     */
+    removeClass : function(name) {
+      var currentClass = this.getAttribute("class");
+      if (currentClass) {
+        this.setAttribute("class", (currentClass.replace(name, "")).trim());
+      }
+    },
 
 
 

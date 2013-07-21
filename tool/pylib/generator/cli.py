@@ -32,6 +32,21 @@ from generator.runtime.InterruptRegistry import InterruptRegistry
 #import warnings
 #warnings.filterwarnings("error") # turn warnings into errors - e.g. for UnicodeWarning
 
+
+# - Config section -------------------------------------------------------------
+
+# for the '_all_' job, skip jobs that require manual intervention
+_ALL_SKIP_JOBS = set('migration watch watch-scss source-server source-server-reload simulation-run'.split())
+
+# - Config end -----------------------------------------------------------------
+
+## TODO: The next on is a hack, and should be removed once all string handling is
+## properly done in unicode; it is advisable to comment out the call to setdefaultencoding()
+## when working on string handling in other parts of the generator
+reload(sys)
+sys.setdefaultencoding('utf-8')
+sys.setrecursionlimit(3500)  # due to bug#2922; increased with bug#5265
+
 # Fix for Jython
 if os.name == 'java':
   # Java GC cannot be disabled, see http://bugs.jython.org/issue1175
@@ -41,13 +56,6 @@ if os.name == 'java':
     gc.enable()
   except NotImplementedError:
     gc.disable = gc.enable
-
-## TODO: The next on is a hack, and should be removed once all string handling is
-## properly done in unicode; it is advisable to comment out the call to setdefaultencoding()
-## when working on string handling in other parts of the generator
-reload(sys)
-sys.setdefaultencoding('utf-8')
-sys.setrecursionlimit(3500)  # due to bug#2922; increased with bug#5265
 
 interruptRegistry = InterruptRegistry()
 
@@ -216,9 +224,9 @@ def execGenerator(argv, config=None, extra_config=None, appname=None):
 
     # Load application configuration
     if config is not None:
-        config = Config(console, config, argv=argv, **options.letmacros)
+        config = Config(console, config, **options.letmacros)
     else:
-        config = Config(console, options.config, argv=argv, **options.letmacros)
+        config = Config(console, options.config, **options.letmacros)
 
     # Load user configuration (preferences)
     config = getUserConfig(config)
@@ -251,6 +259,11 @@ def execGenerator(argv, config=None, extra_config=None, appname=None):
                 listJobs(console, availableJobs, config)
                 sys.exit(1)
 
+    elif '_all_' in options.jobs:
+        options.jobs = []
+        for job in availableJobs:
+            if job not in _ALL_SKIP_JOBS:
+                options.jobs.append(job)
     else:
         for job in options.jobs:
             if job not in availableJobs:
@@ -263,19 +276,8 @@ def execGenerator(argv, config=None, extra_config=None, appname=None):
     Context.config = config # TODO: clean up overlap between context dict and Context module
 
     # CLI mode
-    if not options.daemon:
-        # TOOD: context already contains config and console, run_jobs signature can be slimmed down
-        return runJobs(config, console, context, level, options.jobs[:])
-
-    # Daemon mode
-    else:
-        from generator.runtime.Generatord import Generatord
-        console.head("Executing: Daemon Mode", True)
-        generatord = Generatord(context)
-        console.info("Opening port %s on %s, serving in background..." % (generatord.servAddr[1],
-                                                                          generatord.servAddr[0] if generatord.servAddr[0] else 'localhost')
-        )
-        generatord.serve()
+    # TOOD: context already contains config and console, run_jobs signature can be slimmed down
+    return runJobs(config, console, context, level, options.jobs[:])
 
 
 def main(argv):

@@ -42,26 +42,6 @@ qx.Bootstrap.define("qx.bom.client.Event",
 
 
     /**
-     * Checks if pointer events are available.
-     *
-     * @internal
-     * @return {Boolean} <code>true</code> if pointer events are supported.
-     */
-    getPointer : function() {
-      // Check if browser reports that pointerEvents is a known style property
-      if ("pointerEvents" in document.documentElement.style) {
-        // Opera 10.63 incorrectly advertises support for CSS pointer events (#4229).
-        // Do not rely on pointer events in Opera until this browser issue is fixed.
-        // IE9 only supports pointer events only for SVG.
-        // See http://msdn.microsoft.com/en-us/library/ff972269%28v=VS.85%29.aspx
-        var browserName = qx.bom.client.Engine.getName();
-        return browserName != "opera" && browserName != "mshtml";
-      }
-      return false;
-    },
-
-
-    /**
      * Checks if MSPointer events are available.
      *
      * @internal
@@ -107,7 +87,6 @@ qx.Bootstrap.define("qx.bom.client.Event",
 
   defer : function(statics) {
     qx.core.Environment.add("event.touch", statics.getTouch);
-    qx.core.Environment.add("event.pointer", statics.getPointer);
     qx.core.Environment.add("event.mspointer", statics.getMsPointer);
     qx.core.Environment.add("event.help", statics.getHelp);
     qx.core.Environment.add("event.hashchange", statics.getHashChange);

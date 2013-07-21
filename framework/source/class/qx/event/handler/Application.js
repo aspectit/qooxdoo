@@ -72,11 +72,11 @@ qx.Class.define("qx.event.handler.Application",
 
   statics :
   {
-    /** {Integer} Priority of this handler */
+    /** @type {Integer} Priority of this handler */
     PRIORITY : qx.event.Registration.PRIORITY_NORMAL,
 
 
-    /** {Map} Supported event types */
+    /** @type {Map} Supported event types */
     SUPPORTED_TYPES :
     {
       ready : 1,
@@ -84,11 +84,11 @@ qx.Class.define("qx.event.handler.Application",
     },
 
 
-    /** {Integer} Which target check to use */
+    /** @type {Integer} Which target check to use */
     TARGET_CHECK : qx.event.IEventHandler.TARGET_WINDOW,
 
 
-    /** {Integer} Whether the method "canHandleEvent" must be called */
+    /** @type {Integer} Whether the method "canHandleEvent" must be called */
     IGNORE_CAN_HANDLE : true,
 
 
@@ -226,13 +226,13 @@ qx.Class.define("qx.event.handler.Application",
         if (
           qx.core.Environment.get("engine.name") == "gecko" ||
           qx.core.Environment.get("engine.name") == "opera" ||
-          qx.core.Environment.get("engine.name") == "webkit"
+          qx.core.Environment.get("engine.name") == "webkit" ||
+          (qx.core.Environment.get("engine.name") == "mshtml" && qx.core.Environment.get("browser.documentmode") > 8)
         ) {
-          // Using native method supported by Mozilla, Webkits and Opera >= 9.0
+          // Using native method supported by Mozilla, Webkit, Opera and IE >= 9
           qx.bom.Event.addNativeListener(this._window, "DOMContentLoaded", this._onNativeLoadWrapped);
         }
-        else if ((qx.core.Environment.get("engine.name") == "mshtml"))
-        {
+        else {
           var self = this;
 
           // Continually check to see if the document is ready

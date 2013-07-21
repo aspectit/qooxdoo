@@ -14,6 +14,7 @@
     "TESTRUNNER_ROOT" : ".",
     "TESTRUNNER"   : "testrunner",
     "REPORT_SERVER" : false,
+    "PERFORMANCE_REPORT_SERVER" : false,
     "TEST_NAMESPACE" : "${APPLICATION}.test",
     "TEST_INCLUDE" : "${TEST_NAMESPACE}.*",
     "TEST_EXCLUDE" : "",
@@ -26,7 +27,9 @@
 
   "config-warnings" :
   {
-    "environment" : [ "non-literal-keys" ]
+    "environment" : [ "non-literal-keys" ],
+    "job-shadowing" : [
+    ]
   },
 
   "jobs" :
@@ -181,15 +184,8 @@
       "extend" : ["source-script", "tests-common"]
     },
 
-    "testrunner-common" :
-    {
-      "let" :
-      {
-        "TESTRUNNER_VIEW" : "testrunner.view.Html",
-        "TESTRUNNER_ORIGIN" : "iframe",
-        "TESTRUNNER_MAIN_CLASS" : "testrunner.Application"
-      },
-
+    "libraries" : {
+      
       "library" :
       [
         {
@@ -211,7 +207,19 @@
         {
           "manifest" : "${TESTRUNNER_ROOT}/Manifest.json"
         }
-      ],
+      ]
+    },
+
+    "testrunner-common" :
+    {
+      "extend" : [ "libraries" ],
+
+      "let" :
+      {
+        "TESTRUNNER_VIEW" : "testrunner.view.Html",
+        "TESTRUNNER_ORIGIN" : "iframe",
+        "TESTRUNNER_MAIN_CLASS" : "testrunner.Application"
+      },
 
       "include" :
       [
@@ -230,6 +238,7 @@
         "testrunner.title" : "${APPLICATION}",
         "testrunner.testParts" : false,
         "testrunner.reportServer" : "${REPORT_SERVER}",
+        "testrunner.reportPerfResultUrl": "${PERFORMANCE_REPORT_SERVER}",
         "testrunner.performance" : true
       },
 
@@ -638,7 +647,7 @@
         "target" : "${BUILD_PATH}",
         "source" : "${TESTRUNNER_ROOT}/source"
       }
-    },
+    }
 
   }
 }

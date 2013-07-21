@@ -18,11 +18,6 @@
 ************************************************************************ */
 
 /* *********************************************************************
-#asset(qx/test/xmlhttp/php_version.php)
-#use(feature-checks)
-#optional(qx.application.Standalone)
-#optional(qx.application.Inline)
-#optional(qx.application.Native)
 ************************************************************************ */
 
 /**
@@ -35,6 +30,13 @@
  *   // test code goes here
  * }
  * </pre>
+ *
+ * @use(feature-checks)
+ * @ignore(qx.application.Standalone)
+ * @ignore(qx.application.Inline)
+ * @ignore(qx.application.Native)
+ *
+ * @asset(qx/test/xmlhttp/php_version.php)
  */
 qx.Mixin.define("qx.dev.unit.MRequirements", {
 
@@ -47,7 +49,7 @@ qx.Mixin.define("qx.dev.unit.MRequirements", {
   */
   statics :
   {
-    /** {Boolean} Result of {@link #hasPhp}. Stored as class member to avoid
+    /** @type {Boolean} Result of {@link #hasPhp}. Stored as class member to avoid
      * repeating the check. */
     __hasPhp : null
   },
@@ -248,6 +250,18 @@ qx.Mixin.define("qx.dev.unit.MRequirements", {
       catch(ex) {
         return win.name.indexOf("selenium") < 0;
       }
+    },
+
+
+    /**
+     * Checks if the application is running on Windows 7
+     *
+     * @return {Boolean} <code>false</code> if operating system is Windows 7
+     */
+    hasNoWin7 : function()
+    {
+      var isWin7 = (qx.core.Environment.get("os.name") === "win" && qx.core.Environment.get("os.version") === "7");
+      return (isWin7 ? false : true);
     }
   }
 

@@ -1,5 +1,5 @@
 {
-    "name"    : "${Name}",
+  "name"    : "${Name}",
 
   "include" :
   [
@@ -14,15 +14,18 @@
     "api-data",
     "build",
     "build-min",
+    "build-module-all",
+    "build-module-all-min",
     "test",
-    "test-source"
+    "test-source",
+    "validate-config"
   ],
 
   "default-job" : "build-min",
 
-  "config-warnings" : 
+  "config-warnings" :
   {
-    "job-shadowing" : ["api"] 
+    "job-shadowing" : ["api"]
   },
 
   "let" :
@@ -31,7 +34,6 @@
     "QOOXDOO_PATH" : "${REL_QOOXDOO_PATH}",
     "WEBSITE"      : "$${QOOXDOO_PATH}/component/standalone/website",
     "CACHE"        : "${Cache}",
-    "BUILD_PATH"   : "script",
     "ROOT"         : "."
   },
 
@@ -50,14 +52,16 @@
       "extend" : ["cache"],
       "copy-files" :
       {
-        "files" : 
+        "files" :
         [
+          "samples",
           "api.css",
           "default.highlight.css",
+          "fiddleframe.html",
           "highlight.LICENSE",
           "highlight.pack.js",
           "index.html",
-          "samples.js",
+          "jsfiddle-logo_small.png",
           "viewer.js"
         ],
         "source" : "$${WEBSITE}/api",

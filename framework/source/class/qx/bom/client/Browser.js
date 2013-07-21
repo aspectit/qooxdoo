@@ -48,15 +48,12 @@
 ************************************************************************ */
 
 /**
-#require(qx.bom.client.OperatingSystem#getVersion)
-*/
-
-/**
  * Basic browser detection for qooxdoo.
  *
  * This class is used by {@link qx.core.Environment} and should not be used
  * directly. Please check its class comment for details how to use it.
  *
+ * @require(qx.bom.client.OperatingSystem#getVersion)
  * @internal
  */
 qx.Bootstrap.define("qx.bom.client.Browser",
@@ -94,7 +91,8 @@ qx.Bootstrap.define("qx.bom.client.Browser",
       }
       else if (engine ===  "mshtml")
       {
-        if (name === "msie")
+        // IE 11's ua string no longer contains "MSIE" or even "IE"
+        if (name === "msie" || name === "trident")
         {
           name = "ie";
 
@@ -220,7 +218,7 @@ qx.Bootstrap.define("qx.bom.client.Browser",
       "gecko" : "prism|Fennec|Camino|Kmeleon|Galeon|Netscape|SeaMonkey|Namoroka|Firefox",
 
       // No idea what other browsers based on IE's engine
-      "mshtml" : "IEMobile|Maxthon|MSIE",
+      "mshtml" : "IEMobile|Maxthon|MSIE|Trident",
 
       // Keep "Opera" the last one to correctly prefer/match the mobile clients
       "opera" : "Opera Mini|Opera Mobi|Opera"

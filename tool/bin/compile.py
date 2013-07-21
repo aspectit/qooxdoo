@@ -40,7 +40,10 @@ from ecmascript.backend.Packer      import Packer
 from ecmascript.backend             import formatter_3 as formatter
 from ecmascript.frontend import tokenizer, treeutil
 from ecmascript.frontend import treegenerator, treegenerator_3
-from ecmascript.transform.optimizer import basecalloptimizer, privateoptimizer, stringoptimizer, variableoptimizer, variantoptimizer, inlineoptimizer
+from ecmascript.transform.optimizer import basecalloptimizer, privateoptimizer, stringoptimizer, variantoptimizer, inlineoptimizer
+from ecmascript.transform.optimizer import variableoptimizer
+from ecmascript.transform.optimizer import globalsoptimizer
+from ecmascript.transform.check     import scopes
 from ecmascript.backend import api
 from misc import filetool
 from generator import Context
@@ -94,7 +97,7 @@ def interruptCleanup(interruptRegistry):
             print >>sys.stderr, e  # just keep on with the others
     
 
-def get_args_1():
+def get_args():
     parser = optparse.OptionParser(option_class=ExtendAction)
 
     usage_str = '''%prog [options] [main_action] file.js,...
@@ -118,6 +121,7 @@ Default action is to compress the JS code. All output is written to STDOUT.
     option_group.add_option("-p", "--privates", action="store_true", dest="privates", default=False, help="optimize privates")
     option_group.add_option("--privateskey", dest="privateskey", metavar="CACHEKEY", type="string", default="", help="cache key for privates")
     option_group.add_option("-b", "--basecalls", action="store_true", dest="basecalls", default=False, help="optimize basecalls")            
+    option_group.add_option("-g", "--globals", action="store_true", dest="globals", default=False, help="optimize globals")
     #option_group.add_option("-i", "--inline", action="store_true", dest="inline", default=False, help="optimize inline")
     option_group.add_option("-r", "--variants", action="store_true", dest="variantsopt", default=False, help="optimize variants")
     option_group.add_option("--variant", action="extend", dest="variants", metavar="KEY:VALUE", type="string", default=[], help="Selected variants")
@@ -139,7 +143,7 @@ Default action is to compress the JS code. All output is written to STDOUT.
     (options, args) = parser.parse_args(sys.argv[1:])
     return options, args
 
-def get_args():
+def get_args_1():
     usage_str = '''%(prog)s [options] [main_action] file.js,...
     
 Default action is to compress the JS code. All output is written to STDOUT.
@@ -161,6 +165,7 @@ Default action is to compress the JS code. All output is written to STDOUT.
     parser.add_argument("-b", "--basecalls", action="store_true", dest="basecalls", default=False, help="optimize basecalls")            
     #parser.add_argument("-i", "--inline", action="store_true", dest="inline", default=False, help="optimize inline")
     parser.add_argument("-r", "--variants", action="store_true", dest="variantsopt", default=False, help="optimize variants")
+    parser.add_argument("-g", "--globals", action="store_true", dest="globals", default=False, help="optimize globals")
     parser.add_argument("--variant", dest="variants", metavar="KEY:VALUE", type=str, default=[], help="Selected variants")
     parser.add_argument("-m", "--comments", action="store_true", dest="comments", default=False, help="optimize comments")
     parser.add_argument("--all", action="store_true", dest="all", default=False, help="optimize all")            
@@ -237,6 +242,7 @@ def run_compile(fileName, fileContent, options, args):
     if not options.quiet:
         print ">>> Creating tree..."
     tree = treegenerator.createFileTree(tokens)
+    tree = scopes.create_scopes(tree)
     
     # optimizing tree
     if len(options.variants) > 0:
@@ -268,6 +274,11 @@ def run_compile(fileName, fileContent, options, args):
         if not options.quiet:
             print ">>> Optimizing variables..."
         variableoptimizer.search(tree)
+
+    if options.all or options.globals:
+        if not options.quiet:
+            print ">>> Optimizing globals..."
+        tree = globalsoptimizer.process(tree)
 
     if options.all or options.privates:
         if not options.quiet:

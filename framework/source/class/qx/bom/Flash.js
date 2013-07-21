@@ -83,9 +83,8 @@ qx.Class.define("qx.bom.Flash",
      * It is possible to add these parameters as supported by Flash movies:
      * http://helpx.adobe.com/flash/kb/flash-object-embed-tag-attributes.html
      *
-     * @TODO: don't use the seperate argument "variables" to set flashvars, this belongs
+     * TODO: don't use the seperate argument "variables" to set flashvars, this belongs
      *        to the "params" argument.
-     * @TODO: remove deprication warning after next major version was build
      *
      * @param element {Element} Parent DOM element node to add flash movie
      * @param attributes {Map} attributes for the object tag like id or mayscript
@@ -301,15 +300,22 @@ qx.Class.define("qx.bom.Flash",
         // Create element, but set attribute "id" first and not later.
         if (attributes.id)
         {
-          element.innerHTML = '<object id="' + attributes.id + '" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000">' + paramsStr + '</object>';
+          element.innerHTML = '<object id="' + attributes.id +
+            '" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" $$widget="' + attributes.$$widget + '">' +
+            paramsStr + '</object>';
           delete attributes.id;
         } else {
-          element.innerHTML = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000">' + paramsStr + '</object>';
+          element.innerHTML = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" $$widget="' +
+            attributes.$$widget + '">' + paramsStr + '</object>';
         }
 
         // Apply attributes
         for (var name in attributes) {
-          element.firstChild.setAttribute(name, attributes[name]);
+          // IE doesn't like dollar signs in attribute names.
+          // Setting the attribute using innerHTML above works fine, though...
+          if (name != "$$widget") {
+            element.firstChild.setAttribute(name, attributes[name]);
+          }
         }
 
         return element.firstChild;

@@ -18,8 +18,11 @@
 ************************************************************************ */
 
 /* ************************************************************************
-#asset(qx/test/style.css)
 ************************************************************************ */
+/**
+ *
+ * @asset(qx/test/style.css)
+ */
 
 qx.Class.define("qx.test.bom.Stylesheet",
 {
@@ -62,6 +65,11 @@ qx.Class.define("qx.test.bom.Stylesheet",
       var rules = sheet.cssRules || sheet.rules;
       this.assertEquals(1, rules.length);
       this.assertEquals("#foo", rules[0].selectorText);
+      if (qx.core.Environment.get("qx.debug")) {
+        this.assertException(function() {
+          qx.bom.Stylesheet.addRule(sheet, "#foo", "{color: red;}");
+        }, qx.core.AssertionError);
+      }
     },
 
     testCreateElement : function()

@@ -57,7 +57,7 @@ Code Organisation
 
    development/code_organisation
    development/library_custom
-.. development/contrib
+   development/contrib
 
 
 Parts
@@ -96,6 +96,7 @@ Documenting Code
 
    development/write_api_documentation
    development/api_jsdoc_ref
+   development/api_jsdoc_at_ignore
 
 Miscellaneous
 =============

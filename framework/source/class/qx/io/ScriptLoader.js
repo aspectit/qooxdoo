@@ -36,7 +36,7 @@ qx.Bootstrap.define("qx.io.ScriptLoader",
   statics :
   {
     /**
-     * {Number} Timeout limit in seconds that applies to browsers not supporting
+     * @type {Number} Timeout limit in seconds that applies to browsers not supporting
      * the error handler. Default is 15 seconds. 0 means no timeout.
      */
     TIMEOUT: 15
@@ -44,22 +44,22 @@ qx.Bootstrap.define("qx.io.ScriptLoader",
 
   members :
   {
-    /** {Boolean} Whether the request is running */
+    /** @type {Boolean} Whether the request is running */
     __running : null,
 
-    /** {Boolean} Whether the current loader is disposed */
+    /** @type {Boolean} Whether the current loader is disposed */
     __disposed : null,
 
-    /** {Function} Callback method to execute */
+    /** @type {Function} Callback method to execute */
     __callback : null,
 
-    /** {Object} Context to execute the callback in */
+    /** @type {Object} Context to execute the callback in */
     __context : null,
 
-    /** {Function} This function is a wrapper for the DOM listener */
+    /** @type {Function} This function is a wrapper for the DOM listener */
     __oneventWrapped : null,
 
-    /** {Element} Stores the DOM element of the script tag */
+    /** @type {Element} Stores the DOM element of the script tag */
     __elem : null,
 
 
@@ -225,19 +225,19 @@ qx.Bootstrap.define("qx.io.ScriptLoader",
       var engineName = qx.bom.client.Engine.getName();
 
       // IE only
-      if (engineName == "mshtml") {
+      if (engineName === "mshtml") {
         var state = this.__elem.readyState;
 
-        if (state == "loaded") {
+        if (state === "loaded" || state === "complete" || (e && e.type === "load")) {
           this.dispose("success");
-        } else if (state == "complete") {
-         this.dispose("success");
+        } else if (e && e.type === "error") {
+          this.dispose("fail");
         } else {
           return;
         }
 
       // opera only
-      } else if (engineName == "opera") {
+      } else if (engineName === "opera") {
         if (qx.Bootstrap.isString(e) || e.type === "error") {
           return this.dispose("fail");
         } else if (e.type === "load") {

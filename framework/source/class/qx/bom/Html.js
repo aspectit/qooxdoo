@@ -31,13 +31,11 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-#ignore(qxWeb)
-************************************************************************ */
-
 /**
  * This class is mainly a convenience wrapper for DOM elements to
  * qooxdoo's event system.
+ *
+ * @ignore(qxWeb)
  */
 qx.Bootstrap.define("qx.bom.Html",
 {
@@ -64,7 +62,7 @@ qx.Bootstrap.define("qx.bom.Html",
     },
 
 
-    /** {Map} Contains wrap fragments for specific HTML matches */
+    /** @type {Map} Contains wrap fragments for specific HTML matches */
     __convertMap :
     {
       opt : [ 1, "<select multiple='multiple'>", "</select>" ], // option or optgroup
@@ -82,6 +80,21 @@ qx.Bootstrap.define("qx.bom.Html",
 
 
     /**
+     * Fixes "XHTML"-style tags in all browsers.
+     * Replaces tags which are not allowed to be closed directly such as
+     * <code>div</code> or <code>p</code>. They are patched to use opening and
+     * closing tags instead, e.g. <code>&lt;p&gt;</code> => <code>&lt;p&gt;&lt;/p&gt;</code>
+     *
+     * @param html {String} HTML to fix
+     * @return {String} Fixed HTML
+     */
+    fixEmptyTags : function(html)
+    {
+      return html.replace(/(<(\w+)[^>]*?)\/>/g, this.__fixNonDirectlyClosableHelper);
+    },
+
+
+    /**
      * Translates a HTML string into an array of elements.
      *
      * @param html {String} HTML string
@@ -92,11 +105,7 @@ qx.Bootstrap.define("qx.bom.Html",
     {
       var div = context.createElement("div");
 
-      // Fix "XHTML"-style tags in all browsers
-      // Replaces tags which are not allowed to be directly closed like
-      // <code>div</code> or <code>p</code>. They are patched to use an
-      // open and close tag instead e.g. <p> => <p></p>
-      html = html.replace(/(<(\w+)[^>]*?)\/>/g, this.__fixNonDirectlyClosableHelper);
+      html = qx.bom.Html.fixEmptyTags(html);
 
       // Trim whitespace, otherwise indexOf won't work as expected
       var tags = html.replace(/^\s+/, "").substring(0, 5).toLowerCase();

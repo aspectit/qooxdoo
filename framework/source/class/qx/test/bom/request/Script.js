@@ -17,19 +17,13 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#asset(qx/test/jsonp_primitive.php)
-#asset(qx/test/script.js)
-#asset(qx/test/xmlhttp/sample.txt)
-
-************************************************************************ */
-
-/* ************************************************************************
-
-#ignore(SCRIPT_LOADED)
-
-************************************************************************ */
+/**
+ *
+ * @asset(qx/test/jsonp_primitive.php)
+ * @asset(qx/test/script.js)
+ * @asset(qx/test/xmlhttp/sample.txt)
+ * @ignore(SCRIPT_LOADED)
+ */
 
 qx.Class.define("qx.test.bom.request.Script",
 {
@@ -74,6 +68,14 @@ qx.Class.define("qx.test.bom.request.Script",
 
       this.assertFalse(this.isInDom(script));
     },
+
+
+    "test: isDisposed()": function() {
+      this.assertFalse(this.req.isDisposed());
+      this.req.dispose();
+      this.assertTrue(this.req.isDisposed());
+    },
+
 
     "test: allow many requests with same object": function() {
       var count = 0,
@@ -133,7 +135,7 @@ qx.Class.define("qx.test.bom.request.Script",
     },
 
     /**
-     * @lint ignoreUndefined(SCRIPT_LOADED)
+     * @ignore(SCRIPT_LOADED)
      */
     "test: status indicates success when determineSuccess returns true": function() {
       var that = this;
@@ -282,7 +284,12 @@ qx.Class.define("qx.test.bom.request.Script",
 
       this.spy(req, "onload");
 
-      this.request();
+      if (this.isIe()) {
+        this.request(this.noCache(this.url));
+      } else {
+        this.request();
+      }
+
       req.abort();
 
       this.wait(300, function() {
@@ -347,7 +354,12 @@ qx.Class.define("qx.test.bom.request.Script",
         }
       };
 
-      this.request();
+      if (this.isIe()) {
+        this.request(this.noCache(this.url));
+      } else {
+        this.request();
+      }
+
       this.wait();
     },
 
@@ -386,7 +398,7 @@ qx.Class.define("qx.test.bom.request.Script",
         this.skip();
       }
 
-      var that = this
+      var that = this;
 
       this.req.onload = function() {
         that.resume(function() {
@@ -584,6 +596,10 @@ qx.Class.define("qx.test.bom.request.Script",
 
     isInDom: function(elem) {
       return elem.parentNode ? true : false;
+    },
+
+    isIe: function(version) {
+      return (qx.core.Environment.get("engine.name") === "mshtml");
     },
 
     isIeBelow: function(version) {

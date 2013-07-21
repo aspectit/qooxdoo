@@ -16,11 +16,7 @@
      * Martin Wittemann (martinwittemann)
 
 ************************************************************************ */
-/* ************************************************************************
 
-#ignore(qx.test.ui.core.W)
-
-************************************************************************ */
 /**
  * @ignore(qx.test.ui.core.W)
  */
@@ -202,19 +198,6 @@ qx.Class.define("qx.test.ui.core.Widget",
       w.destroy();
     },
 
-
-    testGetShadowElement : function()
-    {
-      var w = new qx.ui.core.Widget();
-      this.assertNull(w.getShadowElement());
-
-      w.setShadow("shadow-window");
-      this.assertInstance(w.getShadowElement(), qx.html.Decorator);
-      this.assertEquals("shadow-window", w.getShadowElement().getId());
-
-      w.destroy();
-    },
-
     testScrollChildIntoViewChangesScheduled : function() {
       var msg,
           scrollPane,
@@ -311,6 +294,32 @@ qx.Class.define("qx.test.ui.core.Widget",
         scroll.removeListenerById(listener2);
         scroll.destroy();
       }, this);
+    },
+
+
+    testReleaseChildControl : function() {
+      qx.Class.define("qx.test.ui.core.W", {
+        extend : qx.ui.core.Widget,
+
+        members : {
+          _createChildControlImpl: function(id) {
+            return new qx.ui.core.Widget();
+          }
+        }
+      });
+
+      var w = new qx.test.ui.core.W();
+
+      var child = w.getChildControl("xyz");
+      this.flush();
+      this.assertEquals(w._getCreatedChildControls()["xyz"], child);
+
+      w._releaseChildControl("xyz");
+      this.assertUndefined(w._getCreatedChildControls()["xyz"]);
+
+      child.dispose();
+      w.dispose();
+      qx.Class.undefine("qx.test.ui.core.W");
     },
 
 

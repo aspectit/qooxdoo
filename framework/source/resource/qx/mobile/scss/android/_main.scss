@@ -2,28 +2,26 @@
 // GLOBAL
 //
 
-h1, h2 {
+.title, .form-title {
   font-weight: bold;
 }
 
-h1 {
+.title {
   font-size: 1.4em;
   text-align: center;
 }
 
-h2 {
+.form-title {
   text-indent:4px;
   font-size:1em;
 }
 
 .root {
-  font-family: Helvetica;
   font-weight: normal;
   font-size: 0.9em;
 }
 
 .fontNormal {
-
   font-size: 0.8em;
   font-weight: normal;
 }

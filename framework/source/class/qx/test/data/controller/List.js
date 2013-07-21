@@ -17,11 +17,8 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-#ignore(qx.demo)
-************************************************************************ */
 /**
- * @ignore(qx.demo)
+ * @ignore(qx.demo.Kid, qx.demo.Parent)
  */
 
 qx.Class.define("qx.test.data.controller.List",
@@ -71,6 +68,28 @@ qx.Class.define("qx.test.data.controller.List",
 
       // create the controller
       this.__controller = new qx.data.controller.List(this.__model, this.__list);
+    },
+
+
+    testChangeSelectionOnPush : function() {
+      var selectBox = new qx.ui.form.SelectBox();
+      var model = new qx.data.Array(["a", "b", "c"]);
+
+      var controller = new qx.data.controller.List(model, selectBox);
+      var change = false;
+      controller.getSelection().addListener("change", function() {
+        change = true;
+      });
+
+      model.push("d");
+
+      this.wait(function() {
+        this.assertFalse(change, "Change event has been fired.")
+
+        selectBox.destroy();
+        model.dispose();
+        controller.dispose();
+      }, 200, this);
     },
 
 

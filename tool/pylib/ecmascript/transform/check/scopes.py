@@ -25,6 +25,9 @@
 
 from ecmascript.frontend import treeutil
 
+##
+# Scope visitor that dispatches on the type of the linked AST node.
+#
 class ScopeVisitor(object):
 
     def visit(self, scopeNode):
@@ -92,7 +95,7 @@ class VarsCollector(ScopeVisitor):
         # now move scopeVars up the scope chain (realizing the "leak")
         for id_, scopeVar in scopeNode.vars.items():
             if id_ != catch_param_id:
-                scopeNode.parent.add_scope_var(id_, scopeVar)
+                scopeNode.mv_scope_var(id_, scopeVar, scopeNode.parent)
 
         # restore old scope and visit body
         for child in scopeNode.children:
@@ -103,12 +106,31 @@ class VarsCollector(ScopeVisitor):
 # AST visitor that assigns vardecl and varuses to a given Scope (and pot. its 
 # parents), but doesn't descend into subscopes ("breadth-only search").
 #
+# Registering of identifiers (head symbols):
+#
+# - 'declaring' occurrence (in 'var' statements): 
+#   - register with (pot. new) ScopeVar in enclosing Scope
+#
+# - 'use' occurrence (any other occurrence):
+#   - register with ScopeVar in enclosing Scope, it is also declared in this
+#     Scope
+#   - else search the Scope chain upward for the declaring ScopeVar, register it
+#     there when found
+#   - else if no declaring ScopeVar is found it is a global symbol, register it
+#     with the Scope where the occurrence *was found*
+#     (this means global symbols are currently not propagated to the top-level
+#     Scope or something; this retains globals where they are used across tree
+#     transformations)
+#
 class AssignScopeVarsVisitor(treeutil.NodeVisitor):
 
     def __init__(self, curr_scope):
         super(AssignScopeVarsVisitor, self).__init__()
         self.curr_scope = curr_scope
 
+    ##
+    # "function foo(){}" declaration.
+    #
     def visit_function(self, node):
         # handle pot. function name that goes into this scope
         if node.getChild("identifier",0) and node.isStatement():
@@ -121,13 +143,17 @@ class AssignScopeVarsVisitor(treeutil.NodeVisitor):
     def visit_catch(self, node):
         return
 
-    def visit_params(self, node): # formal params are like local decls
-        #print "params visitor", node
+    ##
+    # Formal params are treated like local vars.
+    #
+    def visit_params(self, node):
         for id_node in node.children:
             self._new_var(id_node)
 
-    def visit_var(self, node):  # var declaration
-        #print "var decl visitor", node
+    ##
+    # "var foo;" declaration.
+    #
+    def visit_var(self, node):
         # go through the definitions
         for def_node in node.children:
             self._new_var(def_node.getDefinee())
@@ -142,9 +168,12 @@ class AssignScopeVarsVisitor(treeutil.NodeVisitor):
         scopeVar = self.curr_scope.add_decl(var_name, id_node)  # returns the corresp. ScopeVariable()
         id_node.scope = self.curr_scope
 
-    def visit_identifier(self, node):  # var reference
-        #print "var use visitor", node
-        if treeutil.checkFirstChainChild(node):  # only treat leftmost identifier (e.g. in a dotaccessor expression)
+    ##
+    # "foo" symbol reference.
+    #
+    def visit_identifier(self, node):  
+        # only treat leftmost identifier (e.g. in a dotaccessor expression)
+        if treeutil.checkFirstChainChild(node):
             var_name = node.get('value')
             # lookup var
             var_scope = self.curr_scope.lookup_decl(var_name)
@@ -210,6 +239,7 @@ class Scope(object):
         self.parent = None
         self.node = node
         self.children = []  # nested scopes
+        self.protect_variable_optimization = False # some scopes need to be protected (bug#1966)
         self.is_load_time = False # whether this scope's symbols are evaluated at load time
         self.is_defer = False # whether this is the scope of a 'defer' function (is checked in load_time.py anyway)
                               # the information goes beyond is_load_time, as e.g. 'statics' references the class name
@@ -236,6 +266,19 @@ class Scope(object):
         else:
             self.vars[name] = self.vars[name].merge(scopeVar)
 
+    ##
+    # Move a scopeVar object from one scope to another.
+    #
+    # - updates scope pointers of tree nodes
+    # - TODO: It might be better to link to the ScopeVar() object directly from the tree nodes,
+    #   instead of to the Scope() object, so relocation of ScopeVar() objects is transparent
+    #   to the tree nodes; would require to maintain a link from ScopeVar to its Scope object.
+    def mv_scope_var(self, var_name, scopeVar, other):
+        other.add_scope_var(var_name, scopeVar)
+        del self.vars[var_name]
+        for var_occur in scopeVar.occurrences():
+            var_occur.scope = other
+
     def lookup_decl(self, name):
         if name in self.vars and self.vars[name].decl:
             return self
@@ -258,7 +301,10 @@ class Scope(object):
             cld.prrnt(indent=indent+'  ')
 
     def globals(self):
-        return dict([(x,y) for x,y in self.vars.items() if not y.decl])
+        return dict([(x,y) for x,y in self.vars.items() if y.is_global()])
+
+    def locals(self):
+        return dict([(x,y) for x,y in self.vars.items() if y.is_scoped()])
 
     ##
     # Return all nested scopes
@@ -276,6 +322,14 @@ class Scope(object):
             for vars_ in cld.vars_iterator():
                 yield vars_
 
+    ##
+    # Return a collection of all the var names of nested scopes
+    def all_var_names(self):
+        all_vars = set()
+        for var_map in self.vars_iterator():
+            all_vars.update(var_map.keys())
+        return all_vars
+
 ##
 # A variable occurring in a scope has several places where it is mentioned ('uses'),
 # and among those mentionings potentially one where it is declared.
@@ -287,6 +341,16 @@ class ScopeVar(object):
         self.decl = []    # var decl node(s)
         self.uses = []    # var occurrences (excluding decl occurrence(s))
         self.is_param = False # is var decl'ed as parameter?
+
+    ##
+    # Is in a lexical scope
+    def is_scoped(self):
+        return bool(self.decl)
+
+    ##
+    # Is in the global scope
+    def is_global(self):
+        return not self.is_scoped()
 
     def add_use(self, node):
         self.uses.append(node)

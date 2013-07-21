@@ -252,7 +252,7 @@ qx.Class.define("qx.ui.layout.Dock",
 
 
     /**
-     * {Map} Maps edge IDs to numeric values
+     * @type {Map} Maps edge IDs to numeric values
      *
      * @lint ignoreReferenceField(__edgeMap)
      */
@@ -267,7 +267,7 @@ qx.Class.define("qx.ui.layout.Dock",
 
 
     /**
-     * {Map} Maps edges to align values
+     * @type {Map} Maps edges to align values
      *
      * @lint ignoreReferenceField(__alignMap)
      */
@@ -356,7 +356,7 @@ qx.Class.define("qx.ui.layout.Dock",
     */
 
     // overridden
-    renderLayout : function(availWidth, availHeight)
+    renderLayout : function(availWidth, availHeight, padding)
     {
       // Rebuild flex/width caches
       if (this._invalidChildrenCache) {
@@ -649,8 +649,8 @@ qx.Class.define("qx.ui.layout.Dock",
               }
 
               this._renderSeparator(separatorY, {
-                left : separatorLeft,
-                top : separatorTop,
+                left : separatorLeft + padding.left,
+                top : separatorTop + padding.top,
                 width : separatorWidth,
                 height : separatorWidths.y
               });
@@ -715,8 +715,8 @@ qx.Class.define("qx.ui.layout.Dock",
               }
 
               this._renderSeparator(separatorX, {
-                left : separatorLeft,
-                top : separatorTop,
+                left : separatorLeft + padding.left,
+                top : separatorTop + padding.top,
                 width : separatorWidths.x,
                 height : separatorHeight
               });
@@ -763,7 +763,7 @@ qx.Class.define("qx.ui.layout.Dock",
         }
 
         // Apply layout
-        child.renderLayout(left, top, width, height);
+        child.renderLayout(left + padding.left, top + padding.top, width, height);
       }
     },
 

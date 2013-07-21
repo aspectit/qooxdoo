@@ -19,12 +19,6 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#ignore(qx.Interface)
-
-************************************************************************ */
-
 /**
  * Internal class for handling of dynamic properties. Should only be used
  * through the methods provided by {@link qx.Class}.
@@ -144,6 +138,7 @@
  * </table>
  *
  * @internal
+ * @ignore(qx.Interface)
  */
 qx.Bootstrap.define("qx.core.Property",
 {
@@ -563,6 +558,9 @@ qx.Bootstrap.define("qx.core.Property",
         members[method.init[name]] = function(value) {
           return qx.core.Property.executeOptimizedSetter(this, clazz, name, "init", arguments);
         }
+        if (qx.core.Environment.get("qx.debug")) {
+          members[method.init[name]].$$propertyMethod = true;
+        }
       }
 
       if (config.inheritable)
@@ -570,6 +568,9 @@ qx.Bootstrap.define("qx.core.Property",
         method.refresh[name] = "refresh" + upname;
         members[method.refresh[name]] = function(value) {
           return qx.core.Property.executeOptimizedSetter(this, clazz, name, "refresh", arguments);
+        }
+        if (qx.core.Environment.get("qx.debug")) {
+          members[method.refresh[name]].$$propertyMethod = true;
         }
       }
 
@@ -594,12 +595,30 @@ qx.Bootstrap.define("qx.core.Property",
         members[method.resetThemed[name]] = function() {
           return qx.core.Property.executeOptimizedSetter(this, clazz, name, "resetThemed");
         }
+        if (qx.core.Environment.get("qx.debug")) {
+          members[method.setThemed[name]].$$propertyMethod = true;
+          members[method.resetThemed[name]].$$propertyMethod = true;
+        }
       }
 
       if (config.check === "Boolean")
       {
         members["toggle" + upname] = new Function("return this." + method.set[name] + "(!this." + method.get[name] + "())");
         members["is" + upname] = new Function("return this." + method.get[name] + "()");
+
+        if (qx.core.Environment.get("qx.debug")) {
+          members["toggle" + upname].$$propertyMethod = true;
+          members["is" + upname].$$propertyMethod = true;
+        }
+      }
+
+      // attach a flag to makr generated property methods
+      if (qx.core.Environment.get("qx.debug")) {
+        members[method.get[name]].$$propertyMethod = true;
+        members[method.set[name]].$$propertyMethod = true;
+        members[method.reset[name]].$$propertyMethod = true;
+        members[method.setRuntime[name]].$$propertyMethod = true;
+        members[method.resetRuntime[name]].$$propertyMethod = true;
       }
     },
 
@@ -616,25 +635,7 @@ qx.Bootstrap.define("qx.core.Property",
     },
 
 
-    /**
-     * Special function for IE6 and FF2 which returns if the reference for
-     * the given property check should be removed on dispose.
-     * As IE6 and FF2 seem to have bad garbage collection behaviors, we should
-     * additionally remove all references between qooxdoo objects and
-     * interfaces.
-     *
-     * @param check {var} The check of the property definition.
-     * @return {Boolean} If the dereference key should be set.
-     */
-    __shouldBeDereferencedOld : function(check)
-    {
-      return this.__dereference[check] ||
-      qx.util.OOUtil.classIsDefined(check) ||
-      (qx.Interface && qx.Interface.isDefined(check));
-    },
-
-
-    /** {Map} Internal data field for error messages used by {@link #error} */
+    /** @type {Map} Internal data field for error messages used by {@link #error} */
     __errors :
     {
       0 : 'Could not change or apply init value after constructing phase!',
@@ -1525,25 +1526,6 @@ qx.Bootstrap.define("qx.core.Property",
       code.push('var a=this._getChildren();if(a)for(var i=0,l=a.length;i<l;i++){');
       code.push('if(a[i].', this.$$method.refresh[name], ')a[i].', this.$$method.refresh[name], '(backup);');
       code.push('}');
-    }
-  },
-
-
-
-  /*
-  *****************************************************************************
-     DEFER
-  *****************************************************************************
-  */
-
-  defer : function(statics)
-  {
-    var ie6 = navigator.userAgent.indexOf("MSIE 6.0") != -1;
-    var ff2 = navigator.userAgent.indexOf("rv:1.8.1") != -1;
-
-    // keep the old dereference behavior for IE6 and FF2
-    if (ie6 || ff2) {
-      statics.__shouldBeDereferenced = statics.__shouldBeDereferencedOld;
     }
   }
 });

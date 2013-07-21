@@ -76,8 +76,17 @@ def createPackageDoc(text, packageName, docTree = None):
 
     package = getPackageNode(docTree, packageName)
 
-    commentAttributes = Comment.Comment(text).parse()
-    # Read all description, param and return attributes
+    commentAttributes = Comment.Comment(text).parse(want_errors=True)
+
+    # check for JSDoc issues (no filtering)
+    for attrib in commentAttributes:
+        if 'error' in attrib:
+            lineno = attrib['line'] # assume the comment text is the only contents of the package odc
+            msg = "%s (%s): %s" % (packageName, lineno, attrib['message'])
+            msg += (": %s" % attrib['text']) if 'text' in attrib and attrib['text'] else ''
+            Context.console.warn(msg)
+
+    # Read description, see attributes
     for attrib in commentAttributes:
         # Add description
         if attrib["category"] == "description":
@@ -461,6 +470,7 @@ def generatePropertyMethods(propertyName, classNode, generatedMethods):
         funcName = access + funcName + name
         functionCode = propData[funcName]
         node = treeutil.compileString(functionCode)
+        node.getRoot().set('file', '|generated@api.py|')
         commentAttributes = Comment.parseNode(node)[-1]
         docNode = handleFunction(node, funcName, commentAttributes, classNode, False, False)
         docNode.remove("line")
@@ -524,7 +534,7 @@ def handlePropertyDefinitionNew(propName, propDefinition, classNode):
             #elif check_tree.type in ('operation', 'call'): # "value<=100", "qx.util.Validate.range(0,100)"
                 node.set("check", "Custom check function.")  # that's good enough so the param type is set to 'var'
         else:
-            addError(node, "Unknown property check value %s" % check.type, propDefinition["check"])
+            addError(node, "Unknown property check value: '%s'" % check.type, propDefinition["check"])
 
     return node
 
@@ -620,12 +630,16 @@ def handleProperties(item, classNode):
         if classNode.get("type", False) == "mixin":
             node.set("isMixin", True)
 
-        # If the description has a type specified then take this type
-        # (and not the one extracted from the paramsMap)
         commentAttributes = Comment.parseNode(keyvalue)[-1]
-        addTypeInfo(node, Comment.getAttrib(commentAttributes, "description"), item)
+
+        for attrib in commentAttributes:
+            addTypeInfo(node, attrib, item)
+
         handleDeprecated(node, commentAttributes)
         handleAccess(node, commentAttributes)
+
+        if not node.hasChild("desc"):
+            addError(node, "Documentation is missing.", item)
 
         classNode.addListChild("properties", node)
 
@@ -714,7 +728,7 @@ def handleChildControls(item, classNode, className, commentAttributes):
             childControlNode.set("name", childControlName)
 
             if not "type" in attrib:
-                addError(classNode, "No type defined for child control '%s'." % childControlName, item)
+                addError(classNode, "No type defined for child control: '%s'." % childControlName, item)
             addTypeInfo(childControlNode, attrib, item)
 
             classNode.addListChild("childControls", childControlNode)
@@ -752,8 +766,8 @@ def handleConstantDefinition(item, classNode):
             node.set("type", "Array")
 
     commentAttributes = Comment.parseNode(item)[-1]
-    description = Comment.getAttrib(commentAttributes, "description")
-    addTypeInfo(node, description, item)
+    for attr in commentAttributes:
+        addTypeInfo(node, attr, item)
 
     handleDeprecated(node, commentAttributes)
     handleAccess(node, commentAttributes)
@@ -847,7 +861,7 @@ def handleFunction(funcItem, name, commentAttributes, classNode, reportMissingDe
             paramNode = node.getListChildByAttribute("params", "name", paramName, False)
 
             if not paramNode:
-                addError(node, "Contains information for a non-existing parameter '%s'." % paramName, funcItem)
+                addError(node, "Contains information for non-existing parameter: '%s'." % paramName, funcItem)
                 continue
 
             addTypeInfo(paramNode, attrib, funcItem)
@@ -885,7 +899,7 @@ def handleFunction(funcItem, name, commentAttributes, classNode, reportMissingDe
         paramsListNode = node.getChild("params")
         for paramNode in paramsListNode.children:
             if not paramNode.getChild("desc", False):
-                addError(node, "Parameter '%s' is not documented." % paramNode.get("name"), funcItem)
+                addError(node, "Parameter is not documented: '%s'" % paramNode.get("name"), funcItem)
 
     if reportMissingDesc and not node.hasChild("desc"):
         addError(node, "Documentation is missing.", funcItem)
@@ -1026,7 +1040,7 @@ def addTypeInfo(node, commentAttrib=None, item=None):
                 pass
 
         elif node.type == "param":
-            addError(node, "Parameter '%s' is not documented." % commentAttrib.get("name"), item)
+            addError(node, "Parameter is not documented: '%s'" % commentAttrib.get("name"), item)
 
         elif node.type == "return":
             addError(node, "Return value is not documented.", item)
@@ -1038,10 +1052,16 @@ def addTypeInfo(node, commentAttrib=None, item=None):
 
     # add description
     if "text" in commentAttrib:
-        node.addChild(tree.Node("desc").set("text", commentAttrib["text"]))
+        descNode = treeutil.findChild(node, "desc")
+        if descNode:
+            # add any additional text attributes (e.g. type description) to the
+            # existing desc node
+            descNode.set("text", descNode.get("text") + commentAttrib["text"])
+        else:
+            node.addChild(tree.Node("desc").set("text", commentAttrib["text"]))
 
     # add types
-    if "type" in commentAttrib and commentAttrib["type"]:
+    if "type" in commentAttrib and commentAttrib["type"] and not commentAttrib["category"] == "throws":
         typesNode = tree.Node("types")
         node.addChild(typesNode)
 
@@ -1061,6 +1081,9 @@ def addTypeInfo(node, commentAttrib=None, item=None):
             # print "defaultValue: %s" % defaultValue
             node.set("defaultValue", defaultValue)
 
+    # optional parameter?
+    if "optional" in commentAttrib and commentAttrib["optional"]:
+        node.set("optional", commentAttrib["optional"])
 
 
 def addEventNode(classNode, classItem, commentAttrib):
@@ -1981,7 +2004,8 @@ def logErrors(docTree, targets):
                 Context.console.warn(errNode.get("msg"))
 
             if not itemType in ["class", "package"]:
-                itemName = itemName + "#" + getParentAttrib(errNode, "name")
+                #itemName = itemName + "#" + getParentAttrib(errNode, "name")
+                pass
 
             line = errNode.get("line", False)
             column = errNode.get("column", False)
@@ -1992,7 +2016,7 @@ def logErrors(docTree, targets):
                     lineCol = "%s,%s" % (lineCol, str(column))
                 lineCol = lineCol + ")"
 
-            Context.console.warn("%s %s%s: %s" % (itemType, itemName, lineCol, errNode.get("msg")))
+            Context.console.warn("%s%s: %s" % (itemName, lineCol, errNode.get("msg")))
 
     if not "data" in targets:
         for node in errorNodeIterator(docTree):

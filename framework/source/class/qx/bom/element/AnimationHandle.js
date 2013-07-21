@@ -17,16 +17,12 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#ignore(qx.bom.element.AnimationJs)
-
-************************************************************************ */
-
 /**
  * This is a simple handle, which will be returned when an animation is
  * started using the {@link qx.bom.element.Animation#animate} method. It
  * basically controls the animation.
+ *
+ * @ignore(qx.bom.element.AnimationJs)
  */
 qx.Bootstrap.define("qx.bom.element.AnimationHandle",
 {
@@ -106,7 +102,7 @@ qx.Bootstrap.define("qx.bom.element.AnimationHandle",
 
     /**
      * Resumes an animation. This does not start the animation once it has ended.
-     * You need to create start a new Animation if you want to restart the animation.
+     * In this case you need to start a new Animation.
      */
     play : function() {
       if (this.el) {
@@ -124,14 +120,15 @@ qx.Bootstrap.define("qx.bom.element.AnimationHandle",
      * Stops the animation if running.
      */
     stop : function() {
-      if (this.el && qx.core.Environment.get("css.animation") && !this.animationId) {
+      if (this.el && qx.core.Environment.get("css.animation") && !this.jsAnimation) {
         this.el.style[this.__playState] = "";
         this.el.style[qx.core.Environment.get("css.animation").name] = "";
         this.el.$$animation.__playing = false;
         this.el.$$animation.__ended = true;
       }
       // in case the animation is based on JS
-      if (qx.bom.element.AnimationJs) {
+      else if (this.jsAnimation) {
+        this.stopped = true;
         qx.bom.element.AnimationJs.stop(this);
       }
     }

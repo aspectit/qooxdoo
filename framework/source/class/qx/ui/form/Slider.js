@@ -240,6 +240,7 @@ qx.Class.define("qx.ui.form.Slider",
 
   members :
   {
+
     __sliderLocation : null,
     __knobLocation : null,
     __knobSize : null,
@@ -255,7 +256,8 @@ qx.Class.define("qx.ui.form.Slider",
     __lastValueEvent: null,
     __dragValue: null,
 
-    __requestId : null,
+    __scrollAnimationframe : null,
+
 
     // overridden
     /**
@@ -327,7 +329,7 @@ qx.Class.define("qx.ui.form.Slider",
       var axis = this.getOrientation() === "horizontal" ? "x" : "y";
       var delta = e.getWheelDelta(axis);
 
-      if (qx.core.Environment.get("event.touch") && qx.core.Environment.get("qx.emulatemouse")) {
+      if (qx.event.handler.MouseEmulation.ON) {
         this.slideBy(delta);
       } else {
         var direction =  delta > 0 ? 1 : delta < 0 ? -1 : 0;
@@ -405,8 +407,21 @@ qx.Class.define("qx.ui.form.Slider",
       var locationProperty = isHorizontal ? "left" : "top";
 
       var cursorLocation = isHorizontal ? e.getDocumentLeft() : e.getDocumentTop();
+
+      var decorator = this.getDecorator();
+      decorator = qx.theme.manager.Decoration.getInstance().resolve(decorator);
+      if (isHorizontal) {
+        var decoratorPadding = decorator ? decorator.getInsets().left : 0;
+        var padding = (this.getPaddingLeft() || 0) + decoratorPadding;
+      } else {
+        var decoratorPadding = decorator ? decorator.getInsets().top : 0;
+        var padding = (this.getPaddingTop() || 0) + decoratorPadding;
+      }
+
       var sliderLocation = this.__sliderLocation = qx.bom.element.Location.get(this.getContentElement().getDomElement())[locationProperty];
-      var knobLocation = this.__knobLocation = qx.bom.element.Location.get(knob.getContainerElement().getDomElement())[locationProperty];
+      sliderLocation += padding;
+
+      var knobLocation = this.__knobLocation = qx.bom.element.Location.get(knob.getContentElement().getDomElement())[locationProperty];
 
       if (e.getTarget() === knob)
       {
@@ -630,12 +645,12 @@ qx.Class.define("qx.ui.form.Slider",
     ---------------------------------------------------------------------------
     */
 
-    /** {Boolean} Whether the slider is laid out horizontally */
+    /** @type {Boolean} Whether the slider is laid out horizontally */
     __isHorizontal : false,
 
 
     /**
-     * {Integer} Available space for knob to slide on, computed on resize of
+     * @type {Integer} Available space for knob to slide on, computed on resize of
      * the widget
      */
     __slidingSpace : 0,
@@ -780,12 +795,11 @@ qx.Class.define("qx.ui.form.Slider",
      */
     _setKnobPosition : function(position)
     {
-      // Use DOM Element
-      var container = this.getChildControl("knob").getContainerElement();
+      var knob = this.getChildControl("knob");
       if (this.__isHorizontal) {
-        container.setStyle("left", position+"px", true);
+        knob.setLayoutProperties({left: position});
       } else {
-        container.setStyle("top", position+"px", true);
+        knob.setLayoutProperties({top: position});
       }
     },
 
@@ -905,6 +919,44 @@ qx.Class.define("qx.ui.form.Slider",
      */
     slideTo : function(value, duration)
     {
+      this.stopSlideAnimation();
+
+      if (duration) {
+        this.__animateTo(value, duration);
+      } else {
+        this.updatePosition(value);
+      }
+    },
+
+
+    /**
+     * Updates the position property considering the minimum and maximum values.
+     * @param value {Number} The new position.
+     */
+    updatePosition : function(value) {
+      this.setValue(this.__normalizeValue(value));
+    },
+
+
+    /**
+     * In case a slide animation is currently running, it will be stopped.
+     * If not, the method does nothing.
+     */
+    stopSlideAnimation : function() {
+      if (this.__scrollAnimationframe) {
+        this.__scrollAnimationframe.cancelSequence();
+        this.__scrollAnimationframe = null;
+      }
+    },
+
+
+    /**
+     * Internal helper to normalize the given value concerning the minimum
+     * and maximum value.
+     * @param value {Number} The value to normalize.
+     * @return {Number} The normalized value.
+     */
+    __normalizeValue : function(value) {
       // Bring into allowed range or fix to single step grid
       if (value < this.getMinimum()) {
         value = this.getMinimum();
@@ -913,13 +965,7 @@ qx.Class.define("qx.ui.form.Slider",
       } else {
         value = this.getMinimum() + Math.round((value - this.getMinimum()) / this.getSingleStep()) * this.getSingleStep()
       }
-
-      if (duration) {
-        this.__animateTo(value, duration);
-      } else {
-        // Sync with property directly
-        this.setValue(value);
-      }
+      return value;
     },
 
 
@@ -929,27 +975,22 @@ qx.Class.define("qx.ui.form.Slider",
      * @param duration {Number} The time in milliseconds the slide to should take.
      */
     __animateTo : function(to, duration) {
-      // finish old animation before starting a new one
-      if (this.__requestId) {
-        return;
-      }
-
-      var start = +(new Date());
+      to = this.__normalizeValue(to);
       var from = this.getValue();
 
-      var clb = function(time) {
-        // final call
-        if (time >= start + duration) {
-          this.setValue(to);
-          this.__requestId = null;
-          this.fireEvent("slideAnimationEnd");
-        } else {
-          var timePassed = time - start;
-          this.setValue(parseInt(timePassed/duration * (to - from) + from));
-          qx.bom.AnimationFrame.request(clb, this);
-        }
-      };
-      qx.bom.AnimationFrame.request(clb, this);
+      this.__scrollAnimationframe = new qx.bom.AnimationFrame();
+
+      this.__scrollAnimationframe.on("frame", function(timePassed) {
+        this.setValue(parseInt(timePassed/duration * (to - from) + from));
+      }, this);
+
+      this.__scrollAnimationframe.on("end", function() {
+        this.setValue(to);
+        this.__scrollAnimationframe = null;
+        this.fireEvent("slideAnimationEnd");
+      }, this);
+
+      this.__scrollAnimationframe.startSequence(duration);
     },
 
 

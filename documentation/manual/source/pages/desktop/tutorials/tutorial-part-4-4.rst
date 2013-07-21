@@ -84,9 +84,9 @@ First of all, create a corresponding class **tweets.test.TweetView** in the ``so
 
 ::
 
-  /* ************************************************************************
-  #asset(tweets/logo.png)
-  ************************************************************************ */
+  /**
+   * @asset(tweets/logo.png)
+   */
   qx.Class.define("tweets.test.TweetView",
   {
     extend : qx.dev.unit.TestCase,
@@ -127,14 +127,14 @@ For cases where the generic class-wide ``tearDown`` isn't enough, methods using 
 The test function
 =================
 
-We need the URI of a valid image for this test, so we add an ``#asset`` hint to the class header that will cause the Generator to add the file ``source/class/tweets/resource/logo.png`` to the AUT's resources. In the test function, we first ask qooxdoo's resource manager to resolve the resource ID into a valid URI. This is the expected value for the icon child control's ``source`` property. Next, we apply this value to the TweetView's ``icon`` property, then get the child control's ``source`` property and compare the two values using `assertEquals <http://demo.qooxdoo.org/current/apiviewer/#qx.core.Assert~assertEquals>`_.
+We need the URI of a valid image for this test, so we add an ``@asset`` hint to the class header that will cause the Generator to add the file ``source/class/tweets/resource/logo.png`` to the AUT's resources. In the test function, we first ask qooxdoo's resource manager to resolve the resource ID into a valid URI. This is the expected value for the icon child control's ``source`` property. Next, we apply this value to the TweetView's ``icon`` property, then get the child control's ``source`` property and compare the two values using `assertEquals <http://demo.qooxdoo.org/current/apiviewer/#qx.core.Assert~assertEquals>`_.
 
 OK, time to build the AUT again. This time, run ``generate.py test-source`` instead of ``test``. As you might expect, this will generate a source version of the AUT, which, like the source version of the actual application, is far better suited for development. Open the file ``test/index-source.html`` to load the Testrunner with the source tests.
 
 Asynchronous Tests
 ==================
 
-As with many GUI applications, the various components of the tweets app use events to communicate. The ``tweets.TweetService`` class, for example, has a method ``fetchTweets`` that causes a ``changeTweets`` event to fire once the data store has finished (re)loading. We can't know in advance just how long this takes, so we need some way to instruct the test to wait until the event fires. This is where asynchronous testing comes in.
+As with many GUI applications, the various components of the tweets app use events to communicate. The ``tweets.IdenticaService`` class, for example, has a method ``fetchTweets`` that causes a ``changeTweets`` event to fire once the data store has finished (re)loading. We can't know in advance just how long this takes, so we need some way to instruct the test to wait until the event fires. This is where asynchronous testing comes in.
 
 Once again, create a new test class named **tweets.test.IdenticaService**. The ``setUp`` and ``tearDown`` methods are mostly identical to the ones from tweets.test.TweetView, except of course they initialize/destroy an instance of tweets.IdenticaService instead. Here's the actual test function:
 
