@@ -14,7 +14,6 @@
 
 ************************************************************************ */
 /* ************************************************************************
-#ignore(quit)
 ************************************************************************ */
 /**
  * Simulator main application class.
@@ -25,10 +24,6 @@ qx.Class.define("simulator.Application", {
 
   members :
   {
-
-    /**
-     * @lint ignoreUndefined(testrunner)
-     */
     main : function()
     {
       qx.log.Logger.register(qx.log.appender.RhinoConsole);
@@ -59,7 +54,7 @@ qx.Class.define("simulator.Application", {
      * Runs the suite once it's loaded. Also stops the Selenium session after
      * the suite is finished or if there was an error during loading.
      *
-     * @lint ignoreUndefined(quit)
+     * @ignore(quit)
      * @param ev {qx.event.type.Data} The testrunner's changeTestSuiteState event
      */
     _onChangeTestSuiteState : function(ev) {

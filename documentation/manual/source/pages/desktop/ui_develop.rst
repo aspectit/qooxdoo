@@ -1,4 +1,4 @@
-.. _pages/desktop/ui_develop#custom_widgets:
+  .. _pages/desktop/ui_develop#custom_widgets:
 
 Custom Widgets
 **************
@@ -21,6 +21,9 @@ The qooxdoo ``Spinner`` for example extends the ``Widget`` as well and adds a ``
 Setup Content
 =============
 
+For a Widget
+------------
+
 The following methods may be used to manage children:
 
 * ``_getChildren``
@@ -30,6 +33,23 @@ The following methods may be used to manage children:
 It is possible to use any layout available. To set up the layout just use ``_setLayout``. To access it afterwards use ``_getLayout``.
 
 For details refer to the API documentation of `qx.ui.core.Widget <http://demo.qooxdoo.org/%{version}/apiviewer/#qx.ui.core.Widget>`_.
+
+
+For a Container
+---------------
+
+If the custom widget is a container widget, the author has to decide:
+
+* Whether the children will be added directly to the widget or into some nested sub widget.
+* Whether the user should be able to set a layout manager
+
+This results in four possible combinations:
+
+#. **The children are added directly to the container and setting a layout manager is possible:** Inherit from qx.ui.container.Composite. This class has the whole children and layout handling API exposed as public API.
+#. **The children are added directly to the container but setting a layout manager is not possible:** Inherit from qx.ui.core.Widget and add the children handling API by including the mixin qx.ui.core.MChildrenHandling. (Example: HBox widget with predefined horizontal box layout)
+#. **The children are added to a nested sub widget and setting a layout manager is possible:** Inherit from qx.ui.core.Widget and add the children and layout handling API by including the mixins qx.ui.core.MRemoteChildrenHandling and qx.ui.core.MRemoteLayoutHandling. The container must implement the method getChildrenContainer, which has to return the widget, to which the child widgets should be added. (Example: Window, Groupbox)
+#. **The children are added to a nested sub widget and setting a layout manager is not possible:** The same as the previous case but don't include qx.ui.core.MRemoteLayoutHandling. (Example: List, SelectBox)
+
 
 .. _pages/desktop/ui_develop#child_controls:
 
@@ -92,35 +112,27 @@ For details about styling please refer to :doc:`the theming article <ui_theming>
 HTML Elements
 =============
 
-A normal qooxdoo widget consists of at least two HTML Elements (`API <http://api.qooxdoo.org/#qx.html.Element>`_). The first one is the container element which is the outer frame of each widget. The inner one is the content element which is the target for children added to the widget. The content element is also used for the iframe element of the ``Iframe`` widget and the image element of the ``Image`` widget. This means it may contain children or may be used by a native DOM element which does not allow any children.
+A normal qooxdoo widget consists of one HTML Element (`API <http://api.qooxdoo.org/#qx.html.Element>`_), the content element.
 
-There might be some other elements depending on the configuration:
+This elements is an instances of ``qx.html.Element`` so it come with a cross-browser fixed API to apply styles and attributes to the DOM node. All of these things can be done without the DOM element needing to be created or inserted. For details on ``qx.html.Element`` please have a look at :doc:`the technical documentation </pages/desktop/html_element_handling>`.
 
-* shadow: Placed into the container with negative offsets to be visible behind the original widget.
-* decorator: Placed into the container with the same size as the container. Used to render all kinds of decorators. 
-* protector: Helper to fix certain hover issues when changing decorators during event sequences, e.g. hover effects.
-
-For widget authors, the content element is normally the most important, followed by the container element. The other elements are quite uninteresting. It is good to know that they are there, but one typically has little to do with them.
-
-Both elements are instances of ``qx.html.Element`` so they come with a cross-browser fixed API to apply styles and attributes to the DOM nodes. All of these things can be done without the DOM element needing to be created or inserted. For details on ``qx.html.Element`` please have a look at :doc:`the technical documentation </pages/desktop/html_element_handling>`.
-
-The elements are accessible through the functions ``getContentElement()`` and ``getContainerElement()``, respectively. The elements are stored privately in each widget instance and are only accessible through these methods in derived classes.
+The element is accessible through the functions ``getContentElement()`` and is stored privately in each widget instance.
 
 .. _pages/desktop/ui_develop#custom_elements:
 
 Custom Elements
 ===============
 
-qooxdoo normally generates a bunch of styled ``div`` elements. Some widgets like iframes or images need other elements, though. Normally the only element which is replaced is the content element. To achieve this, the method ``_createContentElement`` needs to be overwritten. The overwritten method should create an instance of ``qx.html.Element`` (or a derived class), configure it with some static attributes or styles, and finally return it. For most natively supported types there exists a class which can be used already. In special cases the widget author also needs to write a special low-level class which is derived from ``qx.html.Element``.
+qooxdoo normally generates a bunch of styled ``div`` elements. Some widgets like iframes or images need other elements, though. To use a different DOM element, the method ``_createContentElement`` needs to be overwritten. The overwritten method should create an instance of ``qx.html.Element`` (or a derived class), configure it with some static attributes or styles, and finally return it. For most natively supported types there exists a class which can be used already. In special cases the widget author also needs to write a special low-level class which is derived from ``qx.html.Element``.
 
 .. _pages/desktop/ui_develop#working_with_events:
 
 Working with Events
 ===================
 
-Events can be added to the HTML elements as well as to the child controls. The names of the methods assigned should follow the following names for convention. 
+Events can be added to the HTML element as well as to the child controls. The names of the methods assigned should follow the following names for convention.
 
-* For the HTML elements use: ``_onContentXXX`` or ``_onContainerXXX``
+* For the HTML elements use: ``_onContentXXX``
 * For the child controls use: ``_onIconXXX`` or ``_onFieldXXX`` etc.
 
 Where ``XXX`` stands for the name of the event or of the change that happens. This will result in names like ``_onIframeLoad`` or ``_onContentInput``.
@@ -133,3 +145,60 @@ Anonymous Widgets
 Anonymous widgets are ignored in the event hierarchy. This is useful for combined widgets where the internal structure does not have a custom appearance with a different styling from the enclosing element. This is especially true for widgets like checkboxes or buttons where the text or icon are handled synchronously for state changes to the outer widget.
 
 A good example is the ``SelectBox`` widget where the ``mouseover`` event should affect the entire widget at once and not the different child controls of which it consists. So setting the child controls (in this case an ``atom`` and an ``image`` widget) to ``anonymous`` keeps these child control widgets from receiving any events and the event handling is done completely by the parent widget (the ``SelectBox`` itself).
+
+Defining the API
+================
+
+The number of constructor parameters should be kept short. Long parameter lists especially with optional parameters can result in code, which is very hard to read. As an example lets take this hypothetical LinkAtom widget:
+
+::
+
+  qx.Class.define("custom.LinkAtom", {
+    extend : qx.ui.basic.Atom,
+   
+    construct : function(text, icon, toolTipText, underline, bold, wrap, underlineOnMouseover) { ... }
+  });
+
+All parameters are optional. This can make the code using this class very hard to read:
+
+::
+
+  var link = new custom.LinkAtom("Help");
+  var link = new custom.LinkAtom("create", null, null, false, true, false, true);
+
+While the first line is perfectly readable, it is virtually impossible to understand the second line without referring to the API documentation of LinkAtom.
+
+In this case it helps to keep only those parameters, which are required or used with almost every instance. All other parameters should be converted into properties:
+
+::
+
+  qx.Class.define("custom.LinkAtom", {
+    extend : qx.ui.basic.Atom,
+   
+    construct : function(text, icon) { ... },
+   
+    properties {
+      toolTipText: { ... },
+      underline: { ... },
+      bold: { ... },
+      wrap: { ... },
+      underlineOnMouseover: { ... }
+    }
+  });
+
+Now only the text and icon parameter remain in the constructor. All other parameters have been converted into properties. The hard to read example now becomes:
+
+::
+
+  var link = new custom.LinkAtom("create").set({
+    underline: false
+    bold: true,
+    wrap: false,
+    underlineOnMouseover: true
+  });
+
+For someone reading this code it is immediately obvious, what's happening.
+
+.. note::
+
+  Keep parameter lists small and use properties instead of optional constructor parameters.

@@ -193,7 +193,7 @@ class Node(object):
 
     def addChild(self, childNode, index = None):
         if childNode:
-            if childNode.parent:
+            if childNode.parent and childNode in childNode.parent.children:
                 childNode.parent.removeChild(childNode)
 
             if index != None:
@@ -206,11 +206,15 @@ class Node(object):
     def removeChild(self, childNode):
         if self.children:
             self.children.remove(childNode)
-            childNode.parent = None
+            #childNode.parent = None
+
+    def removeAllChildren(self):
+        for child in self.children[:]:
+            self.children.remove(child)
 
     def replaceChild(self, oldChild, newChild):
-        if self.children:
-            if newChild.parent:
+        if oldChild in self.children and oldChild is not newChild:
+            if newChild.parent and newChild in newChild.parent.children:
                 newChild.parent.removeChild(newChild)
 
             self.children.insert(self.children.index(oldChild), newChild)

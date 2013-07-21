@@ -193,10 +193,11 @@ qx.Class.define("inspector.components.Selector",
      * @return {qx.ui.core.Widget} the created highlighter.
      */
     __createHighlighter : function() {
-      var highlightDecorator = new this.__applicationWindow.qx.ui.decoration.Single(
-        this.self(arguments).BORDER,
-        "solid",
-        this.self(arguments).BORDER_COLOR);
+      var highlightDecorator = new this.__applicationWindow.qx.ui.decoration.Decorator().set({
+        width: this.self(arguments).BORDER,
+        style: "solid",
+        color: this.self(arguments).BORDER_COLOR
+      });
       this.__model.addToExcludes(highlightDecorator);
 
       var highlightOverlay = new this.__applicationWindow.qx.ui.core.Widget();
@@ -297,7 +298,13 @@ qx.Class.define("inspector.components.Selector",
       var applicationRoot = this.__model.getApplication().getRoot();
       var win = this.__applicationWindow;
 
-      if (win.qx.ui.root && win.qx.Class.isSubClassOf(widget.constructor, win.qx.ui.root.Application)) {
+      var root;
+      if (win.qx.ui.root && win.qx.ui.root.Page) {
+        root = win.qx.ui.root.Page;
+      } else if (win.qx.ui.root && win.qx.ui.root.Application) {
+        root = win.qx.ui.root.Application;
+      }
+      if (root && win.qx.Class.isSubClassOf(widget.constructor, root)) {
         applicationRoot.add(widget, {edge: 0});
       }
       else
@@ -307,7 +314,13 @@ qx.Class.define("inspector.components.Selector",
           widget.setWidth(qx.bom.Document.getWidth(win));
         }
         else {
-          var el = widget.getContainerElement();
+          var el;
+          if (this.__isMobileApp) {
+            el = widget.getContainerElement();
+          } else {
+            el = widget.getContentElement();
+          }
+
           el.style.width = qx.bom.Document.getHeight(win) + "px";
           el.style.height = qx.bom.Document.getWidth(win) + "px";
         }
@@ -411,7 +424,7 @@ qx.Class.define("inspector.components.Selector",
 
         var domElement = null;
         if (this.__isWidget(childWidget)) {
-          domElement = childWidget.getContainerElement().getDomElement();
+          domElement = childWidget.getContentElement().getDomElement();
         } else if (this.__isMobileWidget(childWidget)) {
           domElement = childWidget.getContainerElement();
         } else if (this.__isQxHtmlElement(childWidget)) {
@@ -471,7 +484,7 @@ qx.Class.define("inspector.components.Selector",
 
       var element = null;
       if (this.__isWidget(object) && !this.__isRootElement(object)) {
-        element = object.getContainerElement().getDomElement();
+        element = object.getContentElement().getDomElement();
       } else if (this.__isMobileWidget(object)) {
         element = object.getContainerElement();
       } else if (this.__isQxHtmlElement(object)) {
@@ -508,7 +521,7 @@ qx.Class.define("inspector.components.Selector",
      * Helper method to check if the passed object is a root element.
      *
      * @param object {qx.core.Object} object to check.
-     * @return <code>true</code> if root element, <code>false</code> otherwise.
+     * @return {Boolean} <code>true</code> if root element, <code>false</code> otherwise.
      */
     __isRootElement : function (object)
     {
@@ -525,7 +538,7 @@ qx.Class.define("inspector.components.Selector",
      * Helper method to check if the passed object is a widget.
      *
      * @param object {qx.core.Object} object to check.
-     * @return <code>true</code> if widget, <code>false</code> otherwise.
+     * @return {Boolean} <code>true</code> if widget, <code>false</code> otherwise.
      */
     __isWidget : function (object)
     {
@@ -542,7 +555,7 @@ qx.Class.define("inspector.components.Selector",
      * Helper method to check if the passed object is a mobile widget.
      *
      * @param object {qx.core.Object} object to check.
-     * @return <code>true</code> if widget, <code>false</code> otherwise.
+     * @return {Boolean} <code>true</code> if widget, <code>false</code> otherwise.
      */
     __isMobileWidget : function(object)
     {
@@ -559,7 +572,7 @@ qx.Class.define("inspector.components.Selector",
      * Helper method to check if the passed object is a <code>qx.html.Element</code>.
      *
      * @param object {qx.core.Object} object to check.
-     * @return <code>true</code> if <code>qx.html.Element</code>, <code>false</code> otherwise.
+     * @return {Boolean} <code>true</code> if <code>qx.html.Element</code>, <code>false</code> otherwise.
      */
     __isQxHtmlElement : function (object)
     {

@@ -19,12 +19,6 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#use(qx.event.dispatch.DomBubbling)
-
-************************************************************************ */
-
 /**
  * This handler is used to normalize all focus/activation requirements
  * and normalize all cross browser quirks in this area.
@@ -37,6 +31,8 @@
  * * TabIndex is normally 0, which means all naturally focusable elements are focusable.
  * * TabIndex > 0 means that the element is focusable and tabable
  * * TabIndex < 0 means that the element, even if naturally possible, is not focusable.
+ *
+ * @use(qx.event.dispatch.DomBubbling)
  */
 qx.Class.define("qx.event.handler.Focus",
 {
@@ -66,7 +62,7 @@ qx.Class.define("qx.event.handler.Focus",
     this._body = this._document.body;
 
     // abstraction
-    var useTouch = qx.core.Environment.get("event.touch") && qx.core.Environment.get("qx.emulatemouse");
+    var useTouch = qx.core.Environment.get("event.touch") && qx.event.handler.MouseEmulation.ON;
     this.__down = useTouch ? "touchstart" : "mousedown";
     this.__up = useTouch ? "touchend" : "mouseup";
 
@@ -105,10 +101,10 @@ qx.Class.define("qx.event.handler.Focus",
 
   statics :
   {
-    /** {Integer} Priority of this handler */
+    /** @type {Integer} Priority of this handler */
     PRIORITY : qx.event.Registration.PRIORITY_NORMAL,
 
-    /** {Map} Supported event types */
+    /** @type {Map} Supported event types */
     SUPPORTED_TYPES :
     {
       focus : 1,
@@ -119,11 +115,11 @@ qx.Class.define("qx.event.handler.Focus",
       deactivate : 1
     },
 
-    /** {Integer} Whether the method "canHandleEvent" must be called */
+    /** @type {Integer} Whether the method "canHandleEvent" must be called */
     IGNORE_CAN_HANDLE : true,
 
     /**
-     * {Map} See: http://msdn.microsoft.com/en-us/library/ms534654(VS.85).aspx
+     * @type {Map} See: http://msdn.microsoft.com/en-us/library/ms534654(VS.85).aspx
      */
     FOCUSABLE_ELEMENTS : qx.core.Environment.select("engine.name",
     {
@@ -319,7 +315,7 @@ qx.Class.define("qx.event.handler.Focus",
     ---------------------------------------------------------------------------
     */
 
-    /** {Boolean} Whether the window is focused currently */
+    /** @type {Boolean} Whether the window is focused currently */
     _windowFocused : true,
 
     /**
@@ -374,7 +370,6 @@ qx.Class.define("qx.event.handler.Focus",
         this.__onNativeBlurWrapper = qx.lang.Function.listener(this.__onNativeBlur, this);
 
         this.__onNativeDragGestureWrapper = qx.lang.Function.listener(this.__onNativeDragGesture, this);
-
 
         // Register events
         qx.bom.Event.addNativeListener(this._document, this.__down, this.__onNativeMouseDownWrapper, true);
@@ -822,6 +817,16 @@ qx.Class.define("qx.event.handler.Focus",
 
         if (focusTarget) {
           this.setFocus(focusTarget);
+          if (qx.core.Environment.get("event.touch") && qx.event.handler.MouseEmulation.ON) {
+            try {
+              // if the element is already focused, blur and refocus
+              // it to make sure the keyboard is shown on tap
+              if (document.activeElement == focusTarget) {
+                focusTarget.blur();
+              }
+              focusTarget.focus();
+            } catch(ex) {};
+          }
         } else {
           qx.bom.Event.preventDefault(domEvent);
         }

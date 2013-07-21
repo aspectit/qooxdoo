@@ -31,21 +31,21 @@ qx.Bootstrap.define("qx.io.ImageLoader",
 {
   statics :
   {
-    /** {Map} Internal data structure to cache image sizes */
+    /** @type {Map} Internal data structure to cache image sizes */
     __data : {},
 
 
-    /** {Map} Default image size */
+    /** @type {Map} Default image size */
     __defaultSize :
     {
       width : null,
       height : null
     },
 
-    /** {RegExp} Known image types */
+    /** @type {RegExp} Known image types */
     __knownImageTypesRegExp : /\.(png|gif|jpg|jpeg|bmp)\b/i,
 
-    /** {RegExp} Image types of a data URL */
+    /** @type {RegExp} Image types of a data URL */
     __dataUrlRegExp : /^data:image\/(png|gif|jpg|jpeg|bmp)\b/i,
 
     /**
@@ -283,9 +283,15 @@ qx.Bootstrap.define("qx.io.ImageLoader",
       // Shorthand
       var entry = this.__data[source];
 
-      // Store dimensions
-      if (event.type === "load")
+      var isImageAvailable = function(imgElem) {
+        return (imgElem && imgElem.height !== 0);
+      };
+
+      // [BUG #7497]: IE11 doesn't properly emit an error event
+      // when loading fails so augment success check
+      if (event.type === "load" && isImageAvailable(element))
       {
+        // Store dimensions
         entry.loaded = true;
         entry.width = this.__getWidth(element);
         entry.height = this.__getHeight(element);
@@ -343,6 +349,14 @@ qx.Bootstrap.define("qx.io.ImageLoader",
     {
       return qx.core.Environment.get("html.image.naturaldimensions") ?
         element.naturalHeight : element.height;
+    },
+
+    /**
+     * Dispose stored images.
+     */
+    dispose : function()
+    {
+      this.__data = {};
     }
   }
 });

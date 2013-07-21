@@ -19,9 +19,6 @@
 
 /* ************************************************************************
 
-#asset(qx/icon/${qx.icontheme}/16/actions/*)
-#asset(qx/icon/${qx.icontheme}/16/apps/utilities-help.png)
-#asset(qx/icon/${qx.icontheme}/22/apps/preferences-users.png)
 
 ************************************************************************ */
 
@@ -45,6 +42,10 @@
  * toolbar.Separator
  * toolbar.SplitButton
  * toolbar.ToolBar
+ *
+ * @asset(qx/icon/${qx.icontheme}/16/actions/*)
+ * @asset(qx/icon/${qx.icontheme}/16/apps/utilities-help.png)
+ * @asset(qx/icon/${qx.icontheme}/22/apps/preferences-users.png)
  *
  */
 
@@ -83,6 +84,11 @@ qx.Class.define("widgetbrowser.pages.ToolBar",
       label = new qx.ui.basic.Label("ToolBar Part (Button, CheckBox, RadioButton, MenuButton)");
       this.add(label, {left: 0, top: 280});
       this.add(this.getToolBarExclude(), {left: 0, top: 300});
+
+      // Context menu
+      label = new qx.ui.basic.Label("Context Menu (Right click the widget)");
+      this.add(label, {left: 0, top: 370});
+      this.add(this.getContextMenuWidget(), {left: 0, top: 390});
 
     },
 
@@ -284,6 +290,28 @@ qx.Class.define("widgetbrowser.pages.ToolBar",
       buttonMenu.hide = buttonMenu.exclude = function() {};
 
       return subContainer;
+    },
+
+
+    /**
+     * @lint ignoreDeprecated(alert)
+     */
+    getContextMenuWidget : function() {
+      var w = new qx.ui.core.Widget();
+      w.setBackgroundColor("text-disabled");
+      w.setMinHeight(100);
+      w.setWidth(200);
+
+      var menu = new qx.ui.menu.Menu();
+      w.setContextMenu(menu);
+
+      var helpButton = new qx.ui.menu.Button("Help");
+      helpButton.addListener("execute", function() {
+        alert("Help!");
+      });
+      menu.add(helpButton);
+
+      return w;
     }
   }
 });

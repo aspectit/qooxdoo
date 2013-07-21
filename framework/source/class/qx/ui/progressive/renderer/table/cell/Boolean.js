@@ -35,9 +35,11 @@ qx.Class.define("qx.ui.progressive.renderer.table.cell.Boolean",
     this.__resolveImages();
 
     // dynamic theme switch
-    qx.theme.manager.Appearance.getInstance().addListener(
-      "changeTheme", this.__resolveImages, this
-    );
+    if (qx.core.Environment.get("qx.dyntheme")) {
+      qx.theme.manager.Decoration.getInstance().addListener(
+        "changeTheme", this.__resolveImages, this
+      );
+    }
   },
 
 
@@ -122,7 +124,7 @@ qx.Class.define("qx.ui.progressive.renderer.table.cell.Boolean",
           "if (value == '0') " +
           "{";
 
-        if (qx.bom.element.Decoration.isAlphaImageLoaderEnabled() &&
+        if (qx.core.Environment.get("css.alphaimageloaderneeded") &&
             /\.png$/i.test(this.__iconUrlTrue))
         {
           imageData.extras +=
@@ -144,7 +146,7 @@ qx.Class.define("qx.ui.progressive.renderer.table.cell.Boolean",
           "else " +
           "{";
 
-        if (qx.bom.element.Decoration.isAlphaImageLoaderEnabled() &&
+        if (qx.core.Environment.get("css.alphaimageloaderneeded") &&
             /\.png$/i.test(this.__iconUrlFalse))
         {
           imageData.extras +=
@@ -191,8 +193,10 @@ qx.Class.define("qx.ui.progressive.renderer.table.cell.Boolean",
     this.__iconUrlTrue = this.__iconUrlFalse = null;
 
     // remove dynamic theme listener
-    qx.theme.manager.Appearance.getInstance().removeListener(
-      "changeTheme", this.__resolveImages, this
-    );
+    if (qx.core.Environment.get("qx.dyntheme")) {
+      qx.theme.manager.Decoration.getInstance().removeListener(
+        "changeTheme", this.__resolveImages, this
+      );
+    }
   }
 });

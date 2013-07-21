@@ -17,14 +17,6 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#ignore(environment)
-#ignore(process)
-#ignore(Titanium)
-
-************************************************************************ */
-
 /**
  * Basic runtime detection for qooxdoo.
  *
@@ -32,6 +24,10 @@
  * directly. Please check its class comment for details how to use it.
  *
  * @internal
+ *
+ * @ignore(environment)
+ * @ignore(process)
+ * @ignore(Titanium)
  */
 qx.Bootstrap.define("qx.bom.client.Runtime",
 {
@@ -43,7 +39,7 @@ qx.Bootstrap.define("qx.bom.client.Runtime",
      * to the browser name defined by {@link qx.bom.client.Browser#getName}.
      * @return {String} The name of the current runtime.
      * @internal
-     * @lint ignoreUndefined(environment, process, Titanium)
+     * @ignore(environment, process, Titanium.*)
      */
     getName : function() {
       var name = "";

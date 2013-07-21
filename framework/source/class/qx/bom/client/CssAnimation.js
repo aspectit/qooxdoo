@@ -16,14 +16,13 @@
      * Martin Wittemann (wittemann)
 
 ************************************************************************ */
-/* ************************************************************************
-#require(qx.bom.Stylesheet)
-************************************************************************ */
+
 /**
  * Responsible for checking all relevant animation properties.
  *
  * Spec: http://www.w3.org/TR/css3-animations/
  *
+ * @require(qx.bom.Stylesheet)
  * @internal
  */
 qx.Bootstrap.define("qx.bom.client.CssAnimation",
@@ -110,7 +109,7 @@ qx.Bootstrap.define("qx.bom.client.CssAnimation",
         "MozAnimation" : "animationstart",
         "OAnimation" : "oAnimationStart",
         "animation" : "animationstart"
-      }
+      };
 
       return mapping[this.getName()];
     },

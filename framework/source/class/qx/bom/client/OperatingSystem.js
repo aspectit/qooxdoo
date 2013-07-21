@@ -107,6 +107,7 @@ qx.Bootstrap.define("qx.bom.client.OperatingSystem",
     /** Maps user agent names to system IDs */
     __ids : {
       // Windows
+      "Windows NT 6.3" : "8.1",
       "Windows NT 6.2" : "8",
       "Windows NT 6.1" : "7",
       "Windows NT 6.0" : "vista",
@@ -124,6 +125,10 @@ qx.Bootstrap.define("qx.bom.client.OperatingSystem",
       "Win95" : "95",
 
       // OS X
+      "Mac OS X 10_9" : "10.9",
+      "Mac OS X 10.9" : "10.9",
+      "Mac OS X 10_8" : "10.8",
+      "Mac OS X 10.8" : "10.8",
       "Mac OS X 10_7" : "10.7",
       "Mac OS X 10.7" : "10.7",
       "Mac OS X 10_6" : "10.6",

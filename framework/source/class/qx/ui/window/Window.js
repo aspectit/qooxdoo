@@ -25,9 +25,6 @@
  *
  * More information can be found in the package description {@link qx.ui.window}.
  *
- * @state active Whether the window is activated
- * @state maximized Whether the window is maximized
- *
  * @childControl statusbar {qx.ui.container.Composite} statusbar container which shows the statusbar text
  * @childControl statusbar-text {qx.ui.basic.Label} text of the statusbar
  * @childControl pane {qx.ui.container.Composite} window pane which holds the content
@@ -119,7 +116,7 @@ qx.Class.define("qx.ui.window.Window",
 
   statics :
   {
-    /** {Class} The default window manager class. */
+    /** @type {Class} The default window manager class. */
     DEFAULT_MANAGER_CLASS : qx.ui.window.Manager
   },
 
@@ -390,10 +387,10 @@ qx.Class.define("qx.ui.window.Window",
 
   members :
   {
-    /** {Integer} Original top value before maximation had occoured */
+    /** @type {Integer} Original top value before maximation had occoured */
     __restoredTop : null,
 
-    /** {Integer} Original left value before maximation had occoured */
+    /** @type {Integer} Original left value before maximation had occoured */
     __restoredLeft : null,
 
 

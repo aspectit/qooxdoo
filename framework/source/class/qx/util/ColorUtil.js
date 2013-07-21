@@ -19,16 +19,11 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#ignore(qx.theme.*)
-#ignore(qx.theme)
-#ignore(qx.Class)
-
-************************************************************************ */
-
 /**
  * Methods to convert colors between different color spaces.
+ *
+ * @ignore(qx.theme.*)
+ * @ignore(qx.Class)
  */
 qx.Bootstrap.define("qx.util.ColorUtil",
 {
@@ -180,16 +175,19 @@ qx.Bootstrap.define("qx.util.ColorUtil",
     stringToRgb : function(str)
     {
       if (this.supportsThemes() && this.isThemedColor(str)) {
-        var str = qx.theme.manager.Color.getInstance().resolveDynamic(str);
+        str = qx.theme.manager.Color.getInstance().resolveDynamic(str);
       }
 
       if (this.isNamedColor(str))
       {
-        return this.NAMED[str];
+        return this.NAMED[str].concat();
       }
       else if (this.isSystemColor(str))
       {
         throw new Error("Could not convert system colors to RGB: " + str);
+      }
+      else if (this.isRgbaString(str)) {
+        return this.__rgbaStringToRgb(str);
       }
       else if (this.isRgbString(str))
       {
@@ -265,11 +263,12 @@ qx.Bootstrap.define("qx.util.ColorUtil",
     /**
      * Converts a RGB array to an RGB string
      *
-     * @param rgb {Array} an array with red, green and blue
-     * @return {String} a RGB string
+     * @param rgb {Array} an array with red, green and blue values and optionally
+     * an alpha value
+     * @return {String} an RGB string
      */
     rgbToRgbString : function(rgb) {
-      return "rgb(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ")";
+      return "rgb" + (rgb[3] ? "a" : "") +  "(" + rgb.join(",") + ")";
     },
 
 
@@ -392,6 +391,11 @@ qx.Bootstrap.define("qx.util.ColorUtil",
       var red = parseInt(RegExp.$1, 10);
       var green = parseInt(RegExp.$2, 10);
       var blue = parseInt(RegExp.$3, 10);
+      var alpha = parseInt(RegExp.$4, 10);
+
+      if (red === 0 && green === 0 & blue === 0 && alpha === 0) {
+        return [-1, -1, -1];
+      }
 
       return [red, green, blue];
     },
@@ -566,7 +570,7 @@ qx.Bootstrap.define("qx.util.ColorUtil",
      */
     hsbToRgb : function(hsb)
     {
-      var i, f, p, q, t;
+      var i, f, p, r, t;
 
       var hue = hsb[0] / 360;
       var saturation = hsb[1] / 100;
@@ -600,7 +604,7 @@ qx.Bootstrap.define("qx.util.ColorUtil",
         f = hue - i;
 
         p = Math.floor(tov * (1.0 - saturation));
-        q = Math.floor(tov * (1.0 - (saturation * f)));
+        r = Math.floor(tov * (1.0 - (saturation * f)));
         t = Math.floor(tov * (1.0 - (saturation * (1.0 - f))));
 
         switch(i)
@@ -612,7 +616,7 @@ qx.Bootstrap.define("qx.util.ColorUtil",
             break;
 
           case 1:
-            rgb.red = q;
+            rgb.red = r;
             rgb.green = tov;
             rgb.blue = p;
             break;
@@ -625,7 +629,7 @@ qx.Bootstrap.define("qx.util.ColorUtil",
 
           case 3:
             rgb.red = p;
-            rgb.green = q;
+            rgb.green = r;
             rgb.blue = tov;
             break;
 
@@ -638,7 +642,7 @@ qx.Bootstrap.define("qx.util.ColorUtil",
           case 5:
             rgb.red = tov;
             rgb.green = p;
-            rgb.blue = q;
+            rgb.blue = r;
             break;
         }
       }

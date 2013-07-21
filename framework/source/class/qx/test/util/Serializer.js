@@ -17,10 +17,6 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-#ignore(qx.test.SerializerModel)
-#ignore(qx.test.SerializerModelEnc)
-************************************************************************ */
 /**
  * @ignore(qx.test.SerializerModel)
  * @ignore(qx.test.SerializerModelEnc)
@@ -183,6 +179,18 @@ qx.Class.define("qx.test.util.Serializer",
       model.dispose();
     },
 
+
+    testUrlQxClass : function() {
+      this.__model.setData1(qx.core.Object);
+      this.__model.setData2(qx.data.IListData);
+      this.__model.setData3(qx.data.MBinding);
+      this.assertEquals(
+        "data1=qx.core.Object&data2=qx.data.IListData&data3=qx.data.MBinding",
+        this.__s.toUriParameter(this.__model)
+      );
+    },
+
+
     testJsonFlat : function() {
       this.__model.setData1("a");
       this.__model.setData2(10.456);
@@ -312,6 +320,16 @@ qx.Class.define("qx.test.util.Serializer",
 
       model.dispose();
     },
+
+
+    testJsonQxClass : function() {
+      this.__model.setData1(qx.core.Object);
+      this.__model.setData2(qx.data.IListData);
+      this.__model.setData3(qx.data.MBinding);
+
+      this.assertEquals('{"data1":"qx.core.Object","data2":"qx.data.IListData","data3":"qx.data.MBinding"}', this.__s.toJson(this.__model));
+    },
+
 
     //
     // toNativeObject tests
@@ -462,6 +480,19 @@ qx.Class.define("qx.test.util.Serializer",
       item.dispose();
     },
 
+
+    testNativeObjectQxClass : function() {
+      this.__model.setData1(qx.core.Object);
+      this.__model.setData2(qx.data.IListData);
+      this.__model.setData3(qx.data.MBinding);
+      this.assertJsonEquals(
+        {
+          "data1" : "qx.core.Object",
+          "data2" : "qx.data.IListData",
+          "data3" : "qx.data.MBinding"
+        },
+        this.__s.toNativeObject(this.__model));
+    },
 
 
     /* ******************************

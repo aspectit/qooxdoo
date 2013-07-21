@@ -27,8 +27,10 @@
     "LOCALES"      : [ "en" ],
     "APPLICATION_MAIN_CLASS" : "${APPLICATION}.Application",
     "ADD_NOCACHE_PARAM"      : false,
+    "COMPILE_WITH_LINT"      : true,
     "SOURCE_PATH"  : "${ROOT}/source",
-    "BUILD_PATH"   : "${ROOT}/build"
+    "BUILD_PATH"   : "${ROOT}/build",
+    "CONTRIB_CATALOG_BASEURL": "https://github.com/qooxdoo/contrib-catalog/raw/master/contributions"
   },
 
 
@@ -118,7 +120,8 @@
         },
         "code" :
         {
-          "locales" : "${LOCALES}"
+          "locales"    : "${LOCALES}",
+          "lint-check" : "${COMPILE_WITH_LINT}"
         }
       }
     },
@@ -246,7 +249,8 @@
         "qx.debug" : false,
         "qx.debug.databinding" : false,
         "qx.debug.dispose" : false,
-        "qx.debug.ui.queue" : false
+        "qx.debug.ui.queue" : false,
+        "qx.debug.io" : false
       },
 
       "compile-options" :
@@ -267,7 +271,8 @@
           "format"   : false,
           "locales"  : "${LOCALES}",
           "except"   : [],
-          "optimize" : "${OPTIMIZE}"
+          "optimize" : "${OPTIMIZE}",
+          "lint-check" : "${COMPILE_WITH_LINT}"
         }
       },
 
@@ -305,7 +310,8 @@
         "qx.debug" : false,
         "qx.debug.databinding" : false,
         "qx.debug.dispose" : false,
-        "qx.debug.ui.queue" : false
+        "qx.debug.ui.queue" : false,
+        "qx.debug.io" : false
       },
 
       "copy-resources" :
@@ -399,7 +405,8 @@
         "qx.debug" : false,
         "qx.debug.databinding" : false,
         "qx.debug.dispose" : false,
-        "qx.debug.ui.queue" : false
+        "qx.debug.ui.queue" : false,
+        "qx.debug.io" : false
       }
 
       ,"provider" :
@@ -417,6 +424,7 @@
       "desc"   : "create a dependencies.json file for the library"
       ,"extend" : ["cache", "scan-local-lib"]
       ,"config-warnings" : {
+        "include" : false,
         "exclude" : [ "${APPLICATION}.test.*", "${APPLICATION}.simulation.*" ]
       }
       ,"include" : [ "=${APPLICATION}.*" ]
@@ -442,12 +450,33 @@
     {
       "desc"  : "start a lightweight web server that exports the source version"
       ,"extend" : ["cache", "libraries", "source-script-compopts"]
+      ,"let"  : {
+        "SOURCE_SERVER_PORT" : 0
+      }
       ,"web-server" :
       {
         "document-root" : ""   // calculate dynamically from libraries
-        ,"server-port"  : 0
+        ,"server-port"  : "${SOURCE_SERVER_PORT}"
         ,"log-level"    : "error"  // use "info" for more console logging, "fatal" for none
         ,"allow-remote-access" : false
+      }
+    },
+
+    "source-server-reload" :
+    {
+      "desc"  : "web server for source version, with active reload (requires running 'watch' job)"
+      ,"extend" : [ "source-server" ]
+      ,"web-server" :
+      {
+        "active-reload" : {
+          "client-script" : "${QOOXDOO_PATH}/tool/data/generator/active_reload.js"
+        }
+      }
+      // has an extra 'watch-files' key - 'web-server' needs to evaluate first in Generator!
+      ,"watch-files" : {
+        // watch the application script file
+        "paths" : ["${SOURCE_PATH}/script/${APPLICATION}.js"]
+        ,"check-interval" : 2
       }
     },
 
@@ -581,20 +610,29 @@
 
       "lint-check" :
       {
-        "allowed-globals" : [ "q", "qxWeb", "qxsettings", "qxvariants" ]
-        ,"ignore-catch-param" : false
-        ,"ignore-deprecated-symbols" : false
-        ,"ignore-environment-nonlit-key" : false
-        ,"ignore-finally-without-catch" : false
-        ,"ignore-multiple-mapkeys" : false
-        ,"ignore-multiple-vardecls": true
-        ,"ignore-no-loop-block" : false
-        ,"ignore-reference-fields" : false
-        ,"ignore-undeclared-privates" : false
-        ,"ignore-undefined-globals" : false
-        ,"ignore-unused-parameter" : true
-        ,"ignore-unused-variables" : false
+        "allowed-globals"   : [
+          "q",
+          "qxWeb",
+          "qxsettings",
+          "qxvariants",
+          "simulator", "selenium"  // for skeletons that have simulation.* classes
+        ]
+        ,"ignore-catch-param"               : false
+        ,"ignore-deprecated-symbols"        : false
+        ,"ignore-environment-nonlit-key"    : false
+        ,"ignore-finally-without-catch"     : false
+        ,"ignore-multiple-mapkeys"          : false
+        ,"ignore-multiple-vardecls"         : true
+        ,"ignore-no-loop-block"             : false
+        ,"ignore-reference-fields"          : false
+        ,"ignore-undeclared-privates"       : false
+        ,"ignore-undefined-globals"         : false
+        ,"ignore-shadowing-locals"          : false
+        ,"ignore-unused-parameter"          : true
+        ,"ignore-unused-variables"          : false
         ,"run" : true
+        ,"warn-unknown-jsdoc-keys"          : false
+        ,"warn-jsdoc-key-syntax"            : true
       }
     },
 
@@ -651,6 +689,7 @@
     "profiling" :
     {
       "desc"    : "includer job, to activate profiling",
+      "extend"  : [ "cache" ],
 
       "environment" :
       {
@@ -707,6 +746,7 @@
 
     "watch" :
     {
+      "desc" : "watch source files for changes and run the default job automatically",
       "extend" : ["cache"],
 
       "watch-files" :
@@ -714,19 +754,29 @@
         "command" :
         {
           "line"     : "${PYTHON_CMD} generate.py -q -I",
-          "per-file" : false
+          "per-file" : false,
+          "exec-on-startup" : true,
+          "exit-on-retcode" : false
         },
         "paths"    : ["${SOURCE_PATH}/class"],
         "include" : [ "*.js" ],
-        "check-interval" : 2,
-        "exit-on-retcode" : false
+        "check-interval" : 2
       }
     },
 
-    "manifest-validation" :
+    "validate-manifest" :
     {
+      "extend" : ["cache", "scan-local-lib"],
+
       "desc" : "validates the given filepath as manifest (defaults to './Manifest.json')",
-      "manifest-validate" : {}
+      "validation-manifest" : {}
+    },
+
+    "validate-config" :
+    {
+      "extend" : ["cache"],
+      "desc" : "validates the 'config.json' itself - if jobname arg is given checks dedicated job only",
+      "validation-config" : {}
     }
   }
 }

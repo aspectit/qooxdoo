@@ -17,13 +17,10 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-#ignore(testrunner.testDefinitions)
-************************************************************************ */
-
 /**
  * The TestRunner is responsible for loading the test classes and keeping track
  * of the test suite's state.
+ *
  */
 qx.Class.define("testrunner.runner.TestRunnerBasic", {
 
@@ -265,7 +262,8 @@ qx.Class.define("testrunner.runner.TestRunnerBasic", {
     /**
      * Create a new test suite from the class definitions in
      * window.testrunner.testDefinitions
-     * @lint ignoreUndefined(testrunner.testDefinitions)
+     *
+     * @ignore(testrunner.testDefinitions.*)
      */
     _loadExternalTests : function()
     {
@@ -599,6 +597,26 @@ qx.Class.define("testrunner.runner.TestRunnerBasic", {
     _onTestEndMeasurement : function(ev)
     {
       this.__addExceptions(this.currentTestData, ev.getData());
+
+      var url = qx.core.Environment.get("testrunner.reportPerfResultUrl");
+      if (url) {
+        var measureData = ev.getData()[0].exception.getData();
+        measureData.testname = this.currentTestData.getFullName();
+        measureData.browsername = qx.core.Environment.get("browser.name");
+        measureData.browserversion = qx.core.Environment.get("browser.version");
+        measureData.osname = qx.core.Environment.get("os.name") || "unknown";
+        measureData.osversion = qx.core.Environment.get("os.version") || "unknown";
+
+        var parsedUri = qx.util.Uri.parseUri(location.href);
+        if (parsedUri.queryKey && parsedUri.queryKey.branch) {
+          measureData.branch = parsedUri.queryKey.branch;
+        }
+
+        url += "?" + qx.util.Uri.toParameter(measureData, false);
+        var req = new qx.bom.request.Script();
+        req.open("GET", url);
+        req.send();
+      }
     },
 
     /**

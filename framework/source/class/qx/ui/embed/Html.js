@@ -33,7 +33,7 @@
  *
  * *External Documentation*
  *
- * <a href='http://manual.qooxdoo.org/1.6.x/pages/widget/html.html' target='_blank'>
+ * <a href='http://manual.qooxdoo.org/${qxversion}/pages/widget/html.html' target='_blank'>
  * Documentation of this widget in the qooxdoo manual.</a>
  */
 qx.Class.define("qx.ui.embed.Html",
@@ -149,19 +149,13 @@ qx.Class.define("qx.ui.embed.Html",
 
       // Insert HTML content
       elem.setAttribute("html", value||"");
-
-      // Local style override problematic sections applied through
-      // an optional classname
-      elem.setStyles({
-        "padding": "0px",
-        "border": "none"
-      });
     },
 
 
     // property apply
     _applyCssClass : function (value, old) {
-      this.getContentElement().setAttribute("class", value);
+      this.getContentElement().removeClass(old);
+      this.getContentElement().addClass(value);
     },
 
 
@@ -171,11 +165,11 @@ qx.Class.define("qx.ui.embed.Html",
       this.base(arguments, value);
 
       /*
-       * We have to set the value to "text" in Webkit for the container element
+       * We have to set the value to "text" in Webkit for the content element
        */
       if ((qx.core.Environment.get("engine.name") == "webkit"))
       {
-        this.getContainerElement().setStyle("userSelect", value ? "text" : "none");
+        this.getContentElement().setStyle("userSelect", value ? "text" : "none");
       }
     },
 

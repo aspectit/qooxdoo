@@ -17,13 +17,11 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#require(qx.bom.htmlarea.HtmlArea)
-#require(qx.io.remote.Request)
-#require(qx.ui.core.scroll.MScrollBarFactory)
-
-************************************************************************ */
+/**
+ * @require(qx.bom.htmlarea.HtmlArea)
+ * @require(qx.io.remote.Request)
+ * @require(qx.ui.core.scroll.MScrollBarFactory)
+ */
 
 qx.Class.define("qx.test.core.Environment",
 {
@@ -365,6 +363,7 @@ qx.Class.define("qx.test.core.Environment",
       this.assertBoolean(qx.core.Environment.get("html.element.textcontent"));
       this.assertBoolean(qx.core.Environment.get("html.image.naturaldimensions"));
       this.assertBoolean(qx.core.Environment.get("html.history.state"));
+      this.assertString(qx.core.Environment.get("html.selection"));
     },
 
     testXml : function()
@@ -418,13 +417,14 @@ qx.Class.define("qx.test.core.Environment",
       var inlineBlock = qx.core.Environment.get("css.inlineblock");
       this.assert(typeof inlineBlock == "string" || inlineBlock === null);
       this.assertBoolean(qx.core.Environment.get("css.opacity"));
-      this.assertBoolean(qx.core.Environment.get("css.overflowxy"));
       var linearGradient = qx.core.Environment.get("css.gradient.linear");
       this.assert(typeof linearGradient == "string" || linearGradient === null);
       this.assertBoolean(qx.core.Environment.get("css.gradient.filter"));
       var radialGradient = qx.core.Environment.get("css.gradient.radial");
       this.assert(typeof radialGradient == "string" || radialGradient === null);
       this.assertBoolean(qx.core.Environment.get("css.gradient.legacywebkit"));
+      this.assertBoolean(qx.core.Environment.get("css.alphaimageloaderneeded"));
+      this.assertBoolean(qx.core.Environment.get("css.pointerevents"));
     },
 
     testPhoneGap : function() {
@@ -434,7 +434,6 @@ qx.Class.define("qx.test.core.Environment",
 
     testEvent : function() {
       this.assertBoolean(qx.core.Environment.get("event.touch"));
-      this.assertBoolean(qx.core.Environment.get("event.pointer"));
       this.assertBoolean(qx.core.Environment.get("event.help"));
       this.assertBoolean(qx.core.Environment.get("event.hashchange"));
     },
@@ -475,6 +474,10 @@ qx.Class.define("qx.test.core.Environment",
       this.assertString(qx.core.Environment.get("device.type"));
     },
 
+    testDevicePixelRatio : function() {
+      this.assertNumber(qx.core.Environment.get("device.pixelRatio"));
+    },
+
     testJson : function() {
       this.assertBoolean(qx.core.Environment.get("json"));
     },
@@ -496,13 +499,15 @@ qx.Class.define("qx.test.core.Environment",
       this.assertBoolean(qx.core.Environment.get("qx.mobile.emulatetouch"), "14");
       this.assertBoolean(qx.core.Environment.get("qx.mobile.nativescroll"), "15");
       this.assertBoolean(qx.core.Environment.get("qx.emulatemouse"), "16");
+      this.assertBoolean(qx.core.Environment.get("qx.dynlocale"), "17");
     },
 
 
-    testAnimationAndTransform : function() {
+    testAnimationTransformTransition : function() {
       // smoke test... make sure the method is doing something
       qx.core.Environment.get("css.animation");
       qx.core.Environment.get("css.transform");
+      qx.core.Environment.get("css.transition");
 
       // 3d transform support
       this.assertBoolean(qx.core.Environment.get("css.transform.3d"));

@@ -13,7 +13,10 @@ Besides foreign files we have included in the project, we also want to list the 
 Framework %{JS} Code
 ============================
 
-These are components that are integrated into the %{JS} class code.
+These are components that are integrated into the framework class code. I.e. if
+you are using classes from the framework to create your custom application,
+chances are that these components will make it into the deploy version of your
+application.
 
 .. list-table::
   :header-rows: 1
@@ -36,14 +39,16 @@ These are components that are integrated into the %{JS} class code.
 
   * - `parseUri <http://blog.stevenlevithan.com/archives/parseuri>`_
     - `MIT`_
-    
+
   * - `iScroll <http://cubiq.org/iscroll-4/>`_
     - `MIT`_
 
 Application %{JS} Code
 ============================
 
-These are components that are integrated into the %{JS} class code from our demo apps.
+These are components that are used by the %{JS} code of our demo apps.  I.e. if
+you are using classes from the framework to create your custom application none
+of these components will ever make it into your application.
 
 .. list-table::
   :header-rows: 1
@@ -55,13 +60,18 @@ These are components that are integrated into the %{JS} class code from our demo
   * - `ACE <http://ajaxorg.github.com/ace/>`_
     - `BSD (mod.) <https://github.com/ajaxorg/ace/blob/master/LICENSE>`_
 
+  * - `highlight.js <http://highlightjs.org/>`_
+    - `BSD (3-Clause) <http://opensource.org/licenses/BSD-3-Clause>`_
+
 
 .. _pages/introduction/third_party_components#resources:
 
 Resources
 =========
 
-Static resource files, like images, CSS, etc..
+Static resource files, like images, CSS, etc. Static resources are frequently
+included in custom application, so it is very likely some of them will make it
+into your own custom application.
 
 .. list-table::
   :header-rows: 1
@@ -78,10 +88,10 @@ Static resource files, like images, CSS, etc..
 
   * - `CLDR Data <http://cldr.unicode.org/>`_
     - `Unicode Terms of Use <http://www.unicode.org/copyright.html>`_
-    
+
   * - `JQTouch Project <http://www.jqtouch.com/>`_
     - `MIT`_
-    
+
   * - `iScroll <http://cubiq.org/iscroll-4/>`_
     - `MIT`_
 
@@ -90,7 +100,10 @@ Static resource files, like images, CSS, etc..
 Tool Chain
 ===========
 
-These are the Python modules we use that are not self-written, nor part of a vanilla Python 2.x SDK:
+These are the Python modules we use that are not self-written nor part of a
+vanilla Python 2.5 SDK. While they are shipped with our SDK they are only used
+while the tool chain runs, and never become part of the resulting custom
+application.
 
 .. list-table::
    :header-rows: 1
@@ -99,35 +112,46 @@ These are the Python modules we use that are not self-written, nor part of a van
    * - Module
      - License
 
+   * - `argparse <https://pypi.python.org/pypi/argparse/>`_
+     - `Python License 2 <http://opensource.org/licenses/Python-2.0>`_
+
    * - `cssmin <http://pypi.python.org/pypi/cssmin/>`_
      - `BSD-compat <https://github.com/zacharyvoase/cssmin/blob/master/LICENSE>`_
- 
+
    * - `demjson <http://deron.meranda.us/python/demjson/>`_
      - `LGPL 3 <http://www.gnu.org/licenses/lgpl-3.0.html>`_
 
    * - `elementtree <http://effbot.org/zone/element-index.htm>`_
      - `old-style Python <http://effbot.org/zone/copyright.htm>`_ `(HPND) <http://www.opensource.org/licenses/historical.php>`_
- 
+
    * - `graph <http://pypi.python.org/pypi/python-graph>`_
      - `MIT`_
- 
+
+   * - `jsonschema <http://pypi.python.org/pypi/jsonschema/>`_
+     - `MIT`_
+
    * - `polib <http://pypi.python.org/pypi/polib>`_
      - `MIT`_
- 
+
    * - `pyparsing <http://pypi.python.org/pypi/pyparsing/>`_
      - `MIT`_
- 
+
    * - `simplejson <http://pypi.python.org/pypi/simplejson>`_
      - `MIT`_
- 
+
    * - `textile <http://pypi.python.org/pypi/textile/>`_
-     - `new BSD <http://www.opensource.org/licenses/bsd-license.php>`_
+     - `BSD <http://www.opensource.org/licenses/bsd-license.php>`_
 
 
 .. _pages/introduction/third_party_components#other:
 
 Components or tools that are not included with the SDK
 =======================================================
+
+These tools we use on our development machines, e.g. to prepare the %{qooxdoo}
+SDK, run automated tests, create reports, and the like. They are not required to
+use any of %{qooxdoo}'s deliverables, but can be interesting for users that
+pursue specific interests.
 
 .. list-table::
    :header-rows: 1
@@ -136,7 +160,7 @@ Components or tools that are not included with the SDK
    * - Tool
      - License
 
-   * - `ImageMagick <http://www.imagemagick.org/script/index.php>`_ 
+   * - `ImageMagick <http://www.imagemagick.org/script/index.php>`_
      - `GPL-compat <http://www.imagemagick.org/script/license.php>`_
 
    * - `Make <http://www.gnu.org/s/make/>`_
@@ -152,7 +176,10 @@ Components or tools that are not included with the SDK
      - `Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_
 
    * - `Sphinx <http://sphinx.pocoo.org/>`_
-     - `BSD <http://www.opensource.org/licenses/bsd-license.php>`_
+     - `BSD`_
 
    * - `TeX Live <http://www.tug.org/texlive/>`_
      - `mixed free licenses <http://tug.org/texlive/LICENSE.TL>`_
+
+   * - `qxMaven <http://qxmaven.charless.org/>`_
+     - `LGPL <http://www.gnu.org/licenses/lgpl.html>`_, `EPL <http://www.eclipse.org/org/documents/epl-v10.php>`_

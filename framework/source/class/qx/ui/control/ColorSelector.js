@@ -186,12 +186,12 @@ qx.Class.define("qx.ui.control.ColorSelector",
     */
 
     /**
-     * {String} The context in which an update has occurred.
+     * @type {String} The context in which an update has occurred.
      */
     __updateContext : null,
 
     /**
-     * {Array} Map containing the preset colors.
+     * @type {Array} Map containing the preset colors.
      * @lint ignoreReferenceField(__presetTable)
      */
     __presetTable : [ "maroon", "red", "orange", "yellow", "olive", "purple",
@@ -199,22 +199,22 @@ qx.Class.define("qx.ui.control.ColorSelector",
       "#333", "#666", "#999", "#BBB", "#EEE", "white" ],
 
     /**
-     * {String} Name of child control which is captured.
+     * @type {String} Name of child control which is captured.
      */
     __capture : "",
 
     /**
-     * {Number} Numeric brightness value
+     * @type {Number} Numeric brightness value
      */
     __brightnessSubtract : 0,
 
     /**
-     * {Integer} HueSaturation's X coordinate
+     * @type {Integer} HueSaturation's X coordinate
      */
     __hueSaturationSubtractTop : 0,
 
     /**
-     * {Integer} HueSaturation's Y coordinate
+     * @type {Integer} HueSaturation's Y coordinate
      */
     __hueSaturationSubtractLeft : 0,
 
@@ -784,8 +784,8 @@ qx.Class.define("qx.ui.control.ColorSelector",
       this.__capture = "brightness-handle";
 
       // Calculate subtract: Position of Brightness Field - Current Mouse Offset
-      var locationBrightnessField = this.getChildControl("brightness-field").getContainerLocation();
-      var locationBrightnessHandle = this.getChildControl("brightness-handle").getContainerLocation();
+      var locationBrightnessField = this.getChildControl("brightness-field").getContentLocation();
+      var locationBrightnessHandle = this.getChildControl("brightness-handle").getContentLocation();
       var fieldBounds = this.getChildControl("brightness-field").getBounds();
 
       this.__brightnessSubtract = locationBrightnessField.top +
@@ -835,7 +835,7 @@ qx.Class.define("qx.ui.control.ColorSelector",
     _onBrightnessFieldMouseDown : function(e)
     {
       // Calculate substract: Half height of handler
-      var location  = this.getChildControl("brightness-field").getContainerLocation();
+      var location  = this.getChildControl("brightness-field").getContentLocation();
       var bounds = this.getChildControl("brightness-handle").getBounds();
       this.__brightnessSubtract = location.top + (bounds.height / 2);
 
@@ -856,7 +856,12 @@ qx.Class.define("qx.ui.control.ColorSelector",
      */
     _onBrightnessPaneMouseWheel : function(e)
     {
-      this.setBrightness(qx.lang.Number.limit(this.getBrightness() - e.getWheelDelta("y"), 0, 100));
+      // change direction for touch events (not IE)
+      if (qx.event.handler.MouseEmulation.ON && qx.core.Environment.get("event.touch")) {
+        this.setBrightness(qx.lang.Number.limit(this.getBrightness() + (e.getWheelDelta("y") / 2.5), 0, 100));
+      } else {
+        this.setBrightness(qx.lang.Number.limit(this.getBrightness() - e.getWheelDelta("y"), 0, 100));
+      }
       e.stop();
     },
 
@@ -936,7 +941,7 @@ qx.Class.define("qx.ui.control.ColorSelector",
     _onHueSaturationFieldMouseDown : function(e)
     {
       // Calculate substract: Half width/height of handler
-      var location = this.getChildControl("hue-saturation-field").getContainerLocation();
+      var location = this.getChildControl("hue-saturation-field").getContentLocation();
       var handleBounds = this.getChildControl("hue-saturation-handle").getBounds();
       var fieldBounds = this.getChildControl("hue-saturation-field").getBounds();
 
@@ -960,8 +965,15 @@ qx.Class.define("qx.ui.control.ColorSelector",
      */
     _onHueSaturationPaneMouseWheel : function(e)
     {
-      this.setSaturation(qx.lang.Number.limit(this.getSaturation() - e.getWheelDelta("y"), 0, 100));
-      this.setHue(qx.lang.Number.limit(this.getHue() + e.getWheelDelta("x"), 0, 360));
+      // change direction for touch events (not IE)
+      if (qx.event.handler.MouseEmulation.ON && qx.core.Environment.get("event.touch")) {
+        this.setSaturation(qx.lang.Number.limit(this.getSaturation() + (e.getWheelDelta("y") / 2.5), 0, 100));
+        this.setHue(qx.lang.Number.limit(this.getHue() - (e.getWheelDelta("x") * 1.3), 0, 360));
+      } else {
+        this.setSaturation(qx.lang.Number.limit(this.getSaturation() - e.getWheelDelta("y"), 0, 100));
+        this.setHue(qx.lang.Number.limit(this.getHue() + e.getWheelDelta("x"), 0, 360));
+      }
+
       e.stop();
     },
 

@@ -21,8 +21,9 @@
 #
 ################################################################################
 
-import os, sys, re, types, string, copy
+import os, sys, re, types, string, copy, codecs
 import graph
+from copy import deepcopy
 from generator.config.Lang import Key, Let
 from generator.resource.Library import Library
 from generator.runtime.ShellCmd import ShellCmd
@@ -42,6 +43,7 @@ class Config(object):
         # init members
         self._console  = console_
         self._data     = None
+        self._rawdata  = None
         self._fname    = None
         self._shellCmd = ShellCmd()
         self._includedConfigs = []  # to record included configs
@@ -50,6 +52,7 @@ class Config(object):
         console = console_
 
         # dispatch on argument
+
         if isinstance(data, (types.DictType, types.ListType)):
             #self._console.debug("Creating config from data")
             self.__init__data(data, path)
@@ -95,7 +98,8 @@ class Config(object):
             e.args = (e.args[0] + "\nFile: %s" % fname,) + e.args[1:]
             raise e
 
-        self._data  = data
+        self._data = data
+        self._rawdata = deepcopy(data)
         self._fname = os.path.abspath(fname)
         self._dirname = os.path.dirname(self._fname)
 
@@ -192,10 +196,16 @@ class Config(object):
         container[splits[-1]] = content
         return True
 
-
+    ##
+    # Takes jobname or job object ref, and returns job object ref or default;
+    # searches recursively through imported configs
+    #
+    # @param job jobname|jobObj
+    # @param withIncludes
+    # @param default
+    # @return jobObj|default param
+    #
     def getJob(self, job, withIncludes=False, default=None):
-        ''' takes jobname or job object ref, and returns job object ref or default;
-            searches recursively through imported configs'''
 
         if isinstance(job, Job): # you already found it :)
             return job
@@ -303,7 +313,7 @@ class Config(object):
         for jobName in jobList:
             job = self.getJob(jobName)
             if not job:
-                raise RuntimeError, "No such job: \"%s\"" % jobname
+                raise RuntimeError, "No such job: \"%s\"" % jobName
             else:
                 job.cleanUpJob()
 
@@ -320,7 +330,6 @@ class Config(object):
             if key not in Key.TOP_LEVEL_KEYS.keys():
                 if key not in tl_ignored_keys:
                     self._console.warn("! Unknown top-level config key \"%s\" - ignored." % key)
-                #raise RuntimeError("! Unknown top-level config key \"%s\" - ignored." % key)
             # does it have a correct value type?
             elif not isinstance(configMap[key], Key.TOP_LEVEL_KEYS[key]):
                 self.raiseConfigError("Incorrect value for top-level config key \"%s\" (expected %s)" % (key, Key.TOP_LEVEL_KEYS[key]))
@@ -329,6 +338,8 @@ class Config(object):
         jobEntries = configMap[Key.JOBS_KEY]
         jobType    = types.DictType
         for jobentry in jobEntries:
+            if jobentry in Key.META_KEYS:
+                continue
             if not isinstance(jobEntries[jobentry], (jobType, Job)):
                 self.warnConfigError("! Not a valid job definition: \"%s\" - ignored." % jobentry)
                 continue
@@ -449,7 +460,7 @@ class Config(object):
                 (clashCase.name not in jobMap[Key.OVERRIDE_KEY])):
                 # put shaddowed job in the local 'extend'
                 if not newJob:
-                    raise Error, "unsuitable new job"
+                    raise Exception, "unsuitable new job"
                 localjob = self.getJob(clashCase.name)
                 extList = localjob.getFeature('extend', [])
                 extList.append(newJob)
@@ -623,7 +634,6 @@ class Config(object):
 
 
     def resolveLibs(self, jobs):
-        config  = self.get("jobs")
         console = self._console
 
         console.debug("Resolving libs/manifests...")
@@ -643,7 +653,7 @@ class Config(object):
                         if 'manifest' not in lib:
                             self.raiseConfigError("Attribute 'manifest' is mandatory in config key 'library'")
                         manipath = lib.get('manifest')
-                        if not manipath.startswith("contrib://"):
+                        if not manipath.startswith(("contrib://","http://","https://")):
                             manipath = self.absPath(manipath)
                         libObj = Library(manipath, self._console)  # fresh Library() object; Generator.py handles cached versions
                         libObj.uri = lib.get('uri', None)
@@ -751,6 +761,27 @@ class Config(object):
                 for path1, key in self.walk(data[child], "/".join((path, child))):
                     yield path1, key
 
+    ##
+    # Schema for 'config.json'.
+    #
+    # @param customJobs list
+    # @return schema dict
+    #
+    def getSchema(self):
+        relPathToSchema = "/../../../data/config/config_schema.json"
+        schemaPath = os.path.abspath(os.path.dirname(__file__) + relPathToSchema)
+
+        try:
+            file = codecs.open(schemaPath, "r", "utf-8")
+            schema = json.loads(file.read())
+            file.close()
+        except Exception, e:
+            msg = "Reading of schema file failed: '%s'" % schemaPath + (
+                "\n%s" % e.args[0] if e.args else "")
+            e.args = (msg,) + e.args[1:]
+            raise
+
+        return schema
 
 # Late imports, for cross-importing
 from generator.config.Job import Job

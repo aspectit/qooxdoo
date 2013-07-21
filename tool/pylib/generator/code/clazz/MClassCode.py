@@ -23,17 +23,19 @@
 # generator.code.Class Mixin: class code (tree and compile)
 ##
 
-import sys, os, types, re, string, copy
+import sys, os, types, re, string, copy, time
 from ecmascript.backend.Packer      import Packer
 from ecmascript.backend             import formatter
 from ecmascript.frontend import treeutil, tokenizer
 from ecmascript.frontend import treegenerator, lang
 from ecmascript.frontend.SyntaxException import SyntaxException
-from ecmascript.transform.check     import scopes, lint, load_time
+from ecmascript.transform.check     import scopes, load_time, lint, jshints
 from ecmascript.transform.optimizer import variantoptimizer, variableoptimizer, commentoptimizer
 from ecmascript.transform.optimizer import stringoptimizer, basecalloptimizer, privateoptimizer
 from ecmascript.transform.optimizer import featureoptimizer
+from ecmascript.transform.optimizer import globalsoptimizer
 from generator import Context
+from generator.action               import CodeMaintenance
 from misc import util, filetool
 
 
@@ -66,7 +68,7 @@ class MClassCode(object):
             console.debug("Parsing file: %s..." % self.id)
             console.indent()
 
-            # tokenize
+            # Tokenize
             fileContent = filetool.read(self.path, self.encoding)
             fileId = self.path if self.path else self.id
             try:
@@ -76,10 +78,7 @@ class MClassCode(object):
                 e.args = (e.args[0] + "\nFile: %s" % fileId,) + e.args[1:]
                 raise e
             
-            # parse
-            console.outdent()
-            console.debug("Generating tree: %s..." % self.id)
-            console.indent()
+            # Parse
             try:
                 tree = treegen.createFileTree(tokens, fileId)
             except SyntaxException, e:
@@ -87,7 +86,7 @@ class MClassCode(object):
                 e.args = (e.args[0] + "\nFile: %s" % fileId,) + e.args[1:]
                 raise
 
-            # check class id against file id
+            # Check class id against file id
             try:
                 self.checkClassId(tree)
             except ValueError, e:
@@ -95,36 +94,26 @@ class MClassCode(object):
                 e.args = (e.args[0] + "\nFile: %s" % fileId,) + e.args[1:]
                 raise
 
-            # annotate with scopes
+            # Annotate with scopes
             if True:
-                console.outdent()
-                console.debug("Calculating scopes: %s..." % self.id)
-                console.indent()
                 tree = scopes.create_scopes(tree)  # checks for suitable treegenerator_tag
                 #tree.scope.prrnt()
                 #print self.id, " (globals):", [c for s in tree.scope.scope_iterator() for c in s.globals()]
 
-            # annotate scopes reg. load time evaluation
+            # Annotate scopes with load time information
             if True:
                 if hasattr(tree,'scope') and tree.scope:
-                    console.outdent()
-                    console.debug("Annotating scopes with load time information: %s..." % self.id)
-                    console.indent()
                     load_time.load_time_check(tree.scope)
 
-            # lint check
-            if False:  # currently done in MClassDependencies, due to global classList
-                console.outdent()
-                console.debug("Checking JavaScript source code: %s..." % self.id)
-                console.indent()
-                # construct parse-level check options
-                opts = lint.defaultOptions()
-                lint.lint_check(tree, self.id, opts)
+            # Annotate with jsdoc hints
+            if True:
+                tree = jshints.create_hints_tree(tree)
 
-            # store unoptimized tree
+            # Store unoptimized tree
             cache.write(cacheId, tree, memory=tradeSpaceForSpeed)
 
             console.outdent()
+
         return tree
 
 
@@ -172,13 +161,12 @@ class MClassCode(object):
 
         classinfo, _ = self._getClassCache()
         classvariants = None
-        if classinfo == None or 'svariants' not in classinfo:  # 'svariants' = supported variants
+        if not classinfo or 'svariants' not in classinfo:  # 'svariants' = supported variants
             if generate:
                 # TODO: it might be better to work on the variant tree, as config variants have already been pruned?!
                 tree = self.tree()  # get complete tree
                 classvariants = self._variantsFromTree(tree) # get list of variant keys
-                if classinfo == None:
-                    classinfo = {}
+                classinfo, _ = self._getClassCache()  # re-read, b.o. self.tree()
                 classinfo['svariants'] = classvariants
                 self._writeClassCache (classinfo)
         else:
@@ -347,8 +335,11 @@ class MClassCode(object):
                 privateoptimizer.patch(tree, id, privatesMap)
                 write_privates(privatesMap)
 
+            if "globals" in optimize:
+                tree = globalsoptimizer.process(tree) # need to re-assign as this optimizer might change the root node
+
             if "strings" in optimize:
-                tree = self._stringOptimizer(tree)
+                tree = stringoptimizer.process(tree, self.id)
 
             if "variables" in optimize:
                 variableoptimizer.search(tree)
@@ -404,40 +395,6 @@ class MClassCode(object):
         return "[%s]" % ("-".join(optimize))
 
 
-    def _stringOptimizer(self, tree):
-        # string optimization works over a list of statements,
-        # so extract the <file>'s <statements> node
-        statementsNode = tree.getChild("statements")
-        stringMap = stringoptimizer.search(statementsNode)
-
-        if len(stringMap) == 0:
-            return tree
-
-        stringList = stringoptimizer.sort(stringMap)
-        stringoptimizer.replace(statementsNode, stringList)
-
-        # Build JS string fragments
-        stringStart = "(function(){"
-        stringReplacement = stringoptimizer.replacement(stringList)
-        stringStop = "})();"
-
-        # Compile wrapper node
-        wrapperNode = treeutil.compileString(stringStart+stringReplacement+stringStop, self.id + "||stringopt")
-
-        # Reorganize structure
-        funcStatements = (wrapperNode.getChild("operand").getChild("group").getChild("function")
-                    .getChild("body").getChild("block").getChild("statements"))
-        if statementsNode.hasChildren():
-            for child in statementsNode.children[:]:
-                statementsNode.removeChild(child)
-                funcStatements.addChild(child)
-
-        # Add wrapper to now empty statements node
-        statementsNode.addChild(wrapperNode)
-
-        return tree
-
-
 
     ##
     # Convenience method for length of compiled class
@@ -445,6 +402,19 @@ class MClassCode(object):
     def getCompiledSize(self, compOptions, treegen=treegenerator, featuremap={}):
         code = self.getCode(compOptions, treegen, featuremap)
         return len(code)
+
+
+    ##
+    # Lint the source
+    def lint_warnings(self, lint_opts):
+        classInfo, mTime = self._getClassCache()
+        if (not 'lint-basics' in classInfo
+            and True):  # not up-to-date?! when is the class cache invalidated?!
+            warns = lint.lint_check(self.tree(), self.id, lint_opts)
+            classInfo['lint-basics'] = (warns, time.time())
+            self._writeClassCache(classInfo)
+        return classInfo['lint-basics'][0]
+
 
 
 

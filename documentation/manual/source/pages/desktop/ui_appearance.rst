@@ -8,7 +8,7 @@ Appearance
 What is it?
 ===========
 
-An appearance theme is the main part of the theme. It contains all appearance definitions which are responsible for holding all styling informations for the wigets. Usually the apperance theme is the biggest theme and uses all other theme classes like the Decorator- or Font-theme.
+An appearance theme is the main part of the theme. It contains all appearance definitions which are responsible for holding all styling information for the widgets. Usually the appearance theme is the biggest theme and uses all other theme classes like the Decorator- or Font-theme.
 
 .. _pages/desktop/ui_appearance#theme_structure:
 
@@ -48,7 +48,7 @@ It is also possible that a widget, which is a child control itself, uses another
       - level2
         - level3
 
-the generated selector would be ``pane/level1/level2/level3``. For ``pane`` which is not a child control of any other widget the appearance ID is used. For all others the child control ID is used. Again ``pane`` is not managed by any other widget so it is basically added by the developer of the application to another widget while ``level1`` to ``level3`` are managed by some type of combined widget and are added to each other without the work of the application developer. 
+the generated selector would be ``pane/level1/level2/level3``. For ``pane`` which is not a child control of any other widget the appearance ID is used. For all others the child control ID is used. Again ``pane`` is not managed by any other widget so it is basically added by the developer of the application to another widget while ``level1`` to ``level3`` are managed by some type of combined widget and are added to each other without the work of the application developer.
 
 A classic example for this is the ``Spinner`` widget. A ``Spinner`` is basically a Grid layout with a ``TextField`` and two ``RepeatButtons``. The three internal widgets are available under the sub control IDs ``textfield``, ``upbutton`` and ``downbutton``. The selectors for these kind of child controls are then:
 
@@ -100,7 +100,7 @@ This is super convenient for simple cases and additionally it is still possible 
     {
       [...],
 
-      "myimage" : [...],    
+      "myimage" : [...],
 
       "spinner/upbutton" : "button",
       "spinner/upbutton/icon" : "myimage",
@@ -112,7 +112,7 @@ This is super convenient for simple cases and additionally it is still possible 
 Internally the above results into the following remapping:
 
 ::
-  
+
   "spinner/upbutton" => "button"
   "spinner/upbutton/icon" => "myimage"
   "spinner/upbutton/label" => "button/label"
@@ -132,13 +132,13 @@ The more complex full entry is a map with several sub entries where all are opti
     {
       [...],
 
-      "spinner/textfield" : 
+      "spinner/textfield" :
       {
         base : true/false,
         include : String,
         alias : String,
 
-        style : function(states, styles) 
+        style : function(states, styles)
         {
           return {
             property : states.hovered ? value1 : value2,
@@ -156,7 +156,7 @@ The more complex full entry is a map with several sub entries where all are opti
 Style Method
 ------------
 
-Let's start with the ``style`` sub entry. The value under this key should be a function which returns a set of properties to apply to the target widget. The first parameter of the function is named ``states``. This is a map containing keys with boolean values which signalize which states are switched on. The data could be used to react on specific states like ``hovered``, ``focused``, ``selected``, etc. The second parameter ``styles`` is only avaliable if a ``include`` key is given. If so, the ``styles`` parameter contains the styles of the included appearance. This may be very handy if you just want to add some padding and don't want to change it completely. In any case, you don't need to return the given styles. The returned styles and the ``styles`` argument will be merged by the appearance manager with a higher priority for the local (returned) styles.
+Let's start with the ``style`` sub entry. The value under this key should be a function which returns a set of properties to apply to the target widget. The first parameter of the function is named ``states``. This is a map containing keys with boolean values which signalize which states are switched on. The data could be used to react on specific states like ``hovered``, ``focused``, ``selected``, etc. The second parameter ``styles`` is only available if a ``include`` key is given. If so, the ``styles`` parameter contains the styles of the included appearance. This may be very handy if you just want to add some padding and don't want to change it completely. In any case, you don't need to return the given styles. The returned styles and the ``styles`` argument will be merged by the appearance manager with a higher priority for the local (returned) styles.
 
 It is required that all properties applied in one state are applied in all other states. Something like this is seen as bad style and may result in wrong styling:
 
@@ -194,7 +194,7 @@ Instead, you should always define the else case:
 
 .. note::
 
-  The ``undefined`` value means that no value should be applied. When qooxdoo runs through the returned map it calls the ``reset`` method for properties with a value of ``undefined``. In most cases it would be also perfectly valid to use ``null`` instead of ``undefined``, but keep in mind that ``null`` is stored using the setter (explicit null) and this way it overrides values given through the inheritance or through the init values. In short this means that ``undefined`` is the better choice in almost all cases. 
+  The ``undefined`` value means that no value should be applied. When qooxdoo runs through the returned map it calls the ``reset`` method for properties with a value of ``undefined``. In most cases it would be also perfectly valid to use ``null`` instead of ``undefined``, but keep in mind that ``null`` is stored using the setter (explicit null) and this way it overrides values given through the inheritance or through the init values. In short this means that ``undefined`` is the better choice in almost all cases.
 
 One thing we have also seen in the example is that it is perfectly possible to create the return map using standard JavaScript and fill in keys during the runtime of the ``style`` method. This allows to use more complex statements to solve the requirements of today's themes were a lot of states or dependencies between states can have great impact on the result map.
 
@@ -203,7 +203,7 @@ One thing we have also seen in the example is that it is perfectly possible to c
 Includes
 --------
 
-Includes are used to reuse the result of another key and merge it with the local data. Includes may also used standalone without the ``style`` key but this is merly the same like an alias. An alias is the faster and better choice in this case.
+Includes are used to reuse the result of another key and merge it with the local data. Includes may also used standalone without the ``style`` key but this is merely the same like an alias. An alias is the faster and better choice in this case.
 
 The results of the include block are merged with lower priority than the local data so it just gets added to the map. To remove a key from the included map just define the key locally as well (using the ``style`` method) and set it to ``undefined``.
 
@@ -248,7 +248,7 @@ The result mapping would look like the following:
   "spinner/upbutton/icon" => "button/image"
   "spinner/upbutton/label" => "button/label"
 
-As you can see the ``spinner/upbutton`` is kept in its original state. This allows one to just refine a specific outer part of a complex widget instead of the whole widget. It is also possible to include the orignal part of the ``button`` into the ``spinner/upbutton`` as well. This is useful to just override a few properties like seen in the following example:
+As you can see the ``spinner/upbutton`` is kept in its original state. This allows one to just refine a specific outer part of a complex widget instead of the whole widget. It is also possible to include the original part of the ``button`` into the ``spinner/upbutton`` as well. This is useful to just override a few properties like seen in the following example:
 
 ::
 
@@ -263,7 +263,7 @@ As you can see the ``spinner/upbutton`` is kept in its original state. This allo
         alias : "button",
         include : "button",
 
-        style : function(states) 
+        style : function(states)
         {
           return {
             padding : 2,
@@ -283,7 +283,7 @@ When ``alias`` and ``include`` are identically pointing to the same selector the
 Base Calls
 ----------
 
-When extending themes the so-named ``base`` flag can be enabled to include the result of this selector of the derived theme into the local selector. This is quite comparable to the ``this.base(arguments, ...)`` call in member functions of typical qooxdoo classes. It does all the things the super class has done plus the local things. Please note that all local defintions have higher priority than the inheritance. See next paragraph for details.
+When extending themes the so-named ``base`` flag can be enabled to include the result of this selector of the derived theme into the local selector. This is quite comparable to the ``this.base(arguments, ...)`` call in member functions of typical qooxdoo classes. It does all the things the super class has done plus the local things. Please note that all local definitions have higher priority than the inheritance. See next paragraph for details.
 
 .. _pages/desktop/ui_appearance#priorities:
 
@@ -297,7 +297,7 @@ Priority is quite an important topic when dealing with so many sources to fill a
 States
 ======
 
-A state is used for every visual state a widget may have. Every state has flag character. It could only be enabled or disabled via the API ``addState`` or ``removeState``. 
+A state is used for every visual state a widget may have. Every state has flag character. It could only be enabled or disabled via the API ``addState`` or ``removeState``.
 
 .. _pages/desktop/ui_appearance#performance:
 
@@ -311,7 +311,7 @@ qooxdoo has a lot of impressive caching ideas behind the whole appearance handli
 Appearance Queue
 ----------------
 
-First of all we have the appearance queue. Widgets which are visible and inserted into a visible parent are automatically processed by this queue when changes happen or on the initial display of the widget. Otherwise the change is delayed until the widget gets visible (again). 
+First of all we have the appearance queue. Widgets which are visible and inserted into a visible parent are automatically processed by this queue when changes happen or on the initial display of the widget. Otherwise the change is delayed until the widget gets visible (again).
 
 The queue also minimizes the effect of multiple state changes when they happen at once. All changes are combined into one lookup to the theme e.g. changing ``hovered`` and ``focused`` directly after each other would only result into one update instead of two. In a modern GUI typically each click influence a few widgets at once and in these widgets a few states at once so this optimization really pays of.
 
@@ -336,7 +336,7 @@ The list of resolved aliases can be seen when printing out the map under ``qx.th
 Result Caching
 --------------
 
-Further the result of each selector for a specific set of states is cached as well. This is maybe the most massive source of performance tweaks in the system. With the first usage, qooxdoo caches for example the result of ``button`` with the states ``hovered`` and ``focused``. The result is used for any further request for such an appearance with the identical set of states. This caching is by the way the most evident reason why the appearance has no access to the individual widget. This would torpedate the caching in some way.
+Further the result of each selector for a specific set of states is cached as well. This is maybe the most massive source of performance tweaks in the system. With the first usage, qooxdoo caches for example the result of ``button`` with the states ``hovered`` and ``focused``. The result is used for any further request for such an appearance with the identical set of states. This caching is by the way the most evident reason why the appearance has no access to the individual widget. This would interfere with the caching in some way.
 
 This last caching also reduces the overhead of ``include`` and ``base`` statements which are quite intensive tasks because of the map merge character with which they have been implemented.
 

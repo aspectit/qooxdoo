@@ -18,15 +18,12 @@
 
 ************************************************************************ */
 
-/*
- #ignore(qx.util.ResourceManager)
- */
-
 /**
  * The Package wraps a list of related script URLs, which are required by one
  * or more parts.
  *
  * @internal
+ * @ignore(qx.util.ResourceManager)
  */
 qx.Bootstrap.define("qx.io.part.Package",
 {

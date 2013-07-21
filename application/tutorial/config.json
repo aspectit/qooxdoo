@@ -29,7 +29,9 @@
     "simulation-run",
     "test",
     "test-source",
-    "translation"
+    "translation",
+    "validate-manifest",
+    "validate-config"
   ],
 
   "default-job" : "source-hybrid",
@@ -70,8 +72,7 @@
       [
         "qx.test.*",
         "qx.dev.unit.*",
-        "qx.core.MEvents",
-        "qx.lang.Core"
+        "qx.dev.FakeServer"
       ],
 
       "environment" :

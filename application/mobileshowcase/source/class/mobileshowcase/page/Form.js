@@ -62,6 +62,7 @@ qx.Class.define("mobileshowcase.page.Form",
 
       this.__submitButton = new qx.ui.mobile.form.Button("Submit");
       this.__submitButton.addListener("tap", this._onButtonTap, this);
+      this.__submitButton.addListener("touchstart", qx.bom.Event.preventDefault, this);
       this.__submitButton.setEnabled(false);
       this.getContent().add(this.__submitButton);
 
@@ -88,9 +89,7 @@ qx.Class.define("mobileshowcase.page.Form",
      */
     __createForm : function()
     {
-
       var form = new qx.ui.mobile.form.Form();
-      var validationManager = form.getValidationManager();
 
       this.__name = new qx.ui.mobile.form.TextField().set({placeholder:"Username"});
       this.__name.setRequired(true);
@@ -127,19 +126,21 @@ qx.Class.define("mobileshowcase.page.Form",
       form.addGroupHeader("Feedback");
       var dd = new qx.data.Array(["Web search", "From a friend", "Offline ad","Magazine","Twitter","Other"]);
       var selQuestion = "How did you hear about us ?";
+
       this.__sel = new qx.ui.mobile.form.SelectBox();
       this.__sel.set({required: true});
       this.__sel.set({placeholder:"Unknown"});
       this.__sel.setClearButtonLabel("Clear");
-      this.__sel.setNullable(true);
       this.__sel.setDialogTitle(selQuestion);
       this.__sel.setModel(dd);
-      this.__sel.setSelection(null);
 
       form.add(this.__sel, selQuestion);
 
       form.addGroupHeader("License");
-      this.__info = new qx.ui.mobile.form.TextArea().set({placeholder:"Terms of Service"});
+      this.__info = new qx.ui.mobile.form.TextArea().set({
+        placeholder: "Terms of Service",
+        readOnly: true
+      });
       form.add(this.__info,"Terms of Service");
       this.__info.setValue("qooxdoo Licensing Information\n=============================\n\nqooxdoo is dual-licensed under the GNU Lesser General Public License (LGPL) and the Eclipse Public License (EPL). \n The above holds for any newer qooxdoo release. Only legacy versions 0.6.4 and below were licensed solely under the GNU Lesser General Public License (LGPL). For a full understanding of your rights and obligations under these licenses, please see the full text of the LGPL and/or EPL. \n \n One important aspect of both licenses (so called \"weak copyleft\" licenses) is that if you make any modification or addition to the qooxdoo code itself, you MUST put your modification under the same license, the LGPL or EPL. \n  \n \n  \n Note that it is explicitly NOT NEEDED to put any application under the LGPL or EPL, if that application is just using qooxdoo as intended by the framework (this is where the \"weak\" part comes into play - contrast this with the GPL, which would only allow using qooxdoo to create an application that is itself governed by the GPL).");
 
@@ -150,6 +151,17 @@ qx.Class.define("mobileshowcase.page.Form",
       this.__save.addListener("changeValue", this._enableFormSubmitting, this);
       form.add(this.__save, "Agree? ");
 
+      this._createValidationRules(form.getValidationManager());
+
+      return form;
+    },
+
+
+    /**
+     * Adds all validation rules of the form.
+     * @param validationManager {qx.ui.form.validation.Manager} the created form.
+     */
+    _createValidationRules : function(validationManager) {
       // USERNAME validation
       validationManager.add(this.__name, function(value, item){
         var valid = value != null && value.length>3;
@@ -168,16 +180,24 @@ qx.Class.define("mobileshowcase.page.Form",
         return valid;
       }, this);
 
-       // AGE validation
-      validationManager.add(this.__numberField, function(value, item){
-        var valid = value != null && value!="0";
-        if(!valid) {
+      // AGE validation
+      validationManager.add(this.__numberField, function(value, item) {
+        if(value == null || value == "0") {
           item.setInvalidMessage("Please enter your age.");
+          return false;
         }
-        return valid;
-      }, this);
 
-      return form;
+        if (value.length == 0 || value.match(/[\D]+/)) {
+          item.setInvalidMessage("Please enter a valid age.");
+          return false;
+        }
+
+        if(value < item.getMinimum() || value > item.getMaximum()) {
+          item.setInvalidMessage("Value out of range: "+ item.getMinimum()+"-"+item.getMaximum());
+          return false;
+        }
+        return true;
+      }, this);
     },
 
 
@@ -209,8 +229,18 @@ qx.Class.define("mobileshowcase.page.Form",
       } else {
         // Scroll to invalid field.
         var invalidItems = this.__form.getInvalidItems();
+
         this.scrollToWidget(invalidItems[0].getLayoutParent(), 500);
       }
+    },
+
+
+    // overridden
+    _stop : function() {
+      if(this.__resultPopup) {
+        this.__resultPopup.hide();
+      }
+      this.base(arguments);
     },
 
 

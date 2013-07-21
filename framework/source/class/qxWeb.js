@@ -16,9 +16,7 @@
      * Martin Wittemann (wittemann)
 
 ************************************************************************ */
-/* ************************************************************************
-#ignore(q)
-************************************************************************ */
+
 /**
  * The Core module's responsibility is to query the DOM for elements and offer
  * these elements as a collection. The Core module itself does not offer any methods to
@@ -35,6 +33,8 @@
  *
  * For further details, take a look at the documentation in the
  * <a href='http://manual.qooxdoo.org/${qxversion}/pages/website.html' target='_blank'>user manual</a>.
+ *
+ * @ignore(q)
  */
 qx.Bootstrap.define("qxWeb", {
   extend : qx.type.BaseArray,
@@ -50,13 +50,15 @@ qx.Bootstrap.define("qxWeb", {
      *
      * @param arg {var} An array of Elements which will
      *   be initialized as {@link q}. All items in the array which are not
-     *   either a window object or a node object will be ignored.
+     *   either a window object, a DOM element node or a DOM document node will
+     *   be ignored.
      * @return {q} A new initialized collection.
      */
     $init : function(arg) {
       var clean = [];
       for (var i = 0; i < arg.length; i++) {
-        var isNode = !!(arg[i] && arg[i].nodeType != null);
+        // check for node or window object
+        var isNode = !!(arg[i] && (arg[i].nodeType === 1 || arg[i].nodeType === 9));
         if (isNode) {
           clean.push(arg[i]);
           continue;
@@ -67,7 +69,6 @@ qx.Bootstrap.define("qxWeb", {
         }
       }
 
-      // check for node or window object
       var col = qx.lang.Array.cast(clean, qxWeb);
       for (var i=0; i < qxWeb.__init.length; i++) {
         qxWeb.__init[i].call(col);
@@ -128,10 +129,18 @@ qx.Bootstrap.define("qxWeb", {
     /**
      * Define a new class using the qooxdoo class system.
      *
-     * @signature function(name, config)
      * @param name {String?} Name of the class. If null, the class will not be
      *   attached to a namespace.
-     * @param config {Map} Class definition structure.
+     * @param config {Map ? null} Class definition structure. The configuration map has the following keys:
+     *     <table>
+     *       <tr><th>Name</th><th>Type</th><th>Description</th></tr>
+     *       <tr><th>extend</th><td>Class</td><td>The super class the current class inherits from.</td></tr>
+     *       <tr><th>construct</th><td>Function</td><td>The constructor of the class.</td></tr>
+     *       <tr><th>statics</th><td>Map</td><td>Map of static values / functions of the class.</td></tr>
+     *       <tr><th>members</th><td>Map</td><td>Map of instance members of the class.</td></tr>
+     *       <tr><th>defer</th><td>Function</td><td>Function that is called at the end of
+     *          processing the class declaration.</td></tr>
+     *     </table>
      * @return {Function} The defined class.
      */
     define : function(name, config) {
@@ -145,17 +154,22 @@ qx.Bootstrap.define("qxWeb", {
 
 
   /**
-   * Accepts a selector string and returns a set of found items. The optional context
+   * Primary usage:
+   * Accepts a selector string and returns a collection of found items. The optional context
    * element can be used to reduce the amount of found elements to children of the
-   * context element.
+   * context element. If the context object is a collection, its first item is used.
+   *
+   * Secondary usage:
+   * Creates a collection from an existing DOM element, document node or window object
+   * (or an Array containing any such objects)
    *
    * <a href="http://sizzlejs.com/" target="_blank">Sizzle</a> is used as selector engine.
    * Check out the <a href="https://github.com/jquery/sizzle/wiki/Sizzle-Home" target="_blank">documentation</a>
    * for more details.
    *
-   * @param selector {String|Element|Array} Valid selector (CSS3 + extensions)
-   *   or DOM element or Array of DOM Elements.
-   * @param context {Element} Only the children of this element are considered.
+   * @param selector {String|Element|Document|Window|Array} Valid selector (CSS3 + extensions),
+   *   window object, DOM element/document or Array of DOM Elements.
+   * @param context {Element|q} Only the children of this element are considered.
    * @return {q} A collection of DOM elements.
    */
   construct : function(selector, context) {
@@ -164,6 +178,9 @@ qx.Bootstrap.define("qxWeb", {
     }
 
     if (qx.Bootstrap.isString(selector)) {
+      if (context instanceof qxWeb) {
+        context = context[0];
+      }
       selector = qx.bom.Selector.query(selector, context);
     } else if (!(qx.Bootstrap.isArray(selector))) {
       selector = [selector];
@@ -198,12 +215,11 @@ qx.Bootstrap.define("qxWeb", {
      */
     slice : function(begin, end) {
       // Old IEs return an empty array if the second argument is undefined
-      if (end) {
+      // check 'end' explicit for "undefined" [BUG #7322]
+      if (end !== undefined) {
         return qxWeb.$init(Array.prototype.slice.call(this, begin, end));
       }
-      else {
-        return qxWeb.$init(Array.prototype.slice.call(this, begin));
-      }
+      return qxWeb.$init(Array.prototype.slice.call(this, begin));
     },
 
 
@@ -249,13 +265,31 @@ qx.Bootstrap.define("qxWeb", {
         } else {
           clone.push(arguments[i]);
         }
-      };
+      }
       return qxWeb.$init(clone);
+    },
+
+
+    /**
+     * Calls a function for each DOM element node in the collection. This is used
+     * for DOM manipulations which can't be applied to document nodes or window
+     * objects.
+     *
+     * @param func {Function} Callback function. Will be called with three arguments:
+     * The element, the element's index within the collection and the collection itself.
+     * @param ctx {Object} The context for the callback function (default: The collection)
+     */
+    _forEachElement : function(func, ctx) {
+      for (var i=0, l=this.length; i<l; i++) {
+        if (this[i] && this[i].nodeType === 1) {
+          func.apply(ctx || this, [this[i], i, this]);
+        }
+      }
     }
   },
 
   /**
-   * @lint ignoreUndefined(q)
+   * @ignore(q)
    */
   defer : function(statics) {
     if (window.q == undefined) {

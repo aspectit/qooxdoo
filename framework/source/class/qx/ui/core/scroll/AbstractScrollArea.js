@@ -78,7 +78,7 @@ qx.Class.define("qx.ui.core.scroll.AbstractScrollArea",
     // Mousewheel listener to scroll vertically
     this.addListener("mousewheel", this._onMouseWheel, this);
 
-    // @deprecated {2.2} Touch scrolling is done by mouse events now.
+    // @deprecated {3.0} Touch scrolling is done by mouse events now.
     // Block can be removed.
     if (qx.core.Environment.get("event.touch")) {
       // touch move listener for touch scrolling
@@ -192,7 +192,7 @@ qx.Class.define("qx.ui.core.scroll.AbstractScrollArea",
 
   members :
   {
-    // @deprecated {2.2} Both keys
+    // @deprecated {3.0} Both keys
     __old : null,
     __impulseTimerId : null,
 
@@ -443,6 +443,28 @@ qx.Class.define("qx.ui.core.scroll.AbstractScrollArea",
     },
 
 
+    /**
+     * In case a scroll animation is currently running in X direction,
+     * it will be stopped. If not, the method does nothing.
+     */
+    stopScrollAnimationX : function() {
+      var scrollbar = this.getChildControl("scrollbar-x", true);
+      if (scrollbar) {
+        scrollbar.stopScrollAnimation();
+      }
+    },
+
+
+    /**
+     * In case a scroll animation is currently running in X direction,
+     * it will be stopped. If not, the method does nothing.
+     */
+    stopScrollAnimationY : function() {
+      var scrollbar = this.getChildControl("scrollbar-y", true);
+      if (scrollbar) {
+        scrollbar.stopScrollAnimation();
+      }
+    },
 
 
 
@@ -486,7 +508,10 @@ qx.Class.define("qx.ui.core.scroll.AbstractScrollArea",
      * @param e {qx.event.type.Data} The scroll event object
      */
     _onScrollPaneX : function(e) {
-      this.scrollToX(e.getData());
+      var scrollbar = this.getChildControl("scrollbar-x");
+      if (scrollbar) {
+        scrollbar.updatePosition(e.getData());
+      }
     },
 
 
@@ -496,13 +521,16 @@ qx.Class.define("qx.ui.core.scroll.AbstractScrollArea",
      * @param e {qx.event.type.Data} The scroll event object
      */
     _onScrollPaneY : function(e) {
-      this.scrollToY(e.getData());
+      var scrollbar = this.getChildControl("scrollbar-y");
+      if (scrollbar) {
+        scrollbar.updatePosition(e.getData());
+      }
     },
 
 
     /**
      * Event handler for the touch move.
-     * @deprecated {2.2} Touch scrolling is done by mouse events now.
+     * @deprecated {3.0} Touch scrolling is done by mouse events now.
      * @param e {qx.event.type.Touch} The touch event
      */
     _onTouchMove : function(e) {},
@@ -511,7 +539,7 @@ qx.Class.define("qx.ui.core.scroll.AbstractScrollArea",
     /**
      * Touch move handler for one direction.
      *
-     * @deprecated {2.2} Touch scrolling is done by mouse events now.
+     * @deprecated {3.0} Touch scrolling is done by mouse events now.
      *
      * @param dir {String} Either 'x' or 'y'
      * @param e {qx.event.type.Touch} The touch event

@@ -56,8 +56,10 @@ class Manifest(object):
         self.type        = self.libprovides['type'] if 'type' in self.libprovides else None
 
 
+    ##
+    # Patches a "library" entry with the information from Manifest
+    #
     def patchLibEntry(self, libentry):
-        '''Patches a "library" entry with the information from Manifest'''
         libinfo       = self._manifest['info']
         libprovides   = self._manifest['provides']
         #uriprefix = libentry['uri']
@@ -86,74 +88,55 @@ class Manifest(object):
 
         return libentry
 
-    def validateAgainst(self, schema):
-        """Validates catalog entry via JSON Schema.
 
-        .. seealso:: http://json-schema.org/
-        .. seealso:: http://tools.ietf.org/html/draft-zyp-json-schema-03
-        .. seealso:: https://github.com/json-schema/json-schema
-        """
-        from jsonschema.jsonschema import Draft3Validator
-
-        errors = []
-        validator = Draft3Validator(schema)
-
-        for e in validator.iter_errors(self._manifest):
-            e.path.reverse()
-            # hack for leading 'u' *within* string (but no unicode string!) => jsonschema v0.8.0 issue
-            e.message = e.message[1:] if e.message.startswith("u") else e.message
-            errors.append({"msg": e.message, "path": e.path})
-
-        return errors
-
+    ##
+    # Catalog entry schema for catalog v1.0.
+    #
+    # The regexes strive to be lax (and understandable => part of err msg) but valuable
+    # at the same time, cause we don't want to adapt them over and over again.
+    #
+    # Should be own file instead of dict, but then there would be no named regexes
+    # and furthermore a regex DRY violation for multi-used regexes.
+    #
+    # Notes:
+    #     * currently a query-string (?...) isn't allowed within an URL => change if needed
+    #     * currently a fragment-identifier (#...) isn't allowed within an URL => change if needed
+    #
     @classmethod
     def schema_v1_0(self):
-        """Catalog entry schema for catalog v1.0.
-
-        The regexes strive to be lax (and understandable => part of err msg) but valuable
-        at the same time, cause we don't want to adapt them over and over again.
-
-        Notes:
-            * currently a query-string (?...) isn't allowed within an URL => change if needed
-            * currently a fragment-identifier (#...) isn't allowed within an URL => change if needed
-
-        TODO:
-            * adapt config.json skeletons to export job
-            * adapt Manifest.json skeletons to adhere schema after create-application.py
-        """
         patterns = {
-            "semver": r"^latest$|^\d+\.\d+(\.\d+)?(-[0-9]+-?)?([-a-zA-Z+][-a-zA-Z0-9\.:-]*)?$",
+            "semver": r"^trunk$|master$|^\d+\.\d+(\.\d+)?(-[0-9]+-?)?([-a-zA-Z+][-a-zA-Z0-9.:-]*)?$",
             "url": r"^https?://([a-z0-9\.-]+)\.([a-z\.]{2,6})[/\w\.-]*\/?$",
             "url_and_placeholder": r"^https?://([a-z0-9\.-]+)\.([a-z\.]{2,6})[/\w.%{}-]*(#[/\w.%{}-]*)?\/?$",
-            "url_archive": r"^(https?|ftp)://.*(tar.(gz|bz2)|zip)$",
-            "name_and_github_uid": r"^.*\([A-Za-z0-9]+\)$",
-            "checksum": "^[a-f0-9]{32,40}$"  # md5 or sha1
+            "url_archive": r"^(https?|ftp)://.*(tar(\.gz|\.bz2)?|tgz|zip)$",
+            "name_and_github_uid": r"^.*\([\w.-]+\)$",
+            "checksum": "^[a-f0-9]{40}$"  # has to be SHA-1
         }
 
         return {
-            "$schema": "http://json-schema.org/draft-03/schema#",
-            "name": "contribCatalog entry",
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "title": "Manifest.json",
             "type": "object",
+            "required": ["info", "provides"],
             "properties": {
                 "info": {
                     "type": "object",
-                    "required": True,
+                    "required": ["name", "description", "homepage", "license",
+                                 "authors", "version", "qooxdoo-versions"],
                     "properties": {
                         "name": {
                             "type": "string",
-                            "required": True
                         },
                         "summary": {
                             "type": "string"
                         },
                         "description": {
                             "type": "string",
-                            "required": True
                         },
                         "category": {
-                            "type": "string",
-                            "required": True,
-                            "enum": ["Themes", "Widgets", "Drawing", "Misc", "Tool", "Backend"]
+                             "type": "array",
+                             "items": { "enum": ["theme", "widget", "drawing",
+                                                 "tool", "backend"] }
                         },
                         "keywords": {
                             "type": "array",
@@ -164,20 +147,18 @@ class Manifest(object):
                         },
                         "homepage": {
                             "type": "string",
-                            "required": True,
                             "pattern": patterns["url"]
                         },
                         "license": {
                             "type": "string",
-                            "required": True,
                         },
                         "authors": {
                             "type": "array",
-                            "required": True,
                             "minItems": 1,
                             "uniqueItems": True,
                             "items": {
                                 "type": "object",
+                                "required": ["name", "email"],
                                 "properties": {
                                     "name": {
                                         "type": "string",
@@ -185,29 +166,24 @@ class Manifest(object):
                                     },
                                     "email": {
                                         "type": "string",
-                                        "required": True
                                     }
                                 }
                             }
                         },
                         "download": {
                             "type": "string",
-                            "required": True,
                             "pattern": patterns["url_archive"]
                         },
                         "checksum": {
                             "type": "string",
-                            "required": True,
                             "pattern": patterns["checksum"]
                         },
                         "version": {
                             "type": "string",
-                            "required": True,
                             "pattern": patterns["semver"]
                         },
                         "qooxdoo-versions": {
                             "type": "array",
-                            "required": True,
                             "minItems": 1,
                             "uniqueItems": True,
                             "items": {
@@ -224,32 +200,27 @@ class Manifest(object):
                 },
                 "provides": {
                     "type": "object",
-                    "required": True,
+                    "required": ["namespace", "encoding", "class", "resource",
+                                 "translation", "type"],
                     "properties": {
                         "namespace": {
                             "type": "string",
-                            "required": True,
                         },
                         "encoding": {
                             "type": "string",
-                            "required": True,
                         },
                         "class": {
                             "type": "string",
-                            "required": True,
                         },
                         "resource": {
                             "type": "string",
-                            "required": True,
                         },
                         "translation": {
                             "type": "string",
-                            "required": True,
                         },
                         "type": {
                             "type": "string",
-                            "required": True,
-                            "enum": ["library", "application"]
+                            "enum": ["library", "application", "add-in"]
                         }
                     }
                 }

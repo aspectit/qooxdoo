@@ -17,22 +17,6 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-#ignore(XDomainRequest)
-#require(qx.bom.request.Xhr#open)
-#require(qx.bom.request.Xhr#send)
-#require(qx.bom.request.Xhr#on)
-#require(qx.bom.request.Xhr#onreadystatechange)
-#require(qx.bom.request.Xhr#onload)
-#require(qx.bom.request.Xhr#onloadend)
-#require(qx.bom.request.Xhr#onerror)
-#require(qx.bom.request.Xhr#onabort)
-#require(qx.bom.request.Xhr#ontimeout)
-#require(qx.bom.request.Xhr#setRequestHeader)
-#require(qx.bom.request.Xhr#getAllResponseHeaders)
-#require(qx.bom.request.Xhr#getRequest)
-************************************************************************ */
-
 /**
  * A wrapper of the XMLHttpRequest host object (or equivalent). The interface is
  * similar to <a href="http://www.w3.org/TR/XMLHttpRequest/">XmlHttpRequest</a>.
@@ -54,12 +38,41 @@
  *  req.send();
  * </pre>
  * </div>
+ *
+ * @ignore(XDomainRequest)
+ * @ignore(qx.event.GlobalError.*)
+ *
+ * @require(qx.bom.request.Xhr#open)
+ * @require(qx.bom.request.Xhr#send)
+ * @require(qx.bom.request.Xhr#on)
+ * @require(qx.bom.request.Xhr#onreadystatechange)
+ * @require(qx.bom.request.Xhr#onload)
+ * @require(qx.bom.request.Xhr#onloadend)
+ * @require(qx.bom.request.Xhr#onerror)
+ * @require(qx.bom.request.Xhr#onabort)
+ * @require(qx.bom.request.Xhr#ontimeout)
+ * @require(qx.bom.request.Xhr#setRequestHeader)
+ * @require(qx.bom.request.Xhr#getAllResponseHeaders)
+ * @require(qx.bom.request.Xhr#getRequest)
+ * @require(qx.bom.request.Xhr#dispose)
+ * @require(qx.bom.request.Xhr#isDisposed)
  */
 qx.Bootstrap.define("qx.bom.request.Xhr",
 {
 
+  extend: Object,
+
   construct: function() {
-    this.__onNativeReadyStateChangeBound = qx.Bootstrap.bind(this.__onNativeReadyStateChange, this);
+    var boundFunc = qx.Bootstrap.bind(this.__onNativeReadyStateChange, this);
+
+    // GlobalError shouldn't be included in qx.Website builds so use it
+    // if it's available but otherwise ignore it (see ignore stated above).
+    if (qx.event && qx.event.GlobalError && qx.event.GlobalError.observeMethod) {
+      this.__onNativeReadyStateChangeBound = qx.event.GlobalError.observeMethod(boundFunc);
+    } else {
+      this.__onNativeReadyStateChangeBound = boundFunc;
+    }
+
     this.__onNativeAbortBound = qx.Bootstrap.bind(this.__onNativeAbort, this);
     this.__onTimeoutBound = qx.Bootstrap.bind(this.__onTimeout, this);
 
@@ -72,7 +85,6 @@ qx.Bootstrap.define("qx.bom.request.Xhr",
       this.__onUnloadBound = qx.Bootstrap.bind(this.__onUnload, this);
       window.attachEvent("onunload", this.__onUnloadBound);
     }
-
   },
 
   statics :
@@ -115,7 +127,7 @@ qx.Bootstrap.define("qx.bom.request.Xhr",
     */
 
     /**
-     * {Number} Ready state.
+     * @type {Number} Ready state.
      *
      * States can be:
      * UNSENT:           0,
@@ -127,27 +139,27 @@ qx.Bootstrap.define("qx.bom.request.Xhr",
     readyState: 0,
 
     /**
-     * {String} The response of the request as text.
+     * @type {String} The response of the request as text.
      */
     responseText: "",
 
     /**
-     * {Object} The response of the request as a Document object.
+     * @type {Object} The response of the request as a Document object.
      */
     responseXML: null,
 
     /**
-     * {Number} The HTTP status code.
+     * @type {Number} The HTTP status code.
      */
     status: 0,
 
     /**
-     * {String} The HTTP status text.
+     * @type {String} The HTTP status text.
      */
     statusText: "",
 
     /**
-     * {Number} Timeout limit in milliseconds.
+     * @type {Number} Timeout limit in milliseconds.
      *
      * 0 (default) means no timeout. Not supported for synchronous requests.
      */
@@ -156,7 +168,7 @@ qx.Bootstrap.define("qx.bom.request.Xhr",
     /**
      * Initializes (prepares) request.
      *
-     * @lint ignoreUndefined(XDomainRequest)
+     * @ignore(XDomainRequest)
      *
      * @param method {String?"GET"}
      *  The HTTP method to use.
@@ -414,9 +426,16 @@ qx.Bootstrap.define("qx.bom.request.Xhr",
     },
 
     /**
-     * Abort request.
+     * Abort request - i.e. cancels any network activity.
      *
-     * Cancels any network activity.
+     * Note:
+     *  On Windows 7 every browser strangely skips the loading phase
+     *  when this method is called (because readyState never gets 3).
+     *
+     *  So keep this in mind if you rely on the phases which are
+     *  passed through. They will be "opened", "sent", "abort"
+     *  instead of normally "opened", "sent", "loading", "abort".
+     *
      * @return {qx.bom.request.Xhr} Self for chaining.
      */
     abort: function() {
@@ -437,7 +456,9 @@ qx.Bootstrap.define("qx.bom.request.Xhr",
      * @param event {String} The name of the event.
      */
     _emit: function(event) {
-      this["on" + event]();
+      if (this["on" + event]) {
+        this["on" + event]();
+      }
       this._emitter.emit(event, this);
     },
 
@@ -587,6 +608,16 @@ qx.Bootstrap.define("qx.bom.request.Xhr",
       return true;
     },
 
+
+    /**
+     * Check if the request has already beed disposed.
+     * @return {Boolean} <code>true</code>, if the request has been disposed.
+     */
+    isDisposed : function() {
+      return !!this.__disposed;
+    },
+
+
     /*
     ---------------------------------------------------------------------------
       PROTECTED
@@ -639,72 +670,72 @@ qx.Bootstrap.define("qx.bom.request.Xhr",
     */
 
     /**
-     * {Object} XMLHttpRequest or equivalent.
+     * @type {Object} XMLHttpRequest or equivalent.
      */
     __nativeXhr: null,
 
     /**
-     * {Boolean} Whether request is async.
+     * @type {Boolean} Whether request is async.
      */
     __async: null,
 
     /**
-     * {Function} Bound __onNativeReadyStateChange handler.
+     * @type {Function} Bound __onNativeReadyStateChange handler.
      */
     __onNativeReadyStateChangeBound: null,
 
     /**
-     * {Function} Bound __onNativeAbort handler.
+     * @type {Function} Bound __onNativeAbort handler.
      */
     __onNativeAbortBound: null,
 
     /**
-     * {Function} Bound __onUnload handler.
+     * @type {Function} Bound __onUnload handler.
      */
     __onUnloadBound: null,
 
     /**
-     * {Function} Bound __onTimeout handler.
+     * @type {Function} Bound __onTimeout handler.
      */
     __onTimeoutBound: null,
 
     /**
-     * {Boolean} Send flag
+     * @type {Boolean} Send flag
      */
     __send: null,
 
     /**
-     * {String} Requested URL
+     * @type {String} Requested URL
      */
     __url: null,
 
     /**
-     * {Boolean} Abort flag
+     * @type {Boolean} Abort flag
      */
     __abort: null,
 
     /**
-     * {Boolean} Timeout flag
+     * @type {Boolean} Timeout flag
      */
     __timeout: null,
 
     /**
-     * {Boolean} Whether object has been disposed.
+     * @type {Boolean} Whether object has been disposed.
      */
     __disposed: null,
 
     /**
-     * {Number} ID of timeout timer.
+     * @type {Number} ID of timeout timer.
      */
     __timerId: null,
 
     /**
-     * {Error} Error thrown on open, if any.
+     * @type {Error} Error thrown on open, if any.
      */
     __openError: null,
 
     /**
-     * {Boolean} Conditional get flag
+     * @type {Boolean} Conditional get flag
      */
      __conditional: null,
 

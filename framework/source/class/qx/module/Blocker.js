@@ -17,14 +17,6 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-#require(qx.module.Environment)
-#require(qx.module.Manipulating)
-#require(qx.module.Traversing)
-#require(qx.module.Css)
-#require(qx.module.Attribute)
-************************************************************************ */
-
 /**
  * Provides a way to block elements so they will no longer receive (native)
  * events by overlaying them with a div.
@@ -36,6 +28,12 @@
  * <pre class="javascript">
  * q(document).block();
  * </pre>
+ *
+ * @require(qx.module.Environment)
+ * @require(qx.module.Manipulating)
+ * @require(qx.module.Traversing)
+ * @require(qx.module.Css)
+ * @require(qx.module.Attribute)
  */
 qxWeb.define("qx.module.Blocker", {
   statics :
@@ -53,6 +51,10 @@ qxWeb.define("qx.module.Blocker", {
     {
       var win = qxWeb.getWindow(item);
       var isDocument = qxWeb.isDocument(item);
+
+      if (!isDocument && !qxWeb.isElement(item)) {
+        return;
+      }
 
       if (!item.__blocker) {
         item.__blocker = {
@@ -191,7 +193,7 @@ qxWeb.define("qx.module.Blocker", {
      *
      * @attach {qxWeb}
      * @param color {String ? transparent} The color for the blocker element (any CSS color value)
-     * @param opacity {Float ? 0} The CSS opacity value for the blocker
+     * @param opacity {Number ? 0} The CSS opacity value for the blocker (floating point number from 0 to 1)
      * @param zIndex {Number ? 10000} The zIndex value for the blocker
      * @return {qxWeb} The collection for chaining
      */

@@ -8,14 +8,10 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#asset(tweets/*)
-
-************************************************************************ */
-
 /**
  * This is the main application class of your custom application "tweets"
+ *
+ * @asset(tweets/*)
  */
 qx.Class.define("tweets.Application",
 {
@@ -93,9 +89,6 @@ qx.Class.define("tweets.Application",
           controller.bindProperty("user.profile_image_url", "icon", null, item, id);
           controller.bindProperty("created_at", "time", {
             converter: function(data) {
-              if (qx.core.Environment.get("browser.name") == "ie") {
-                data = Date.parse(data.replace(/( \+)/, " UTC$1"));
-              }
               return new Date(data);
             }
           }, item, id);

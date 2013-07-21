@@ -18,22 +18,6 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#require(qx.Interface)
-#require(qx.Mixin)
-
-#require(qx.lang.normalize.Array)
-#require(qx.lang.normalize.Date)
-#require(qx.lang.normalize.Error)
-#require(qx.lang.normalize.Function)
-#require(qx.lang.normalize.String)
-#require(qx.lang.normalize.Object)
-
-#use(qx.lang.Generics) // deprecated since 2.1
-
-************************************************************************ */
-
 /**
  * This class is one of the most important parts of qooxdoo's
  * object-oriented features.
@@ -76,6 +60,15 @@
  *
  * By using <code>qx.Class</code> within an app, the native JS data types are
  * conveniently polyfilled according to {@link qx.lang.normalize}.
+ *
+ * @require(qx.Interface)
+ * @require(qx.Mixin)
+ * @require(qx.lang.normalize.Array)
+ * @require(qx.lang.normalize.Date)
+ * @require(qx.lang.normalize.Error)
+ * @require(qx.lang.normalize.Function)
+ * @require(qx.lang.normalize.String)
+ * @require(qx.lang.normalize.Object)
  */
 qx.Bootstrap.define("qx.Class",
 {
@@ -661,19 +654,13 @@ qx.Bootstrap.define("qx.Class",
         return true;
       }
 
-      try
-      {
-        qx.Interface.assertObject(obj, iface);
+      if (qx.Interface.objectImplements(obj, iface)) {
         return true;
       }
-      catch(ex) {}
 
-      try
-      {
-        qx.Interface.assert(clazz, iface, false);
+      if (qx.Interface.classImplements(clazz, iface)) {
         return true;
       }
-      catch(ex) {}
 
       return false;
     },
@@ -723,7 +710,7 @@ qx.Bootstrap.define("qx.Class",
     $$registry : qx.Bootstrap.$$registry,
 
 
-    /** {Map} allowed keys in non-static class definition */
+    /** @type {Map} allowed keys in non-static class definition */
     __allowedKeys : qx.core.Environment.select("qx.debug",
     {
       "true":
@@ -746,7 +733,7 @@ qx.Bootstrap.define("qx.Class",
     }),
 
 
-    /** {Map} allowed keys in static class definition */
+    /** @type {Map} allowed keys in static class definition */
     __staticAllowedKeys : qx.core.Environment.select("qx.debug",
     {
       "true":
@@ -894,7 +881,7 @@ qx.Bootstrap.define("qx.Class",
         }
       },
 
-      "default" : function() {}
+      "default" : function(name, config) {}
     }),
 
 
@@ -926,7 +913,7 @@ qx.Bootstrap.define("qx.Class",
         }
       },
 
-      "default" : function() {}
+      "default" : function(clazz) {}
     }),
 
 
@@ -1303,6 +1290,10 @@ qx.Bootstrap.define("qx.Class",
 
           if (patch !== true && proto.hasOwnProperty(key)) {
             throw new Error('Overwriting member "' + key + '" of Class "' + clazz.classname + '" is not allowed!');
+          }
+
+          if (proto[key] != undefined && proto[key].$$propertyMethod) {
+            throw new Error('Overwriting generated property method "' + key + '" of Class "' + clazz.classname + '" is not allowed!');
           }
         }
 

@@ -78,9 +78,12 @@ def isQxDefine(node):
         if variableName in lang.QX_CLASS_FACTORIES:
             if node.hasParentContext("call/operand"):
                 className = selectNode(node, "../../arguments/1")
-                if className and className.type == "constant":
-                    className = className.get("value", None)
-                    className = None if className == False else className
+                if className:
+                    if className.type == "constant":
+                        className = className.get("value", None)
+                        className = None if className == False else className
+                    else:
+                        className = None
                 return True, className, variableName
 
     return False, None, ""
@@ -230,8 +233,14 @@ def selectNode(node, path, ignoreComments=False):
     return _selectNode(node, pathParts, ignoreComments)
 
 
+##
+# External tree visitor.
+# If <nodetypes> is non-empty, use its elements for filtering tree nodes.
 def nodeIterator(node, nodetypes):
-    if node.type in nodetypes:
+    if nodetypes:
+        if node.type in nodetypes:
+            yield node
+    else:
         yield node
 
     for child in node.children[:]: # using a copy in case nodes are removed by the caller
@@ -313,16 +322,17 @@ def mapNodeToMap(mapNode):
     return keys
 
 
-def inlineIfStatement(ifNode, conditionValue):
+def inlineIfStatement(ifNode, conditionValue, inPlace=True):
     """
     Inline an if statement assuming that the condition of the if
     statement evaluates to "conditionValue" (True/False")
     """
 
     if ifNode.type != "loop" or ifNode.get("loopType") != "IF":
-        raise tree.NodeAccessException("Expected the LOOP node of an if statement!", mapNode)
+        raise tree.NodeAccessException("Expected the LOOP node of an if statement!", ifNode)
 
-    replacement = []
+    replacement = None
+    replacement_is_empty = False
     newDefinitions = []
     removedDefinitions = []
 
@@ -341,7 +351,16 @@ def inlineIfStatement(ifNode, conditionValue):
             replacement = ifNode.children[1].children[0]
         else:
             removedDefinitions = getDefinitions(ifNode.children[1])
+            # don't leave single-statement parent loops empty
+            emptyBlock = treegenerator.symbol("block")()
+            emptyBlock.set("line", ifNode.get("line"))
+            stmts = treegenerator.symbol("statements")()
+            stmts.set("line", ifNode.get("line"))
+            emptyBlock.addChild(stmts)
+            replacement = emptyBlock
+            replacement_is_empty = True
 
+    # Rescue var decls
     newDefinitions = [x.getDefinee().get("value") for x in newDefinitions]
     definitions = []
     for definition in removedDefinitions:
@@ -361,30 +380,26 @@ def inlineIfStatement(ifNode, conditionValue):
                 definition.children[0] = idf
             defList.addChild(definition)
 
-        # move defList to higher node
-        node = ifNode
-        while node.type not in ("statements",):
-            if node.parent:
-                node = node.parent
-            else:
-                break
-        node.addChild(defList,0)
+        # attach defList to replacement
+        if replacement.type != 'block': # treat single-statement branches
+            block = treegenerator.symbol("block")()
+            block.set("line", ifNode.get("line"))
+            stmts = treegenerator.symbol("statements")()
+            stmts.set("line", ifNode.get("line"))
+            block.addChild(stmts)
+            stmts.addChild(replacement)
+            replacement = block
+        replacement.getChild("statements").addChild(defList,0)
+        replacement_is_empty = False
 
     # move replacement
-    if replacement:
-        replaceChildWithNodes(ifNode.parent, ifNode, [replacement]) # helper expects list
-    else:
-        emptyBlock = treegenerator.symbol("block")()
-        emptyBlock.set("line", ifNode.get("line"))
-        # TODO: experimental bug#4734: is this enough?
-        if (ifNode.parent.type in ["block", "file"]):
+    if inPlace:
+        if (replacement_is_empty and ifNode.parent.type in ["statements"]):
             ifNode.parent.removeChild(ifNode)
         else:
-            # don't leave single-statement parent loops empty
-            ifNode.parent.replaceChild(ifNode, emptyBlock)
-        replacement = emptyBlock
+            ifNode.parent.replaceChild(ifNode, replacement)
 
-    return replacement
+    return replacement, replacement_is_empty
 
 
 def replaceChildWithNodes(node, oldChild, newChildren):
@@ -684,13 +699,49 @@ def findChainRoot(node):
 ##
 # Find the root <dotaccessor> of a dotted variable expression
 # ("a.b.c"), starting from any variable expression within this tree.
+#
 def findVarRoot(node):
     # node can be var or constant ('{}.toString')
     current = node
     while current.parent and current.parent.isVar():
         current = current.parent
     return current
-        
+
+##
+# Find the root node a comment refers to.
+#
+# Example: Comments are always attached to the lexically next token. This might
+# be the left-hand identifier of an assignment. But the comment actually scopes
+# the entire statement, so the <assignment> node would be the actual commented
+# root. List:
+#
+# - lhs of assignment -> <assignment>
+# - map key -> <keyvalue>
+# - 'function' keyword -> <function>
+# - 'var' keyword -> <var>
+#
+def findCommentedRoot(node):
+    if node.isVar(): # if it's a dotaccessor make sure we look at the highest dot
+        node = findVarRoot(node)
+    # var a=1, function(){}, ...
+    if node.hasParentContext("statements"):
+        return node
+    # a = 1;
+    elif node.hasParentContext("statements/assignment"):
+        return node.parent
+    # a : 1,
+    elif node.type == 'keyvalue':
+        return node
+    # xxx(), (xxx)()
+    elif node.hasParentContext("statements/call/operand"):
+        return node.parent.parent
+    # (xxx).call()
+    elif node.hasParentContext("statements/call/operand/dotaccessor"):
+        return node.parent.parent.parent
+    else:
+        return node
+
+
 ##
 # Find the leftmost child downward the tree of the passed node
 # 
@@ -759,6 +810,9 @@ def findFirstChainChild(node):
     leftmostIdentifier = findLeftmostChild(chainRoot)
     return leftmostIdentifier
 
+##
+# <node> must be the top-level .isVar.
+#
 def isNEWoperand(node):
     operation = None
     if node.hasParentContext("operation/call/operand"):
@@ -767,6 +821,11 @@ def isNEWoperand(node):
         operation = node.parent
     return operation and operation.type=="operation" and operation.get("operator","")=="NEW"
 
+def isCallOperand(node):
+    return (
+        node.hasParentContext("call/operand") or 
+        isNEWoperand(node)
+    )
 
 ##
 # Check if node is the (function) value of the 'defer' class member
@@ -794,6 +853,36 @@ def isDeferFunction(node):
 def isKeyValue(node):
     return node.hasParentContext("map/keyvalue/value")
 
+##
+# Check, and if not present create, a closure wrapper for the syntax tree.
+#
+# The resulting tree will look like 
+#    (function(){ ...[passed-in trees]...})()
+# (with a leading <file> node).
+#
+# <nodes> - [node1, node2, ...]
+#           nodeX is assumed to start with a <file> node
+#
+wrapper_statements_path = "operand/group/function/body/block/statements"
+
+def is_closure_wrapped(node):
+    return (node.type == "call"
+        and selectNode(node, wrapper_statements_path))  # if this succeeds, there is a top-level wrapper
+
+def ensureClosureWrapper(nodes):
+    if not nodes:
+        return None, None
+    # check if we have a closure wrapper already
+    if len(nodes) == 1:
+        closure_statements = is_closure_wrapped(nodes[0])
+        if closure_statements:
+            return nodes[0], closure_statements
+    # create a closure wrapper and attach argument nodes
+    new_tree = treegenerator.parse("(function(){})();").getChild("call")
+    closure_statements = selectNode(new_tree, wrapper_statements_path)
+    for node in nodes[:]:
+        closure_statements.addChild(node)
+    return new_tree, closure_statements
 
 ##
 # NodeVisitor class

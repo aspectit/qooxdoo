@@ -18,15 +18,6 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#require(qx.event.handler.Window)
-#ignore(qx.ui.popup.Manager)
-#ignore(qx.ui.menu.Manager)
-#ignore(qx.ui)
-
-************************************************************************ */
-
 /**
  * This is the root widget for qooxdoo applications with an
  * "application" like behaviour. The widget will span the whole viewport
@@ -40,6 +31,13 @@
  *
  * This class uses a {@link qx.ui.layout.Canvas} as fixed layout. The layout
  * cannot be changed.
+ *
+ * @require(qx.event.handler.Window)
+ * @ignore(qx.ui.popup)
+ * @ignore(qx.ui.popup.Manager.*)
+ * @ignore(qx.ui.menu)
+ * @ignore(qx.ui.menu.Manager.*)
+ * @ignore(qx.ui)
  */
 qx.Class.define("qx.ui.root.Application",
 {
@@ -110,7 +108,7 @@ qx.Class.define("qx.ui.root.Application",
      * @lint ignoreDeprecated(alert)
      * @return {qx.html.Element} The container HTML element
      */
-    _createContainerElement : function()
+    _createContentElement : function()
     {
       var doc = this.__doc;
 
@@ -137,7 +135,11 @@ qx.Class.define("qx.ui.root.Application",
       doc.body.appendChild(elem);
 
       var root = new qx.html.Root(elem);
-      root.setStyle("position", "absolute");
+      root.setStyles({
+        "position" : "absolute",
+        "overflowX" : "hidden",
+        "overflowY" : "hidden"
+      });
 
       // Store "weak" reference to the widget in the DOM element.
       root.setAttribute("$$widget", this.toHashCode());
@@ -190,21 +192,6 @@ qx.Class.define("qx.ui.root.Application",
         throw new Error("The root widget does not support 'left', or 'top' paddings!");
       }
       this.base(arguments, value, old, name);
-    },
-
-
-    // overridden
-    _applyDecorator : function(value, old)
-    {
-      this.base(arguments, value, old);
-      if (!value) {
-        return;
-      }
-
-      var insets = this.getDecoratorElement().getInsets();
-      if (insets.left || insets.top) {
-        throw new Error("The root widget does not support decorators with 'left', or 'top' insets!");
-      }
     }
   },
 

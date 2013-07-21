@@ -17,25 +17,22 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#asset(testrunner/view/html/*)
-#asset(indigo/css/*)
-#require(q)
-#require(qx.module.Polyfill)
-#require(qx.module.Traversing)
-#require(qx.module.Manipulating)
-#require(qx.module.Attribute)
-#require(qx.module.Event)
-#require(qx.module.event.Native)
-#require(qx.module.Css)
-#require(qx.module.Cookie)
-#require(qx.module.Template)
-
-************************************************************************ */
-
 /**
  * Plain HTML TestRunner view.
+ *
+ *
+ * @asset(testrunner/view/html/*)
+ * @asset(indigo/css/*)
+ * @require(q)
+ * @require(qx.module.Polyfill)
+ * @require(qx.module.Traversing)
+ * @require(qx.module.Manipulating)
+ * @require(qx.module.Attribute)
+ * @require(qx.module.Event)
+ * @require(qx.module.event.Native)
+ * @require(qx.module.Css)
+ * @require(qx.module.Cookie)
+ * @require(qx.module.Template)
  *
  */
 qx.Class.define("testrunner.view.Html", {
@@ -807,7 +804,11 @@ qx.Class.define("testrunner.view.Html", {
       if (value === null || value === old) {
         return;
       }
-      q(".t_success").setStyle("display", value ? "block" : "none");
+      if (value) {
+        q(".t_success").removeClass("hidden");
+      } else {
+        q(".t_success").addClass("hidden");
+      }
     },
 
     /**

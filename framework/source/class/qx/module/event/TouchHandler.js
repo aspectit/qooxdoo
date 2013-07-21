@@ -17,13 +17,11 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-#require(qx.module.Event)
-************************************************************************ */
-
 /**
  * Creates a touch event handler that fires high-level events such as "swipe"
  * based on low-level event sequences on the given element
+ *
+ * @require(qx.module.Event)
  */
 qx.Bootstrap.define("qx.module.event.TouchHandler", {
 
@@ -32,7 +30,7 @@ qx.Bootstrap.define("qx.module.event.TouchHandler", {
     /**
      * List of events that require a touch handler
      */
-    TYPES : ["tap", "swipe", "touchstart", "touchend", "touchmove", "touchcancel"],
+    TYPES : ["tap", "longtap", "swipe", "touchstart", "touchend", "touchmove", "touchcancel"],
 
     /**
      * Creates a touch handler for the given element when a touch event listener

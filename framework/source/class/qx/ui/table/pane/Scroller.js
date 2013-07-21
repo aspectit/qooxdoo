@@ -139,10 +139,10 @@ qx.Class.define("qx.ui.table.pane.Scroller",
   statics :
   {
 
-    /** {int} The minimum width a column could get in pixels. */
+    /** @type {int} The minimum width a column could get in pixels. */
     MIN_COLUMN_WIDTH         : 10,
 
-    /** {int} The radius of the resize region in pixels. */
+    /** @type {int} The radius of the resize region in pixels. */
     RESIZE_REGION_RADIUS     : 5,
 
 
@@ -866,12 +866,13 @@ qx.Class.define("qx.ui.table.pane.Scroller",
       } else if (delta < 0 && delta > -1) {
         delta = -1;
       }
-      if (qx.core.Environment.get("event.touch") && qx.core.Environment.get("qx.emulatemouse")) {
+      if (qx.event.handler.MouseEmulation.ON) {
         this.__verScrollBar.scrollBy(delta);
       } else {
         this.__verScrollBar.scrollBySteps(delta);
       }
 
+      var scrolled = delta != 0 && !this.__isAtEdge(this.__verScrollBar, delta);
 
       // horizontal scrolling
       delta = e.getWheelDelta("x");
@@ -881,7 +882,7 @@ qx.Class.define("qx.ui.table.pane.Scroller",
       } else if (delta < 0 && delta > -1) {
         delta = -1;
       }
-      if (qx.core.Environment.get("event.touch") && qx.core.Environment.get("qx.emulatemouse")) {
+      if (qx.event.handler.MouseEmulation.ON) {
         this.__horScrollBar.scrollBy(delta);
       } else {
         this.__horScrollBar.scrollBySteps(delta);
@@ -892,14 +893,24 @@ qx.Class.define("qx.ui.table.pane.Scroller",
         this._focusCellAtPagePos(this.__lastMousePageX, this.__lastMousePageY);
       }
 
-      var position = this.__verScrollBar.getPosition();
-      var max = this.__verScrollBar.getMaximum();
-      // pass the event to the parent if the scrollbar is at an edge
-      if (delta < 0 && position <= 0 || delta > 0 && position >= max) {
-        return;
-      }
+      scrolled = scrolled || (delta != 0 && !this.__isAtEdge(this.__horScrollBar, delta));
 
-      e.stop();
+      // pass the event to the parent if the scrollbar is at an edge
+      if (scrolled) {
+        e.stop();
+      }
+    },
+
+
+    /**
+     * Checks if the table has been scrolled.
+     * @param scrollBar {qx.ui.core.scroll.IScrollBar} The scrollbar to check
+     * @param delta {Number} The scroll delta.
+     * @return {Boolean} <code>true</code>, if the scrolling is a the edge
+     */
+    __isAtEdge : function(scrollBar, delta) {
+      var position = scrollBar.getPosition();
+      return (delta < 0 && position <= 0) || (delta > 0 && position >= scrollBar.getMaximum());
     },
 
 
@@ -1637,7 +1648,7 @@ qx.Class.define("qx.ui.table.pane.Scroller",
     {
       var paneModel = this.getTablePaneModel();
       var columnModel = this.getTable().getTableColumnModel();
-      var paneLeft = this.__tablePane.getContainerLocation().left;
+      var paneLeft = this.__tablePane.getContentLocation().left;
       var colCount = paneModel.getColumnCount();
 
       var targetXPos = 0;
@@ -1659,7 +1670,7 @@ qx.Class.define("qx.ui.table.pane.Scroller",
       }
 
       // Ensure targetX is visible
-      var scrollerLeft = this.__paneClipper.getContainerLocation().left;
+      var scrollerLeft = this.__paneClipper.getContentLocation().left;
       var scrollerWidth = this.__paneClipper.getBounds().width;
       var scrollX = scrollerLeft - paneLeft;
 
@@ -2027,7 +2038,7 @@ qx.Class.define("qx.ui.table.pane.Scroller",
       var columnModel = this.getTable().getTableColumnModel();
       var paneModel = this.getTablePaneModel();
       var colCount = paneModel.getColumnCount();
-      var currX = this.__header.getContainerLocation().left;
+      var currX = this.__header.getContentLocation().left;
       var regionRadius = qx.ui.table.pane.Scroller.RESIZE_REGION_RADIUS;
 
       for (var x=0; x<colCount; x++)
@@ -2084,7 +2095,7 @@ qx.Class.define("qx.ui.table.pane.Scroller",
         return (row < rowCount) ? row : null;
       }
 
-      var headerPos = this.__header.getContainerLocation();
+      var headerPos = this.__header.getContentLocation();
 
       if (
         pageY >= headerPos.top &&

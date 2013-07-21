@@ -65,6 +65,7 @@ qx.Class.define("qx.ui.core.scroll.NativeScrollBar",
     this.addListener("appear", this._onAppear, this);
 
     this.getContentElement().add(this._getScrollPaneElement());
+    this.getContentElement().setStyle("box-sizing", "content-box");
 
     // Configure orientation
     if (orientation != null) {
@@ -145,6 +146,9 @@ qx.Class.define("qx.ui.core.scroll.NativeScrollBar",
     __isHorizontal : null,
     __scrollPaneElement : null,
     __requestId : null,
+
+    __scrollAnimationframe : null,
+
 
     /**
      * Get the scroll pane html element.
@@ -275,12 +279,12 @@ qx.Class.define("qx.ui.core.scroll.NativeScrollBar",
       // Scrollbars don't work properly in IE if the element with overflow has
       // excatly the size of the scrollbar. Thus we move the element one pixel
       // out of the view and increase the size by one.
-      if ((qx.core.Environment.get("engine.name") == "mshtml"))
+      if (qx.core.Environment.get("engine.name") == "mshtml")
       {
         var bounds = this.getBounds();
         this.getContentElement().setStyles({
-          left: isHorizontal ? "0" : "-1px",
-          top: isHorizontal ? "-1px" : "0",
+          left: (isHorizontal ? bounds.left : (bounds.left -1)) + "px",
+          top: (isHorizontal ? (bounds.top - 1) : bounds.top) + "px",
           width: (isHorizontal ? bounds.width : bounds.width + 1) + "px",
           height: (isHorizontal ? bounds.height + 1 : bounds.height) + "px"
         });
@@ -293,38 +297,44 @@ qx.Class.define("qx.ui.core.scroll.NativeScrollBar",
         height: (isHorizontal ? 1 : innerSize) + "px"
       });
 
-      this.scrollTo(this.getPosition());
+      this.updatePosition(this.getPosition());
     },
 
 
     // interface implementation
     scrollTo : function(position, duration) {
-      if (duration) {
-        // finish old animation before starting a new one
-        if (this.__requestId) {
-          return;
-        }
+      // if a user sets a new position, stop any animation
+      this.stopScrollAnimation();
 
-        var start = +(new Date());
+      if (duration) {
         var from = this.getPosition();
 
-        var clb = function(time) {
-          // final call
-          if (time >= start + duration) {
-            this.setPosition(Math.max(0, Math.min(this.getMaximum(), position)));
-            this.__requestId = null;
-            this.fireEvent("scrollAnimationEnd");
-          } else {
-            var timePassed = time - start;
-            var newPos = parseInt(timePassed/duration * (position - from) + from);
-            this.setPosition(Math.max(0, Math.min(this.getMaximum(), newPos)));
-            qx.bom.AnimationFrame.request(clb, this);
-          }
-        };
-        qx.bom.AnimationFrame.request(clb, this);
+        this.__scrollAnimationframe = new qx.bom.AnimationFrame();
+
+        this.__scrollAnimationframe.on("frame", function(timePassed) {
+          var newPos = parseInt(timePassed/duration * (position - from) + from);
+          this.updatePosition(newPos);
+        }, this);
+
+        this.__scrollAnimationframe.on("end", function() {
+          this.setPosition(Math.max(0, Math.min(this.getMaximum(), position)));
+          this.__scrollAnimationframe = null;
+          this.fireEvent("scrollAnimationEnd");
+        }, this);
+
+        this.__scrollAnimationframe.startSequence(duration);
       } else {
-        this.setPosition(Math.max(0, Math.min(this.getMaximum(), position)));
+        this.updatePosition(position);
       }
+    },
+
+
+    /**
+     * Helper to set the new position taking care of min and max values.
+     * @param position {Number} The new position.
+     */
+    updatePosition : function(position) {
+      this.setPosition(Math.max(0, Math.min(this.getMaximum(), position)));
     },
 
 
@@ -339,6 +349,17 @@ qx.Class.define("qx.ui.core.scroll.NativeScrollBar",
     {
       var size = this.getSingleStep();
       this.scrollBy(steps * size, duration);
+    },
+
+
+    /**
+     * If a scroll animation is running, it will be stopped.
+     */
+    stopScrollAnimation : function() {
+      if (this.__scrollAnimationframe) {
+        this.__scrollAnimationframe.cancelSequence();
+        this.__scrollAnimationframe = null;
+      }
     },
 
 

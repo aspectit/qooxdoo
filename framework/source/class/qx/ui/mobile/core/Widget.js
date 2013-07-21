@@ -17,14 +17,10 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#use(qx.ui.mobile.core.EventHandler)
-
-************************************************************************ */
-
 /**
  * This is the base class for all mobile widgets.
+ *
+ * @use(qx.ui.mobile.core.EventHandler)
  */
 qx.Class.define("qx.ui.mobile.core.Widget",
 {
@@ -111,7 +107,10 @@ qx.Class.define("qx.ui.mobile.core.Widget",
     touchcancel : "qx.event.type.Touch",
 
     /** Fired when a finger taps on the screen. */
-    tap : "qx.event.type.Touch",
+    tap : "qx.event.type.Tap",
+
+    /** Fired when a finger holds on the screen. */
+    longtap : "qx.event.type.Tap",
 
     /** Fired when a finger swipes over the screen. */
     swipe : "qx.event.type.Touch",
@@ -390,16 +389,16 @@ qx.Class.define("qx.ui.mobile.core.Widget",
 
   statics :
   {
-    /** {String} Prefix for the auto id */
+    /** @type {String} Prefix for the auto id */
     ID_PREFIX : "qx_id_",
 
-    /** {Map} Internal data structure to store widgets */
+    /** @type {Map} Internal data structure to store widgets */
     __registry : {},
 
-    /** {Integer} Incremental counter of the current id */
+    /** @type {Integer} Incremental counter of the current id */
     __idCounter : 0,
 
-    /** {Integer} ID of the timeout for the DOM update */
+    /** @type {Integer} ID of the timeout for the DOM update */
     __domUpdatedScheduleId : null,
 
     /**
@@ -904,6 +903,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
 
     /**
      * Removes all children from the widget.
+     * @return {Array} An Array including the removed children.
      */
     _removeAll : function()
     {
@@ -912,6 +912,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
       for (var i = 0, l=children.length; i < l; i++) {
         this._remove(children[i]);
       }
+      return children;
     },
 
 
@@ -1150,11 +1151,11 @@ qx.Class.define("qx.ui.mobile.core.Widget",
       if(this.getRotation() != null) {
         propertyValue = propertyValue + "rotate("+this.getRotation()+"deg) ";
       }
-      
+
       if(this.getScaleX() != null && this.getScaleY() != null) {
         propertyValue = propertyValue + "scale("+this.getScaleX()+","+this.getScaleY()+") ";
       }
-      
+
       if(this.getTranslateX() != null && this.getTranslateY() != null) {
         var isTransform3d = qx.core.Environment.get("css.transform.3d");
         if(isTransform3d && this.getTranslateZ() != null) {

@@ -101,7 +101,7 @@ Triggers the generation of a custom Apiviewer application. Takes a map.
 asset-let
 =========
 
-Defines macros that will be replaced in #asset hints. Takes a map.
+Defines macros that will be replaced in :ref:`pages/development/api_jsdoc_ref#asset` hints. Takes a map.
 
 ::
 
@@ -112,7 +112,10 @@ Defines macros that will be replaced in #asset hints. Takes a map.
 
 Each entry is
 
-* <macro_name> : [<list of replacement strings>] Like with macros, references (through '${macro_name}') to these keys in #asset hints in source files will be replaced. Unlike macros, each listed value will be used, and the result is the list of all ensuing expressions, so that all resulting assets will be honored.
+* <macro_name> : [<list of replacement strings>] Like with macros, references
+  (through '${macro_name}') to these keys in @asset hints in source files will be
+  replaced. Unlike macros, each listed value will be used, and the result is the
+  list of all ensuing expressions, so that all resulting assets will be honored.
 
 :ref:`Special section <pages/tool/generator/generator_config_articles#asset-let_key>`
 
@@ -222,7 +225,7 @@ Triggers the creation of combined image files that contain various other images.
 
   Unless you are generating a base64 combined image, this key requires an external program (ImageMagic) to run successfully.
 
-* **montage-cmd** *(experimental)*: command line for the ImageMagick `montage` command. If you create a binary combined image (e.g. .png, .gif), the *montage* command line utility will be invoked. This command template will be used to invoke it, and is exposed here so you can adjust it to your local ImageMagick installation. If you tweak this template and shuffle things around, make sure the placholders ``%(<name>)s`` remain intact. Example values are:
+* **montage-cmd** *(experimental)*: command line for the ImageMagick `montage` command. If you create a binary combined image (e.g. .png, .gif), the *montage* command line utility will be invoked. This command template will be used to invoke it, and is exposed here so you can adjust it to your local ImageMagick installation. If you tweak this template and shuffle things around, make sure the placeholders ``%(<name>)s`` remain intact. Example values are:
 
   * ``"montage @%(tempfile)s -geometry +0+0 -gravity NorthWest -tile %(orientation)s -background None %(combinedfile)s"`` *(for ImageMagick v6.x)*
   * ``"montage -geometry +0+0 -gravity NorthWest -tile %(orientation)s -background None @%(tempfile)s %(combinedfile)s``" *(for ImageMagick v5.x)*
@@ -231,13 +234,13 @@ Triggers the creation of combined image files that contain various other images.
 
 * **images** : map with combine entries
 
-  * **<output_image>** : path of output file; may be relative to the config file location; the file ending determins the file format; use *.png*, *.gif*, etc. for binary formats, or *.b64.json* for base64 combined image
+  * **<output_image>** : path of output file; may be relative to the config file location; the file ending determines the file format; use *.png*, *.gif*, etc. for binary formats, or *.b64.json* for base64 combined image
 
-    * **prefix** *(required)*: takes a list; the first element is a prefix of the path given in <output_image>, leading up to, but not including, the library name space of the output image; this prefix will be stripped from the ouput path, and will be replaced by an optional second element of this setting, to eventually obtain the image id of the output image;
+    * **prefix** *(required)*: takes a list; the first element is a prefix of the path given in <output_image>, leading up to, but not including, the library name space of the output image; this prefix will be stripped from the output path, and will be replaced by an optional second element of this setting, to eventually obtain the image id of the output image;
     * **layout** : either "horizontal" or "vertical"; defines the layout of images within the combined image (default: "horizontal")
     * **input** *(required)*: list of groups of input files, each group sharing the same prefix; each group consists of:
 
-       * **prefix** *(required)*: takes a list; analogous to the *prefix* attribute of the ouput image, the first element of the setting will be stripped from the path of each input file, and replaced by an optional second element, to obtain the corresponding image id
+       * **prefix** *(required)*: takes a list; analogous to the *prefix* attribute of the output image, the first element of the setting will be stripped from the path of each input file, and replaced by an optional second element, to obtain the corresponding image id
        * **files** : the list of input image files (:ref:`file globs <pages/tool/generator/generator_config_articles#file_globs>` allowed); may be relative to config file location
 
 The image id's of both the input and output files will be collected in an accompanying *<output_name>.meta* file, for later processing by the generator when creating source and build versions of the app. You may move these files around after creation, but you'll have to keep the combined image and its .meta file together in the same directory. At generation time, the generator will look for an accompanying .meta file for every image file it finds in a library. The combined image's image id will be refreshed from its current location relative to the library's resource path. But the clipped images (the images inside the combined image) will be registered under the image id's given in the .meta file (and for browser that don't support combined images, they'll have to be available on disk under this exact image id).
@@ -260,7 +263,7 @@ Triggers the generation of a source or build version of the app. Takes a map.
 
   peer-keys: :ref:`pages/tool/generator/generator_config_ref#compile-options`, :ref:`pages/tool/generator/generator_config_ref#cache`, :ref:`pages/tool/generator/generator_config_ref#include`, :ref:`pages/tool/generator/generator_config_ref#library`
 
-Generate Javascript file(s) for the application that can be loaded in the browser. This includes an inital file that acts as the loader and needs to be included by e.g. the hosting index.html page, and possibly other JS files with class code, I18N files, asf. All necessary settings for the compile run are given in the *compile-options* key, so make sure this one is properly filled.
+Generate Javascript file(s) for the application that can be loaded in the browser. This includes an initial file that acts as the loader and needs to be included by e.g. the hosting index.html page, and possibly other JS files with class code, I18N files, asf. All necessary settings for the compile run are given in the *compile-options* key, so make sure this one is properly filled.
 
 Possible keys are
 
@@ -268,7 +271,7 @@ Possible keys are
 
   * **source** : all class code and other resources (images etc.) required for the application are referenced in their original source files on disk (e.g. application classes, framework classes, contrib/library classes, etc.); this is optimal for development and debugging (per-file error messages, setting break-points, additional checks and logging are enabled, etc.) but loads slower due to the many individual files; it is also less amenable to loading the application through a web server, and should usually be run directly from the disk (using the *file://* protocol)
   * **hybrid** : is also a development build type and combines some of the advantages of the build version with the source version; as with the source build type, a selected set of classes are loaded directly from their source files (as specified in :ref:`compile-options/code/except <pages/tool/generator/generator_config_ref#compile-options>`); the other classes required by the application are compiled together in common .js files; this allows for faster load times while retaining good debuggability of the selected classes
-  * **build** : is the deployment build type; all classes are compiled into a set of common .js files, to minimize load requests; the class code is optionally compressed and optimized (cf. :ref:`compile-options/code/optimize <pages/tool/generator/generator_config_ref#compile-options>`); resource files from all involved libraries are copied to the build directoy, so that it is fully functional and self-contained, and can be copied to e.g. a web server; this build type is unsuitable for development activities, as the code is hard to read and certain development features are optimized away, so it should only be used for production deployment of the application
+  * **build** : is the deployment build type; all classes are compiled into a set of common .js files, to minimize load requests; the class code is optionally compressed and optimized (cf. :ref:`compile-options/code/optimize <pages/tool/generator/generator_config_ref#compile-options>`); resource files from all involved libraries are copied to the build directory, so that it is fully functional and self-contained, and can be copied to e.g. a web server; this build type is unsuitable for development activities, as the code is hard to read and certain development features are optimized away, so it should only be used for production deployment of the application
 
 .. _pages/tool/generator/generator_config_ref#compile-options:
 
@@ -301,9 +304,15 @@ Specify various options for compile (and other) keys. Takes a map.
       "locales"         : ["de", "en"],
       "optimize"        : ["basecalls", "comments", "privates", "strings", "variables", "variants", "whitespace"],
       "decode-uris-plug"  : "<path>",
-      "except"          : ["myapp.classA", "myapp.util.*"]
+      "except"          : ["myapp.classA", "myapp.util.*"],
+      "lint-check"      : (true|false)
     }
   }
+
+.. note::
+
+  peer-keys: :ref:`pages/tool/generator/generator_config_ref#compile`,
+  :ref:`pages/tool/generator/generator_config_ref#lint-check`
 
 The *compile-options* key informs all compile actions of the generator. Settings of this key are used e.g. by the jobs that create the source and the build version of an application, though in varying degrees (e.g. the source job only utilizes a few of the settings in this key, and ignores the others). Output Javascript file(s) are generated into the directory of the *paths/file* value, with *path/file* itself being the primary output file. If *paths/file* is not given, the ``APPLICATION`` macro has to be set in the global :ref:`let <pages/tool/generator/generator_config#listing_of_keys_in_context>` section with a proper name, in order to determine a default output file name. For further information see the individual key descriptions to find out which build type utilizes it (in the descriptions, *(<type>)* refers to the :ref:`compile/type <pages/tool/generator/generator_config_ref#compile>`, e.g. *source* or *build*)
 
@@ -313,7 +322,7 @@ Possible keys are
 
   * **file** : the path to the compile output file; can be relative to the config's directory (default: *<type>/script/<appname>.js*)
   * **file-prefix** : path to a file containing %{JS} which will be inserted verbatim at the beginning of each generated output file; this could be a comment with copyright headers (default: *undefined*)
-  * **app-root** : (*source*) relative (in the above sense) path to the directory containing the app’s HTML page (default: *./source*)
+  * **app-root** : (*source*) relative (in the above sense) path to the directory containing the app's HTML page (default: *./source*)
   * **loader-template** : path to a JS file that will be used as an alternative loader template; for possible macros and structure see the default (default: *${QOOXDOO_PATH}/tool/data/generator/loader.tmpl.js*)
   * **gzip** : whether to gzip output file(s) (default: *false*)
 
@@ -327,9 +336,14 @@ Possible keys are
 
   * **format** : (*build*) whether to apply simple output formatting (it adds some sensible line breaks to the output code) (default: *false*)
   * **locales** : (*build*) a list of locales to include (default: *["C"]*)
-  * **optimize** : list of dimensions for optimization, max. ["basecalls", "comments", "privates", "strings", "variables", "variants", "whitespace"] (default: *[<all>]*) :ref:`special section <pages/tool/generator/generator_config_articles#optimize_key>`
+  * **optimize** : list of dimensions for optimization, max. ["basecalls",
+    "comments", "privates", "statics", "strings", "variables", "variants",
+    "whitespace"] (default: *[<all>]*) :doc:`special section
+    </pages/tool/generator/generator_optimizations>`
   * **decode-uris-plug** : path to a file containing JS code, which will be plugged into the loader script, into the ``qx.$$loader.decodeUris()`` method. This allows you to post-process script URIs, e.g. through pattern matching. The current produced script URI is available and can be modified in the variable ``euri``.
   * **except** : (*hybrid*) exclude the classes specified in the class pattern list from compilation when creating a :ref:`hybrid <pages/tool/generator/generator_config_ref#compile>` version of the application
+  * **lint-check** : (*experimental*) whether to perform lint checking during compile
+    (default: *true*)
 
 
 .. _pages/tool/generator/generator_config_ref#config-warnings:
@@ -416,9 +430,21 @@ Triggers the copying of resources. Takes a map.
 
 Possible keys are
 
-* **target** : root target directory to copy resources to; may be relative to the config file location (default: "build")
+* **target** : root target directory to copy resources to; may be relative to
+  the config file location (default: "build")
 
-Unlike :ref:`pages/tool/generator/generator_config_ref#copy-files`, ``copy-resources`` does not take either a "source" key, nor a "files" key. Rather, a bit of implicit knowledge is applied. Resources will be copied from the involved libraries' ``source/resource`` directories (this obviates a "source" key). The list of needed resources is derived from the class files (e.g. from ``#asset`` hints - this obviates the "files" key), and then the libraries are searched for in order. From the first library that provides a certain resource, this resource is copied to the target folder. This way you can use most resources from a standard library (like the qooxdoo framework library), but still "shadow" a few of them by resources of the same path from a different library, just by tweaking the order in which these libraries are listed in the :ref:`pages/tool/generator/generator_config_ref#library` key.
+Unlike :ref:`pages/tool/generator/generator_config_ref#copy-files`,
+``copy-resources`` does not take either a "source" key, nor a "files" key.
+Rather, a bit of implicit knowledge is applied. Resources will be copied from
+the involved libraries' ``source/resource`` directories (this obviates a
+"source" key). The list of needed resources is derived from the class files
+(e.g. from ``@asset`` hints - this obviates the "files" key), and then the
+libraries are searched for in order. From the first library that provides a
+certain resource, this resource is copied to the target folder. This way you can
+use most resources from a standard library (like the qooxdoo framework library),
+but still "shadow" a few of them by resources of the same path from a different
+library, just by tweaking the order in which these libraries are listed in the
+:ref:`pages/tool/generator/generator_config_ref#library` key.
 
 
 .. _pages/tool/generator/generator_config_ref#default-job:
@@ -450,8 +476,8 @@ Allows you to influence the way class dependencies are processed by the generato
     "sort-topological"            : (true|false)
   }
 
-* **follow-static-initializers** *(experimental!)*: Try to resolve dependencies introduced in class definitions when calling static methods to initialize map keys (default: *false*).
-* **sort-topological** *(experimental!)*: Sort the classes using a topological sorting of the load-time dependency graph (default: *false*).
+* **follow-static-initializers** *(not used!)*: Try to resolve dependencies introduced in class definitions when calling static methods to initialize map keys (default: *false*).
+* **sort-topological** *(not used!)*: Sort the classes using a topological sorting of the load-time dependency graph (default: *false*).
 
 .. _pages/tool/generator/generator_config_ref#desc:
 
@@ -503,9 +529,21 @@ Exclude classes from processing in the job. Takes an array of class specifiers.
 
   "exclude" : ["qx.util.*"]
 
-Classes specified through the *exclude* key are excluded from the job processing, e.g. from the generated build output. The class specifiers can include simple wildcards like ``"qx.util.*"`` denoting class id's matching this pattern, including those from sub-name spaces.
+Classes specified through the *exclude* key are excluded from the job
+processing, e.g. from the generated build output. The class specifiers can
+include simple wildcards like ``"qx.util.*"`` denoting class id's matching this
+pattern, including those from sub-name spaces.
 
-A leading ``=`` in front of a class specifier (like in ``"=qx.util.*"``) means to also remove all  dependencies of the specified classes from the build, irrespective of whether they are required by other classes as well. So this will create builds that are no longer self-contained, and will break at runtime unless the required classes are provided otherwise.
+A leading ``=`` in front of a class specifier (like in ``"=qx.util.*"``) means
+to also remove all  dependencies of the specified classes from the build,
+irrespective of whether they are required by other classes as well. So this will
+create builds that are no longer self-contained, and will break at runtime
+unless the required classes are provided otherwise.
+
+When building an application the class patterns given in the *exclude* key will
+automatically be added to the list of
+:ref:`allowed globals <pages/tool/generator/generator_config_ref#lint-check>` when
+checking for unknown global symbols, so they will not be warned about.
 
 
 .. _pages/tool/generator/generator_config_ref#export:
@@ -660,15 +698,30 @@ Define libraries to be taken into account for this job. Takes an array of maps.
   "library" :
   [
     {
-      "manifest"   : "<path>",
+      "manifest"   : "<path_or_url>",
       "uri"        : "<from_html_to_manifest_dir>"
     }
   ]
 
 Each map can contain the keys
 
-* **manifest** *(required)* : path to the "Manifest" file of the library; may be relative to config file location; may use ``contrib://`` scheme
-* **uri** : URI prefix from your HTML file to the directory of the library's "Manifest" file
+* **manifest** *(required)* : specifies the qooxdoo library to use; can take
+  several forms:
+
+  * *a local file system path*: This must reference the Manifest file of
+    the library; may be relative to config file location.
+  * ``contrib://`` *URL*: This must reference the catalog Manifest file of a
+    contribution's version, as available in the :doc:`qooxdoo-contrib
+    </pages/development/contrib>` catalog.
+  * ``http(s)://`` *URL*: This must reference one of two things:
+
+    * *a downloadeable archive*: The URL ends in an archive extension (like
+      *.zip*), the archive contains the contribution library.
+    * *a .json file*: The referenced JSON file is a catalog-style Manifest file which
+      contains a download URL.
+
+* **uri** : URI prefix from your HTML file to the directory of the library's
+  "Manifest" file
 
 :ref:`Special section <pages/tool/generator/generator_config_articles#library_key_and_manifest_files>`
 
@@ -677,7 +730,7 @@ Each map can contain the keys
 lint-check
 ==========
 
-Check Javscript source code with a lint-like utility. Takes a map.
+Check JavaScript source code with a lint-like utility. Takes a map.
 
 ::
 
@@ -694,6 +747,7 @@ Check Javscript source code with a lint-like utility. Takes a map.
     "ignore-reference-fields"       : (true|false),
     "ignore-undeclared-privates"    : (true|false),
     "ignore-undefined-globals"      : (true|false),
+    "ignore-shadowing-locals"       : (true|false),
     "ignore-unused-parameter"       : (true|false),
     "ignore-unused-variables"       : (true|false),
     "run"                           : (true|false),
@@ -740,6 +794,16 @@ Keys are:
 
 * **ignore-undefined-globals** *(experimental)*      :
     Ignore symbols that belong to the global scope, and are not recognized as known built-in symbols or class names (You usually want to avoid those). With this option set to *false*, i.e. those globals being warned about, you can still silence the warning for symbols given in the ``allowed-globals`` option. *(default: false)*
+
+* **ignore-shadowing-locals** *(experimental)*      :
+    Ignore variables declared in a local scope (function) that shadow global
+    library symbols (such as *qx*, *q*, *qxWeb*). With this options set to
+    *false*, code places like ::
+
+      var qx = "foo";
+
+    are warned about. (With such a code line you wouldn't be able to use any
+    %{qooxdoo} framework class in this function anymore).  *(default: false)*
 
 * **ignore-unused-parameter** *(experimental)*       :
     Ignore parameters of functions or catch statements that are not used in their respective body. *(default: true)*
@@ -836,7 +900,7 @@ This key allows you to enable logging features along various axes.
     * ``dot``: generation of a Graphviz dot file; uses the **dot** key
     * ``json``: "native" Json data structure (reflecting the hierarchy of the txt output class -> [run|load]); uses the **json** key
     * ``provider``: similar to the ``json`` output, but all id's are given as path suffixes (slashes between name spaces, file extensions), and dependencies are extended with resource id's and translatable string keys (as ``translation#<key>``); uses the **json** key
-    * ``flare``: Json output suitable for Prefuse Flare depencency graphs; uses the **flare** key
+    * ``flare``: Json output suitable for prefuse Flare dependency graphs; uses the **flare** key
     * ``term``: textual output to the console, in the form of a term *depends(<class>, [<load-deps>,...], [<run-deps>,...])*
 
   * **dot**:
@@ -862,7 +926,7 @@ This key allows you to enable logging features along various axes.
   * **debug** : in debug ("verbose") logging enabled with the ``-v`` command line switch, only print debug messages from generator modules that match the given pattern
 
 * **privates** : print out list of classes that use a specific private member
-* **resources**: writes the map of resource infos for the involved classes to a json-formatted file
+* **resources**: writes the map of resource info for the involved classes to a json-formatted file
 
   * **file** : output file path (default *resources.json*)
 
@@ -1050,7 +1114,7 @@ Keys are:
 provider
 ============
 
-Collects application classes, resources, translateable strings and dependency information in a specific directory structure, under the ``provider`` root directory. Takes a map.
+Collects application classes, resources, translatable strings and dependency information in a specific directory structure, under the ``provider`` root directory. Takes a map.
 
 ::
 
@@ -1193,7 +1257,7 @@ Triggers cutting images into regions. Takes a map.
 
   This key requires an external program (ImageMagic) to run successfully.
 
-* **convert-cmd** *(experimental)*: command line for the ImageMagick `convert` command. If you create clippings of an image, the *convert* command line utility will be invoked. This command template will be used to invoke it, and is exposed here so you can adjust it to your local ImageMagick installation. If you tweak this template and shuffle things around, make sure the placholders ``%(<name>)s`` remain intact. Example value:
+* **convert-cmd** *(experimental)*: command line for the ImageMagick `convert` command. If you create clippings of an image, the *convert* command line utility will be invoked. This command template will be used to invoke it, and is exposed here so you can adjust it to your local ImageMagick installation. If you tweak this template and shuffle things around, make sure the placeholders ``%(<name>)s`` remain intact. Example value:
 
   * ``"convert %(infile)s -crop %(xoff)sx%(yoff)s+%(xorig)s+%(yorig)s +repage %(outfile)s"`` *(for ImageMagick v5.x, v6.x)*
 
@@ -1252,6 +1316,34 @@ Each key is a
 * **<class_name>** : each value is an array of used classes of this class.
 
 
+.. _pages/tool/generator/generator_config_ref#validation-config:
+
+validation-config
+=================
+
+Triggers the validation of the Config (*config.json*) against a schema and prints it to the console. Takes a map.
+
+::
+
+  "validation-config" : {}
+
+This key currently takes no subkeys, but you still have to provide an empty map.
+
+.. _pages/tool/generator/generator_config_ref#validation-manifest:
+
+validation-manifest
+===================
+
+Triggers the validation of the Manifest (*Manifest.json*) against a schema and prints it to the console. Takes a map.
+
+::
+
+  "validation-manifest" : {}
+
+
+This key currently takes no subkeys, but you still have to provide an empty map.
+
+
 .. _pages/tool/generator/generator_config_ref#watch-files:
 
 watch-files
@@ -1264,25 +1356,31 @@ Watch arbitrary files or directories for changes.
   "watch-files" :
   {
     "paths"   : [ "file/or/dir/to/watch" ],
-    "command" : 
+    "command" :
     {
       "line"  : "generate.py source",
-      "per-file" : (true|false)
+      "per-file" : (true|false),
+      "exec-on-startup" : (true|false),
+      "exit-on-retcode" : (true|false)
     }
     "include" : [ "*.js" ],
     "include-dirs"    : (true|false),
     "check-interval"  : 10,
-    "exit-on-retcode" : (true|false)
   }
 
 .. note::
 
   peer-keys: :ref:`pages/tool/generator/generator_config_ref#cache`
 
-* **paths** *(required)* : List of  paths to files or directories which should be watched. If an entry is a directory, it is watched recursively (directories themselves are included according to the ``include-dirs`` key).
+* **paths** *(required)* : List of  paths to files or directories which should
+  be watched. If an entry is a directory, it is watched recursively (directories
+  themselves are included according to the ``include-dirs`` key).
 * **command** :
 
-  * **line** : *(required)* : Shell command line to be executed when a change is detected. There are a couple of placeholders available that can be interpolated into the command string with ``%(<KEY>)``. The different keys are:
+  * **line** : *(required)* : Shell command line to be executed when a change is
+    detected. There are a couple of placeholders available that can be
+    interpolated into the command string with ``%(<KEY>)``. The different keys
+    are:
 
     .. list-table::
       :widths: 10 90
@@ -1290,34 +1388,53 @@ Watch arbitrary files or directories for changes.
 
       * - Key
         - Description
-      * - ``FILELIST`` 
-        - the (space-separated) list of file paths that have changed (e.g. *foo/bar/baz.js foo/bar/yeo.js*)
-      * - ``FILE`` 
-        - the individual file path that has changed (e.g. *foo/bar/baz.js*; interesting when *per-file* is true)
-      * - ``DIRNAME`` 
-        - the directory path of an individual file (e.g. *foo/bar* in *foo/bar/baz.js*)
-      * - ``BASENAME`` 
-        - just the basename of an individual file including extension (e.g. *baz.js* in *foo/bar/baz.js*)
-      * - ``FILENAME`` 
+      * - ``FILELIST``
+        - the (space-separated) list of file paths that have changed (e.g.
+          *foo/bar/baz.js foo/bar/yeo.js*)
+      * - ``FILE``
+        - the individual file path that has changed (e.g. *foo/bar/baz.js*;
+          interesting when *per-file* is true)
+      * - ``DIRNAME``
+        - the directory path of an individual file (e.g. *foo/bar* in
+          *foo/bar/baz.js*)
+      * - ``BASENAME``
+        - just the basename of an individual file including extension (e.g.
+          *baz.js* in *foo/bar/baz.js*)
+      * - ``FILENAME``
         - the file name without path and extension (e.g. *baz* in *foo/bar/baz.js*)
-      * - ``EXTENSION`` 
+      * - ``EXTENSION``
         - the file extension (e.g. *.js* in *foo/bar/baz.js*)
 
 
     For example, this can be used to create a command line like this ::
-    
+
       sass %(FILE) > path/to/css/%(FILENAME).css
-    
-    which runs an SCSS compiler on a .scss file (assuming these files are watched), and redirects the output to a file with same name but a .css extension, in a different path.
 
-    Mind that if you specified multiple ``paths`` the command will be applied if *any* of them change, but for all the execution context will be the same, e.g. have the same current directory. There is currently no implicit ``cd`` or calculation of file paths relative to their watched roots or similar.
+    which runs an SCSS compiler on a .scss file (assuming these files are
+    watched), and redirects the output to a file with same name but a .css
+    extension, in a different path.
 
-  * **per-file** : Whether the command should be executed for each file that has been changed. If true, command will be invoked for each file that has changed since the last check. (default: *false*)
+    Mind that if you specified multiple ``paths`` the command will be applied if
+    *any* of them change, but for all the execution context will be the same,
+    e.g. have the same current directory. There is currently no implicit ``cd``
+    or calculation of file paths relative to their watched roots or similar.
+
+  * **per-file** : Whether the command should be executed for each file that has
+    been changed. If true, command will be invoked for each file that has changed
+    since the last check. (default: *false*)
+  * **exec-on-startup**: Whether to execute the given command once when the
+    watch job starts. This works independent of the *per-file* setting, but
+    **Note**: If you are watching a lot of files, your shell's command line
+    capacity might become exhausted for the first execution of command if you use
+    the *%(FILELIST)* command macro in a *per-file:false* setting, as the
+    Generator will try to pass *all watched files* on the command line.  (default
+    *false*)
+  * **exit-on-retcode**: Whether to terminate when the given command returns a
+    return code != 0, or to continue in this case. (default *false*)
 
 * **include** : List of file globs to be selected when watching a directory tree. (default: *[\*]*)
 * **include-dirs** : Whether to include directories in the list of changed files when watching a directory tree. (default: *false*)
 * **check-interval** : Seconds of elapsed time between checks for changes. (default: *2*)
-* **exit-on-retcode**: Whether to terminate when the given command returns a return code != 0, or to continue in this case. (default *false*)
 
 
 .. _pages/tool/generator/generator_config_ref#web-server:
@@ -1336,17 +1453,35 @@ Start a mini web server to serve local files.
       "document-root" : "",
       "server-port"  : 8080,
       "log-level"    : "error",
-      "allow-remote-access" : false
+      "allow-remote-access" : false,
+      "active-reload" :
+      {
+        "client-script" : "<path>"
+      }
     }
 
 .. note::
 
   peer-keys: :ref:`pages/tool/generator/generator_config_ref#cache`, :ref:`pages/tool/generator/generator_config_ref#library`
 
-* **document-root** : File system path to use as the web server's document root. Best left empty, so the Generator calculates a common root path of all involved %{qooxdoo} libraries. For this to work, your libraries should be collected in the :ref:`"libraries" <pages/tool/generator/generator_default_jobs#libraries>` default job. (default: *""*)
-* **server-port** : The port the server should listen on. (default: *8080*)
-* **log-level** : Log level of the server, ``"error"`` for errors, ``"info"`` for more verbose logging, ``"fatal"`` for no logging. (default: *"error"*)
-* **allow-remote-access** : Whether the web server allows access from other hosts. If set to false, access is only allowed from *localhost*. This is recommended as the web server might expose a substantial part of your hard disk, including directory indexes. (default: *false*)
+* **document-root** : File system path to use as the web server's document root.
+  Best left empty, so the Generator calculates a common root path of all involved
+  %{qooxdoo} libraries. For this to work, your libraries should be collected in
+  the :ref:`"libraries" <pages/tool/generator/generator_default_jobs#libraries>`
+  default job. (default: *""*)
+* **server-port** : The port the server should listen on. ``0`` means to pick an
+  arbitrary free port. (default: *0*)
+* **log-level** : Log level of the server, ``"error"`` for errors, ``"info"``
+  for more verbose logging, ``"fatal"`` for no logging. (default: *"error"*)
+* **allow-remote-access** : Whether the web server allows access from other
+  hosts. If set to false, access is only allowed from *localhost*. This is
+  recommended as the web server might expose a substantial part of your hard disk,
+  including directory indexes. (default: *false*)
+* **active-reload** : Enabling active reload of the app in the browser.
+
+  * **client-script** : The path to the client script which reloads the
+    application in the browser if it has changed on disk. (default:
+    *${QOOXDOO_PATH}/tool/data/generator/active_reload.js"*)
 
 
 .. _pages/tool/generator/generator_config_ref#web-server-config:
@@ -1362,6 +1497,7 @@ Create a web server configuration for the local source version.
 
     "web-server-config" :
     {
+      "document-root" : "",
       "output-dir"     : ".",
       "template-dir"   : "<path>",
       "httpd-type"     : "apache2",
@@ -1372,11 +1508,19 @@ Create a web server configuration for the local source version.
 
   peer-keys: :ref:`pages/tool/generator/generator_config_ref#cache`, :ref:`pages/tool/generator/generator_config_ref#library`
 
-* **output-dir** : Directory path where the configuration file is stored. The file itself is named as ``"<httpd-type>.conf"`` so the name already exposes for which server it is being generated. (default: *.*)
+* **document-root** : File system path to use as the application's document root.
+  Best left empty, so the Generator calculates a common root path of all involved
+  %{qooxdoo} libraries. For this to work, your libraries should be collected in
+  the :ref:`"libraries" <pages/tool/generator/generator_default_jobs#libraries>`
+  default job. (default: *""*)
+* **output-dir** : Directory path where the configuration file is stored. The
+  file itself is named as ``"<httpd-type>.conf"`` so the name already exposes for
+  which server it is being generated. (default: *.*)
 * **template-dir** : Directory path where to look for web server-specific
-  configuration templates. The file name itself is constructed as ``"httpd.<httpd-type>.tmpl.conf"``. (default: *${QOOXDOO_PATH}/tool/data/generator/*)
+  configuration templates. The file name itself is constructed as
+  ``"httpd.<httpd-type>.tmpl.conf"``. (default: *${QOOXDOO_PATH}/tool/data/generator/*)
 
-  Templates can make use of several macros that will expanded during the
+  Templates can make use of several macros that will be expanded during the
   generation process. Macros are referenced in the template with
   ``${<macro_name>}``. The following macros are supported:
 
@@ -1386,17 +1530,17 @@ Create a web server configuration for the local source version.
 
     * - Macro
       - Description
-    * - ``APP_DOCUMENT_ROOT`` 
+    * - ``APP_DOCUMENT_ROOT``
       - the common root path of all libraries making up the application; this is
         usually mapped to an alias in the web server, so that all relative URLs to
         application files continue to work under the web server
-    * - ``APP_NAMESPACE_AS_PATH`` 
+    * - ``APP_NAMESPACE_AS_PATH``
       - the application's namespace, but with "/" in place of "." if it is a
         complex name; this is usually used as a web server alias in the
         configuration
-    * - ``APP_HTTPD_CONFIG`` 
+    * - ``APP_HTTPD_CONFIG``
       - the absolute path to the generated configuration file
-    * - ``LOCALHOST_APP_URL`` 
+    * - ``LOCALHOST_APP_URL``
       - the URL with which the source version can be loaded
 
 * **httpd-type** : The web server implementation. Currently supported types are

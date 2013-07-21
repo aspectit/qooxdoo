@@ -86,9 +86,10 @@ qx.Class.define("qx.ui.mobile.page.NavigationPage",
   {
     /** Fired when the user tapped on the navigation button */
     action : "qx.event.type.Event",
-    
-    /** Fired when parent portrait container should hide. 
-     *  @deprecated { 2.2 } Please use qx.ui.mobile.page.Manager.setHideMasterOnDetailStart(true). */
+
+    /** Fired when parent portrait container should hide.
+     *  @deprecated {3.0} Please use qx.ui.mobile.page.Manager.setHideMasterOnDetailStart(true).
+     */
     hidePortraitContainer : "qx.event.type.Event"
   },
 
@@ -125,7 +126,17 @@ qx.Class.define("qx.ui.mobile.page.NavigationPage",
     {
       check : "String",
       init : "",
-      apply : "_applyButtonText"
+      apply : "_applyActionButtonText"
+    },
+
+
+    /** The action button icon */
+    buttonIcon :
+    {
+      check : "String",
+      init : null,
+      nullable : true,
+      apply : "_applyActionButtonIcon"
     },
 
 
@@ -207,7 +218,7 @@ qx.Class.define("qx.ui.mobile.page.NavigationPage",
     _isTablet : false,
     _wrapContentByGroup : true,
     __backButton : null,
-    __button : null,
+    __actionButton : null,
     __content : null,
     __scrollContainer : null,
     __title : null,
@@ -287,10 +298,10 @@ qx.Class.define("qx.ui.mobile.page.NavigationPage",
       var layout = new qx.ui.mobile.layout.HBox();
       var container = new qx.ui.mobile.container.Composite(layout);
       container.addCssClass("right-container");
-      this.__button = this._createButton();
-      this.__button.addListener("tap", this._onButtonTap, this);
+      this.__actionButton = this._createButton();
+      this.__actionButton.addListener("tap", this._onButtonTap, this);
       this._showButton();
-      container.add(this.__button);
+      container.add(this.__actionButton);
       return container;
     },
 
@@ -300,7 +311,6 @@ qx.Class.define("qx.ui.mobile.page.NavigationPage",
       * Creates the scroll container.
       *
       * @return {qx.ui.mobile.navigationbar.BackButton} The created back button widget
-      * @return {qx.ui.mobile.container.Scroll} The created scroll container
       */
     _createBackButton : function() {
       return new qx.ui.mobile.navigationbar.BackButton(this.getBackButtonText());
@@ -313,10 +323,9 @@ qx.Class.define("qx.ui.mobile.page.NavigationPage",
       * Creates the content container.
       *
       * @return {qx.ui.mobile.navigationbar.Button} The created button widget
-      * @return {qx.ui.mobile.container.Composite} The created content container
       */
     _createButton : function() {
-     return new qx.ui.mobile.navigationbar.Button(this.getButtonText());
+     return new qx.ui.mobile.navigationbar.Button(this.getButtonText(), this.getButtonIcon());
     },
 
 
@@ -348,8 +357,7 @@ qx.Class.define("qx.ui.mobile.page.NavigationPage",
     scrollToWidget : function(widget, time)
     {
       if(widget) {
-        var widgetId = "#"+widget.getId();
-        this.__scrollContainer.scrollToElement(widgetId, time);
+        this.__scrollContainer.scrollToElement(widget.getId(), time);
       }
     },
 
@@ -383,7 +391,7 @@ qx.Class.define("qx.ui.mobile.page.NavigationPage",
      */
     _getButton : function()
     {
-      return this.__button;
+      return this.__actionButton;
     },
 
 
@@ -438,10 +446,19 @@ qx.Class.define("qx.ui.mobile.page.NavigationPage",
 
 
     // property apply
-    _applyButtonText : function(value, old)
+    _applyActionButtonText : function(value, old)
     {
-      if (this.__button) {
-        this.__button.setValue(value);
+      if (this.__actionButton) {
+        this.__actionButton.setValue(value);
+      }
+    },
+
+
+    // property apply
+    _applyActionButtonIcon : function(value, old)
+    {
+      if (this.__actionButton) {
+        this.__actionButton.setIcon(value);
       }
     },
 
@@ -490,12 +507,12 @@ qx.Class.define("qx.ui.mobile.page.NavigationPage",
      */
     _showButton : function()
     {
-      if (this.__button)
+      if (this.__actionButton)
       {
         if (this.getShowButton()) {
-          this.__button.show();
+          this.__actionButton.show();
         } else {
-          this.__button.exclude();
+          this.__actionButton.exclude();
         }
       }
     },
@@ -525,24 +542,7 @@ qx.Class.define("qx.ui.mobile.page.NavigationPage",
      */
     _createScrollContainer : function()
     {
-      // If OS < Android 4.1,
-      // quirks mode for Android should be active.
-      // This means that iScroll does not use transform3d, because
-      // this causes layout problems with input fields.
-      var osName = qx.core.Environment.get("os.name");
-      var osVersion = qx.core.Environment.get("os.version");
-
-      var osVersionParts = osVersion.split(".");
-
-      // If OS is Android, and version is below 4.1 >> quirksmode active
-      var isAndroidQuirksMode = (osName == "android")
-        && ((parseInt(osVersionParts[0]) < 4) || (parseInt(osVersionParts[0]) == 4 && parseInt(osVersionParts[1]) < 1));
-
-      if(isAndroidQuirksMode == true) {
-        return new qx.ui.mobile.container.Scroll({useTransform: false});
-      } else {
-        return new qx.ui.mobile.container.Scroll();
-      }
+      return new qx.ui.mobile.container.Scroll();
     },
 
 
@@ -590,8 +590,8 @@ qx.Class.define("qx.ui.mobile.page.NavigationPage",
   destruct : function()
   {
     this._disposeObjects("__leftContainer", "__rightContainer", "__backButton",
-      "__button", "__title");
-    this.__leftContainer = this.__rightContainer = this.__backButton = this.__button = null;
+      "__actionButton", "__title");
+    this.__leftContainer = this.__rightContainer = this.__backButton = this.__actionButton = null;
     this.__title = this.__content = this.__scrollContainer = null;
     this._isTablet = null;
   }

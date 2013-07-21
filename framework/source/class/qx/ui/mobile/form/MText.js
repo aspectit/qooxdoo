@@ -16,15 +16,12 @@
      * Tino Butz (tbtz)
 
 ************************************************************************ */
-/* ************************************************************************
-
-#require(qx.event.handler.Input)
-
-************************************************************************ */
 
 /**
  * The mixin contains all functionality to provide common properties for
  * text fields.
+ *
+ * @require(qx.event.handler.Input)
  */
 qx.Mixin.define("qx.ui.mobile.form.MText",
 {
@@ -120,6 +117,10 @@ qx.Mixin.define("qx.ui.mobile.form.MText",
      * Points the focus of the form to this widget.
      */
     focus : function() {
+      if(this.isReadOnly() || this.getEnabled() == false) {
+        return;
+      }
+
       var targetElement = this.getContainerElement();
       if(targetElement) {
         qx.bom.Element.focus(targetElement);

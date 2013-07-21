@@ -17,13 +17,17 @@
 
 ************************************************************************ */
 /* ************************************************************************
-#asset(qx/icon/Tango/22/actions/media-skip-backward.png)
-#asset(qx/icon/Tango/22/actions/media-playback-start.png)
-#asset(qx/icon/Tango/22/actions/media-skip-forward.png)
-#asset(tutorial/default.highlight.css)
-#asset(tutorial/highlight.pack.js)
 ************************************************************************ */
 
+/**
+ * @ignore(hljs.*)
+ *
+ * @asset(qx/icon/Tango/22/actions/media-skip-backward.png)
+ * @asset(qx/icon/Tango/22/actions/media-playback-start.png)
+ * @asset(qx/icon/Tango/22/actions/media-skip-forward.png)
+ * @asset(tutorial/default.highlight.css)
+ * @asset(tutorial/highlight.pack.js)
+ */
 qx.Class.define("tutorial.view.Description",
 {
   extend : qx.ui.container.Composite,
@@ -34,9 +38,6 @@ qx.Class.define("tutorial.view.Description",
   *****************************************************************************
   */
 
-  /**
-   * @lint ignoreUndefined(qxc, hljs)
-   */
   construct : function()
   {
     this.base(arguments);
@@ -53,12 +54,18 @@ qx.Class.define("tutorial.view.Description",
 
     this.add(this.__createButtonContainer());
 
-    this.loadHljs(function() {
-      q('pre').forEach(function(el) {
-        q(el).addClass("javascript")
-        hljs.highlightBlock(el);
-      });
-    }, this);
+    var engine = qx.core.Environment.get("engine.name");
+    var browserVersion = qx.core.Environment.get("browser.documentmode");
+    var isIE8OrLower = (engine === "mshtml" && parseInt(browserVersion) <= 8);
+
+    if (!isIE8OrLower) {
+      this.loadHljs(function() {
+        q('pre').forEach(function(el) {
+          q(el).addClass("javascript");
+          hljs.highlightBlock(el);
+        });
+      }, this);
+    }
 
     this.updateView();
   },
@@ -121,9 +128,6 @@ qx.Class.define("tutorial.view.Description",
       qx.bom.Stylesheet.includeFile(uri);
     },
 
-    /**
-     * @lint ignoreUndefined(hljs)
-     */
     updateView : function() {
       if (!this.getTutorial()) {
         return;

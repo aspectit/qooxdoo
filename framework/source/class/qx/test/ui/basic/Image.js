@@ -17,12 +17,11 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-#asset(qx/icon/Tango/48/places/folder.png)
-#asset(qx/icon/Tango/32/places/folder.png)
-#asset(qx/static/blank.gif)
-************************************************************************ */
-
+/**
+ * @asset(qx/icon/Tango/48/places/folder.png)
+ * @asset(qx/icon/Tango/32/places/folder.png)
+ * @asset(qx/static/blank.gif)
+ */
 
 qx.Class.define("qx.test.ui.basic.Image",
 {
@@ -44,7 +43,7 @@ qx.Class.define("qx.test.ui.basic.Image",
       this.flush();
 
       var tagNameAfter = image.getContentElement().getNodeName();
-      if (qx.bom.element.Decoration.isAlphaImageLoaderEnabled()) {
+      if (qx.core.Environment.get("css.alphaimageloaderneeded")) {
         this.assertTrue(tagNameAfter == "div");
       } else {
         this.assertTrue(tagNameAfter == "img");
@@ -80,14 +79,22 @@ qx.Class.define("qx.test.ui.basic.Image",
       this.getRoot().add(image);
       this.flush();
 
-      var tagName = image.getContentElement().getNodeName();
+      var contentElement = image.getContentElement();
+      if (qx.core.Environment.get("css.alphaimageloaderneeded")) {
+        contentElement = contentElement.getChildren()[0];
+      }
+      var tagName = contentElement.getNodeName();
       this.assertTrue(tagName == "img");
 
       image.setSource("qx/icon/Tango/48/places/folder.png");
       this.flush();
 
-      var tagNameAfter = image.getContentElement().getNodeName();
-      if (qx.bom.element.Decoration.isAlphaImageLoaderEnabled()) {
+      contentElement = image.getContentElement();
+      if (qx.core.Environment.get("css.alphaimageloaderneeded")) {
+        contentElement = contentElement.getChildren()[0];
+      }
+      var tagNameAfter = contentElement.getNodeName();
+      if (qx.core.Environment.get("css.alphaimageloaderneeded")) {
         this.assertTrue(tagNameAfter == "div");
       } else {
         this.assertTrue(tagNameAfter == "img");
@@ -105,14 +112,22 @@ qx.Class.define("qx.test.ui.basic.Image",
       image.set({ width: 100, height: 100 });
       this.flush();
 
-      var width = image.getContentElement().getStyle("width");
-      var height = image.getContentElement().getStyle("height");
+      var contentElement = image.getContentElement();
+      if (qx.core.Environment.get("css.alphaimageloaderneeded")) {
+        contentElement = contentElement.getChildren()[0];
+      }
+      var width = contentElement.getStyle("width");
+      var height = contentElement.getStyle("height");
 
       image.setScale(true);
       this.flush();
 
-      this.assertEquals(image.getContentElement().getStyle("width"), width);
-      this.assertEquals(image.getContentElement().getStyle("height"), height);
+      contentElement = image.getContentElement();
+      if (qx.core.Environment.get("css.alphaimageloaderneeded")) {
+        contentElement = contentElement.getChildren()[0];
+      }
+      this.assertEquals(parseInt(contentElement.getStyle("width")), parseInt(width));
+      this.assertEquals(parseInt(contentElement.getStyle("height")), parseInt(height));
 
       image.destroy();
     },
@@ -126,12 +141,12 @@ qx.Class.define("qx.test.ui.basic.Image",
       image.setDecorator("main");
       this.flush();
 
-      var decorator = image.getContainerElement().getChild(2);
+      var decorator = image.getContentElement().getChild(2);
 
       image.setScale(true);
       this.flush();
 
-      this.assertEquals(image.getContainerElement().getChild(2), decorator);
+      this.assertEquals(image.getContentElement().getChild(2), decorator);
 
       image.destroy();
     },

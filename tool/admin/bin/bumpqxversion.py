@@ -29,12 +29,11 @@
 #  bumpqxversion.py 2.1.4-pre
 #
 # DESCRIPTION
-#  Run through a set of files (maintained in this script) and replace occurrences of 
+#  Run through a set of files (maintained in this script) and replace occurrences of
 #  version strings with the new string from the command-line.
 #
 # NOTE
 #  Add new files to the 'Files' map (see further in the "Config section").
-#  If you add files here, also update http://qooxdoo.org/documentation/general/how_to_build_a_release!
 ##
 
 import sys, os, re, string, types, codecs, functools, subprocess as sub
@@ -69,10 +68,10 @@ def npm_version_string(vers_parts):
 ##
 # Files to change:
 #
-# Files = { 
+# Files = {
 #     "path_from_QXROOT": [
-#         <regex_to_replace>, 
-#         (<regex_to_replace>, <version_part>), 
+#         <regex_to_replace>,
+#         (<regex_to_replace>, <version_part>),
 #         ...
 #         ],
 #     ...
@@ -83,7 +82,7 @@ def npm_version_string(vers_parts):
 # the old version string. If only the regex is given, the replacement will be the
 # entire new version string, as passed in the command-line argument.
 # If it is a tuple of (regex, number), the matched location will be replaced with
-# only the corresponding *part* of the new version string (see further). This 
+# only the corresponding *part* of the new version string (see further). This
 # allows you to only replace the major, minor or patch number.
 #
 # <regex_to_replace> -- provide a regexp that captures some occurrences of the
@@ -101,10 +100,10 @@ Files = {
     "./index.html"  : [
         r'var qxversion = "(%s)"'    % qxversion_regexp
         ],
-    "./readme.rst"  : [ 
+    "./readme.rst"  : [
         r'manual.qooxdoo.org/(%s)\b' % qxversion_regexp,
         r'api.qooxdoo.org/(%s)\b' % qxversion_regexp,
-        r'qooxdoo.org/project/release_notes/(%s)\b' % qxversion_regexp 
+        r'qooxdoo.org/project/release_notes/(%s)\b' % qxversion_regexp
         ],
     "./framework/Manifest.json" : [
         r'"version"\s*:\s*"(%s)"'              % qxversion_regexp,
@@ -138,7 +137,7 @@ Files = {
         r'"homepage"\s*:\s*"http://manual.qooxdoo.org/(%s)/pages/core.html"' % qxversion_regexp,
         ],
     "./tool/data/generator/copyright.include.js" : [
-        r'qooxdoo v.(%s) \|' % qxversion_regexp,
+        r'qooxdoo v(%s) \|' % qxversion_regexp,
         ],
     "./component/standalone/server/test/rhino.js" : [
         r'qx-oo-(%s).js' % qxversion_regexp,
@@ -151,6 +150,8 @@ Files = {
         r'qx-oo-(%s).min.js' % qxversion_regexp,
         r'q-(%s).js' % qxversion_regexp,
         r'q-(%s).min.js' % qxversion_regexp,
+        r'q-[a-z]+-(%s).js' % qxversion_regexp,
+        r'q-[a-z]+-(%s).min.js' % qxversion_regexp,
         r'storage-(%s).js' % qxversion_regexp,
         r'storage-(%s).require.js' % qxversion_regexp,
         ],
@@ -169,17 +170,25 @@ Files = {
         ],
     "./component/standalone/website/index.html" : [
         r'q-(%s).min.js' % qxversion_regexp,
+        r'q-(%s).js' % qxversion_regexp,
         ],
     "./component/standalone/website/api/index.html" : [
-        r'q-(%s).min.js' % qxversion_regexp,
+        r'q-[a-z]+-(%s).min.js' % qxversion_regexp,
         ],
     "./component/standalone/website/test/index.html" : [
         r'q-(%s).min.js' % qxversion_regexp,
         ],
+    "./component/standalone/website/test/index-module.html" : [
+        r'q-[a-z]+-(%s).min.js' % qxversion_regexp,
+        ],
     "./application/todo/index.html" : [
-        r'q-(%s).min.js' % qxversion_regexp,
+        r'q-[a-z]+-(%s).min.js' % qxversion_regexp,
         ],
     "./component/tutorials/website/step1/notification.html" : [
+        r'q-(%s).min.js' % qxversion_regexp,
+        ],
+    "./component/standalone/website/test/media.html" : [
+        r'q-[a-z]+-(%s).min.js' % qxversion_regexp,
         r'q-(%s).min.js' % qxversion_regexp,
         ],
 }

@@ -18,12 +18,6 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#use(qx.event.handler.Transition)
-
-************************************************************************ */
-
 /**
  * A card layout.
  *
@@ -46,12 +40,14 @@
  *
  * label2.show();
  * </pre>
+ *
+ * @use(qx.event.handler.Transition)
  */
 qx.Class.define("qx.ui.mobile.layout.Card",
 {
   extend : qx.ui.mobile.layout.Abstract,
 
-  
+
   /*
   *****************************************************************************
      CONSTRUCTOR
@@ -63,8 +59,8 @@ qx.Class.define("qx.ui.mobile.layout.Card",
 
     this.__cardAnimation = new qx.ui.mobile.layout.CardAnimation();
   },
-  
-  
+
+
   /*
   *****************************************************************************
      EVENTS
@@ -103,10 +99,10 @@ qx.Class.define("qx.ui.mobile.layout.Card",
       check : "Boolean",
       init : true
     },
-    
-    
+
+
     /** Transition duration of each animation. */
-    animationDuration : 
+    animationDuration :
     {
       check : "Integer",
       init : 350
@@ -128,14 +124,14 @@ qx.Class.define("qx.ui.mobile.layout.Card",
     __animation : null,
     __reverse : null,
     __cardAnimation : null,
-    
+
 
     // overridden
     _getCssClasses : function() {
       return ["layout-card","vbox"];
     },
-    
-    
+
+
     // overridden
     connectToChildWidget : function(widget)
     {
@@ -166,7 +162,7 @@ qx.Class.define("qx.ui.mobile.layout.Card",
       this.base(arguments, widget, action, properties);
     },
 
-    
+
     /**
      * Setter for this.__cardAnimation.
      * @param value {qx.ui.mobile.layout.CardAnimation} the new CardAnimation object.
@@ -174,8 +170,8 @@ qx.Class.define("qx.ui.mobile.layout.Card",
     setCardAnimation : function(value) {
       this.__cardAnimation = value;
     },
-    
-    
+
+
     /**
      * Getter for this.__cardAnimation.
      * @return {qx.ui.mobile.layout.CardAnimation} the current CardAnimation object.
@@ -183,8 +179,8 @@ qx.Class.define("qx.ui.mobile.layout.Card",
     getCardAnimation : function() {
       return this.__cardAnimation;
     },
-    
-    
+
+
     /**
      * Shows the widget with the given properties.
      *
@@ -282,7 +278,7 @@ qx.Class.define("qx.ui.mobile.layout.Card",
       var toElement = widget.getContainerElement();
 
       var onAnimationEnd = qx.lang.Function.bind(this._onAnimationEnd, this);
-      
+
       if(qx.core.Environment.get("event.mspointer")) {
         qx.bom.Event.addNativeListener(fromElement, "MSAnimationEnd", onAnimationEnd, false);
         qx.bom.Event.addNativeListener(toElement, "MSAnimationEnd", onAnimationEnd, false);
@@ -293,17 +289,17 @@ qx.Class.define("qx.ui.mobile.layout.Card",
 
       var fromCssClasses = this.__getAnimationClasses("out");
       var toCssClasses = this.__getAnimationClasses("in");
-      
+
       this._widget.addCssClass("animationParent");
-      
-      var toElementAnimation = this.__cardAnimation.getAnimation(this.__animation, "in", this.__reverse); 
-      var fromElementAnimation = this.__cardAnimation.getAnimation(this.__animation, "out", this.__reverse); 
-      
+
+      var toElementAnimation = this.__cardAnimation.getAnimation(this.__animation, "in", this.__reverse);
+      var fromElementAnimation = this.__cardAnimation.getAnimation(this.__animation, "out", this.__reverse);
+
       qx.bom.element.Class.addClasses(toElement, toCssClasses);
       qx.bom.element.Class.addClasses(fromElement, fromCssClasses);
 
-      qx.bom.element.Animation.animate(toElement, toElementAnimation); 
-      qx.bom.element.Animation.animate(fromElement, fromElementAnimation); 
+      qx.bom.element.Animation.animate(toElement, toElementAnimation);
+      qx.bom.element.Animation.animate(fromElement, fromElementAnimation);
     },
 
 

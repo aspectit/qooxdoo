@@ -18,15 +18,17 @@
 ************************************************************************ */
 
 /* ************************************************************************
-#ignore(simulator.webdriver)
-#ignore(simulator.webdriver.*)
-#require(simulator.qxwebdriver.WebDriverLoader)
 ************************************************************************ */
 
 /**
  * Overrides <code>webdriver.Builder.build</code> so that it returns a
  * {@link simulator.qxwebdriver.WebDriver} object.
- * @lint ignoreUndefined(simulator.webdriver.Builder)
+ *
+ * @require(simulator.qxwebdriver.WebDriverLoader)
+ * @ignore(simulator.webdriver.FirefoxDomExecutor)
+ * @ignore(simulator.webdriver.process)
+ * @ignore(simulator.webdriver.node)
+ * @ignore(simulator.webdriver.http)
  */
 qx.Class.define("simulator.qxwebdriver.Builder",
 {
@@ -43,10 +45,6 @@ qx.Class.define("simulator.qxwebdriver.Builder",
      * Builds a new {@link simulator.qxwebdriver.WebDriver} instance using this
      * builder's current configuration.
      * @return {simulator.qxwebdriver.WebDriver} A new WebDriver client.
-     * @lint ignoreUndefined(simulator.webdriver.FirefoxDomExecutor)
-     * @lint ignoreUndefined(simulator.webdriver.process)
-     * @lint ignoreUndefined(simulator.webdriver.node)
-     * @lint ignoreUndefined(simulator.webdriver.http)
      */
     build : function()
     {

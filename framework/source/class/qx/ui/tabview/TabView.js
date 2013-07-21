@@ -125,7 +125,7 @@ qx.Class.define("qx.ui.tabview.TabView",
 
   members :
   {
-    /** {qx.ui.form.RadioGroup} instance containing the radio group */
+    /** @type {qx.ui.form.RadioGroup} instance containing the radio group */
     __radioGroup : null,
 
 
@@ -363,7 +363,7 @@ qx.Class.define("qx.ui.tabview.TabView",
     */
 
 
-    /** {Map} Maps the bar position to an appearance state */
+    /** @type {Map} Maps the bar position to an appearance state */
     __barPositionToState : null,
 
     /**
@@ -380,6 +380,7 @@ qx.Class.define("qx.ui.tabview.TabView",
     _applyBarPosition : function(value, old)
     {
       var bar = this.getChildControl("bar");
+      var pane = this.getChildControl("pane");
 
       var horizontal = value == "left" || value == "right";
       var reversed = value == "right" || value == "bottom";
@@ -410,6 +411,9 @@ qx.Class.define("qx.ui.tabview.TabView",
         // Update bar
         bar.removeState(oldState);
 
+        // Update pane
+        pane.removeState(oldState);
+
         // Update pages
         for (var i=0, l=children.length; i<l; i++) {
           children[i].removeState(oldState);
@@ -422,6 +426,9 @@ qx.Class.define("qx.ui.tabview.TabView",
 
         // Update bar
         bar.addState(newState);
+
+        // Update pane
+        pane.addState(newState);
 
         // Update pages
         for (var i=0, l=children.length; i<l; i++) {

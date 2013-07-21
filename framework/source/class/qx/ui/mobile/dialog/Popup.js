@@ -65,11 +65,11 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
   extend : qx.ui.mobile.core.Widget,
 
 
- /*
-  *****************************************************************************
-     CONSTRUCTOR
-  *****************************************************************************
-  */
+  statics:
+  {
+    ROOT : null
+  },
+
 
   /**
    * @param widget {qx.ui.mobile.core.Widget} the widget the will be shown in the popup
@@ -79,24 +79,23 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
   {
     this.base(arguments);
     this.exclude();
-    qx.core.Init.getApplication().getRoot().add(this);
+
+    if(qx.ui.mobile.dialog.Popup.ROOT == null) {
+      qx.ui.mobile.dialog.Popup.ROOT = qx.core.Init.getApplication().getRoot();
+    }
+    qx.ui.mobile.dialog.Popup.ROOT.add(this);
 
     this.__arrow = new qx.ui.mobile.container.Composite();
     this._add(this.__arrow);
 
     this.__anchor = anchor;
-    
+
     if(widget) {
       this._initializeChild(widget);
     }
   },
 
 
-  /*
-  *****************************************************************************
-     PROPERTIES
-  *****************************************************************************
-  */
   properties :
   {
     // overridden
@@ -129,8 +128,8 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
       nullable : true,
       event : "changeIcon"
     },
-    
-    
+
+
     /**
      * Whether the popup should be displayed modal.
      */
@@ -142,12 +141,6 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
     }
   },
 
-
-  /*
-  *****************************************************************************
-     MEMBERS
-  *****************************************************************************
-  */
 
   members :
   {
@@ -170,55 +163,58 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
     {
       if(this.__anchor)
       {
-          var viewPortHeight = qx.bom.Viewport.getHeight();
-          var viewPortWidth = qx.bom.Viewport.getWidth();
-        
-          var anchorPosition = qx.bom.element.Location.get(this.__anchor.getContainerElement());
-          var popupDimension = qx.bom.element.Dimension.getSize(this.getContainerElement());
-        
-          this.__lastPopupDimension = popupDimension;
-          
-          var computedPopupPosition = qx.util.placement.Placement.compute(popupDimension,{
-            width: viewPortWidth,
-            height: viewPortHeight
-          },anchorPosition,{
-            left: 0,
-            right: 0,
-            top: this.__arrowSize,
-            bottom: this.__arrowSize
-          },"bottom-left","keep-align","keep-align");
-          
-          // Reset Anchor.
-          this._resetPosition();
-        
-          var isTop = anchorPosition.top > computedPopupPosition.top;
-          var isLeft = anchorPosition.left > computedPopupPosition.left;
-          
-          
-          var isOutsideViewPort = computedPopupPosition.top < 0 
-            || computedPopupPosition.left < 0 
-            || computedPopupPosition.left + popupDimension.width > viewPortWidth 
-            || computedPopupPosition.top + popupDimension.height > viewPortHeight;
-          
-          this.__arrow.removeCssClasses(['popupAnchorPointerTop','popupAnchorPointerTopRight','popupAnchorPointerBottom','popupAnchorPointerBottomRight']);
-          if(isOutsideViewPort) {
-            this._positionToCenter();
-          } else {
-            if(isTop) {
-              if(isLeft) {
-                this.__arrow.addCssClass('popupAnchorPointerBottomRight');
-              } else {
-                this.__arrow.addCssClass('popupAnchorPointerBottom');
-              }
+        var rootHeight = qx.ui.mobile.dialog.Popup.ROOT.getHeight();
+        var rootWidth = qx.ui.mobile.dialog.Popup.ROOT.getWidth();
+
+        var rootPosition = qx.bom.element.Location.get(qx.ui.mobile.dialog.Popup.ROOT.getContainerElement());
+        var anchorPosition = qx.bom.element.Location.get(this.__anchor.getContainerElement());
+        var popupDimension = qx.bom.element.Dimension.getSize(this.getContainerElement());
+
+        this.__lastPopupDimension = popupDimension;
+
+        var computedPopupPosition = qx.util.placement.Placement.compute(popupDimension, {
+          width: rootPosition.left + rootWidth,
+          height: rootPosition.top + rootHeight
+        }, anchorPosition, {
+          left: 0,
+          right: 0,
+          top: this.__arrowSize,
+          bottom: this.__arrowSize
+        }, "bottom-left", "keep-align", "keep-align");
+
+        // Reset Anchor.
+        this._resetPosition();
+
+        var isTop = anchorPosition.top > computedPopupPosition.top;
+        var isLeft = anchorPosition.left > computedPopupPosition.left;
+
+        computedPopupPosition.top = computedPopupPosition.top - rootPosition.top;
+        computedPopupPosition.left = computedPopupPosition.left - rootPosition.left;
+
+        var isOutsideViewPort = computedPopupPosition.top < 0
+          || computedPopupPosition.left < 0
+          || computedPopupPosition.left + popupDimension.width > rootWidth
+          || computedPopupPosition.top + popupDimension.height > rootHeight;
+
+        this.__arrow.removeCssClasses(['popupAnchorPointerTop','popupAnchorPointerTopRight','popupAnchorPointerBottom','popupAnchorPointerBottomRight']);
+        if(isOutsideViewPort) {
+          this._positionToCenter();
+        } else {
+          if(isTop) {
+            if(isLeft) {
+              this.__arrow.addCssClass('popupAnchorPointerBottomRight');
             } else {
-              if(isLeft) {
-                this.__arrow.addCssClass('popupAnchorPointerTopRight');
-              } else {
-                this.__arrow.addCssClass('popupAnchorPointerTop');
-              }
+              this.__arrow.addCssClass('popupAnchorPointerBottom');
             }
-            this.placeTo(computedPopupPosition.left,computedPopupPosition.top);
+          } else {
+            if(isLeft) {
+              this.__arrow.addCssClass('popupAnchorPointerTopRight');
+            } else {
+              this.__arrow.addCssClass('popupAnchorPointerTop');
+            }
           }
+          this.placeTo(computedPopupPosition.left, computedPopupPosition.top);
+        }
       } else if (this.__childrenContainer) {
         // No Anchor
         this._positionToCenter();
@@ -238,7 +234,7 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
 
         // Move outside of viewport
         this.placeTo(-1000,-1000);
-        
+
         // Needs to be added to screen, before rendering position, for calculating
         // objects height.
         this.base(arguments);
@@ -247,7 +243,7 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
         this._updatePosition();
       }
       this.__isShown = true;
-      
+
       if(this.getModal())
       {
         this._getBlocker().show();
@@ -263,31 +259,31 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
       if (this.__isShown)
       {
         this.__unregisterEventListener();
-        
+
         this.exclude();
       }
       this.__isShown = false;
-      
+
       if(this.getModal())
       {
         this._getBlocker().hide();
       }
     },
-    
-    
+
+
     /**
      * Hides the popup after a given time delay.
      * @param delay {Integer} time delay in ms.
      */
     hideWithDelay : function(delay) {
-      if(delay) {
+      if (delay) {
         qx.lang.Function.delay(this.hide, delay, this);
       } else {
         this.hide();
       }
     },
-    
-    
+
+
     /**
      * Returns the shown state of this popup.
      * @return {Boolean} whether the popup is shown or not.
@@ -319,10 +315,10 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
       qx.bom.element.Style.set(this.getContainerElement(),"left",left+"px");
       qx.bom.element.Style.set(this.getContainerElement(),"top",top+"px");
     },
-    
-    
+
+
     /**
-     * Tracks the user touch on root and hides the widget if touch start event 
+     * Tracks the user touch on root and hides the widget if touch start event
      * occurs outside of the widgets bounds.
      * @param evt {qx.event.type.Touch} the touch event.
      */
@@ -332,7 +328,7 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
 
       var popupLocation = qx.bom.element.Location.get(this.getContainerElement());
 
-      var isOutsideWidget =  clientX < popupLocation.left  
+      var isOutsideWidget =  clientX < popupLocation.left
         || clientX > popupLocation.left + this.__lastPopupDimension.width
         || clientY > popupLocation.top + this.__lastPopupDimension.height
         || clientY < popupLocation.top;
@@ -341,29 +337,48 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
         this.hide();
       }
     },
-    
+
+
+    /**
+     * Handler for touchstart events on popup. Prevents default of <code>touchstart</code> 
+     * if originalTarget was not of type {@link qx.ui.mobile.form.Input qx.ui.mobile.form.Input}
+     * @param evt {qx.event.type.Touch} The touch event.
+     */
+    _preventTouch : function(evt) {
+      var originalTargetWidget = qx.ui.mobile.core.Widget.getWidgetById(evt.getOriginalTarget().id);
+      if(!(originalTargetWidget instanceof qx.ui.mobile.form.Input)) {
+        evt.preventDefault();
+      }
+    },
+
 
     /**
      * Centers this widget to window's center position.
      */
-    _positionToCenter : function() {
-      var childDimension = qx.bom.element.Dimension.getSize(this.getContainerElement());
+    _positionToCenter : function()
+    {
+      var container = this.getContainerElement();
 
-      this.getContainerElement().style.left = "50%";
-      this.getContainerElement().style.top = "50%";
-      this.getContainerElement().style.marginLeft = -(childDimension.width/2) + "px";
-      this.getContainerElement().style.marginTop = -(childDimension.height/2) + "px";
+      container.style.position = "absolute";
+      var childDimension = qx.bom.element.Dimension.getSize(container);
+
+      container.style.left = "50%";
+      container.style.top = "50%";
+      container.style.marginLeft = -(childDimension.width/2) + "px";
+      container.style.marginTop = -(childDimension.height/2) + "px";
     },
 
 
     /**
      * Resets the position of this element (left, top, margins...)
      */
-    _resetPosition : function() {
-      this.getContainerElement().style.left = "0px";
-      this.getContainerElement().style.top = "0px";
-      this.getContainerElement().style.marginLeft = null;
-      this.getContainerElement().style.marginTop = null;
+    _resetPosition : function()
+    {
+      var container = this.getContainerElement();
+      container.style.left = "0px";
+      container.style.top = "0px";
+      container.style.marginLeft = null;
+      container.style.marginTop = null;
     },
 
 
@@ -373,11 +388,13 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
     __registerEventListener : function()
     {
       qx.event.Registration.addListener(window, "resize", this._updatePosition, this);
-      
+
       if(this.__anchor) {
-        var appRoot = qx.core.Init.getApplication().getRoot();
+        var appRoot = qx.ui.mobile.dialog.Popup.ROOT;
         appRoot.addListener("touchstart",this._trackUserTouch,this);
       }
+
+      this.addListener("touchstart", this._preventTouch, this);
     },
 
 
@@ -387,14 +404,16 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
     __unregisterEventListener : function()
     {
       qx.event.Registration.removeListener(window, "resize", this._updatePosition, this);
-      
+
       if(this.__anchor) {
-        var appRoot = qx.core.Init.getApplication().getRoot();
-        appRoot.removeListener("touchstart",this._trackUserTouch,this);
+        var appRoot = qx.ui.mobile.dialog.Popup.ROOT;
+        appRoot.removeListener("touchstart", this._trackUserTouch, this);
       }
+
+      this.removeListener("touchstart", this._preventTouch, this);
     },
-    
-    
+
+
     /**
      * This method creates the container where the popup's widget will be placed
      * and adds it to the popup.
@@ -466,34 +485,22 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
         }
       }
     },
-    
-    
-    /**
-     * Prevents the firing of a click event on this widget when called on "touchstart".
-     * @param evt {qx.event.type.Touch} The touchstart event.
-     */
-    _preventClickEvent : function(evt) {
-      evt.preventDefault();
-    },
 
 
     // property apply
     _applyIcon : function(value, old)
     {
-      if(value) {
-        if(this.__titleWidget)
-        {
+      if (value) {
+        if (this.__titleWidget) {
           this.__titleWidget.setIcon(value);
-        }
-        else
-        {
+        } else {
           this.__titleWidget = new qx.ui.mobile.basic.Atom(this.getTitle(), value);
           this.__titleWidget.addCssClass('popup-title');
 
-          if(this.__widget) {
+          if (this.__widget) {
             this.__childrenContainer.addBefore(this._createTitleWidget(), this.__widget);
           } else {
-            if(this.__childrenContainer) {
+            if (this.__childrenContainer) {
               this.__childrenContainer.add(this._createTitleWidget());
             }
           }
@@ -554,8 +561,8 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
         return null;
       }
     },
-    
-    
+
+
     /**
      * Returns the blocker widget.
      *
@@ -567,12 +574,6 @@ qx.Class.define("qx.ui.mobile.dialog.Popup",
     }
   },
 
-
-  /*
-  *****************************************************************************
-     DESTRUCTOR
-  *****************************************************************************
-  */
 
   destruct : function()
   {

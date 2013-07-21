@@ -17,12 +17,10 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-#require(qx.module.Event)
-************************************************************************ */
-
 /**
  * Normalization for touch events
+ *
+ * @require(qx.module.Event)
  */
 qx.Bootstrap.define("qx.module.event.Touch", {
   statics :
@@ -30,7 +28,7 @@ qx.Bootstrap.define("qx.module.event.Touch", {
     /**
      * List of event types to be normalized
      */
-    TYPES : ["tap", "swipe"],
+    TYPES : ["tap", "longtap", "swipe"],
 
 
     /**

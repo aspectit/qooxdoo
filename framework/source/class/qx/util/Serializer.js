@@ -17,15 +17,11 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#ignore(qx.data.IListData)
-#ignore(qx.locale.LocalizedString)
-
-************************************************************************ */
-
 /**
  * This is an util class responsible for serializing qooxdoo objects.
+ *
+ * @ignore(qx.data.IListData)
+ * @ignore(qx.locale.LocalizedString)
  */
 qx.Class.define("qx.util.Serializer",
 {
@@ -91,6 +87,15 @@ qx.Class.define("qx.util.Serializer",
      */
     __toUriParameter : function(name, value, qxSerializer)
     {
+
+      if (value && value.$$type == "Class") {
+        value = value.classname;
+      }
+
+      if (value && (value.$$type == "Interface" || value.$$type == "Mixin")) {
+        value = value.name;
+      }
+
       if (value instanceof qx.core.Object && qxSerializer != null) {
         var encValue = encodeURIComponent(qxSerializer(value));
         if (encValue === undefined) {
@@ -157,6 +162,16 @@ qx.Class.define("qx.util.Serializer",
         }
 
         return result;
+      }
+
+      // return names for qooxdoo classes
+      if (object.$$type == "Class") {
+        return object.classname;
+      }
+
+      // return names for qooxdoo interfaces and mixins
+      if (object.$$type == "Interface" || object.$$type == "Mixin") {
+        return object.name;
       }
 
       // qooxdoo object
@@ -231,11 +246,11 @@ qx.Class.define("qx.util.Serializer",
      * Serializes the properties of the given qooxdoo object into a json object.
      *
      * @param object {qx.core.Object} Any qooxdoo object
-     * @param qxSerializer {Function} Function used for serializing qooxdoo
+     * @param qxSerializer {Function?} Function used for serializing qooxdoo
      *   objects stored in the propertys of the object. Check for the type of
      *   classes <ou want to serialize and return the serialized value. In all
      *   other cases, just return nothing.
-     * @param dateFormat {qx.util.format.DateFormat} If a date formater is given,
+     * @param dateFormat {qx.util.format.DateFormat?} If a date formater is given,
      *   the format method of this given formater is used to convert date
      *   objects into strings.
      * @return {String} The serialized object.
@@ -272,6 +287,17 @@ qx.Class.define("qx.util.Serializer",
         return result + "]";
       }
 
+      // return names for qooxdoo classes
+      if (object.$$type == "Class") {
+        return '"' + object.classname + '"';
+      }
+
+      // return names for qooxdoo interfaces and mixins
+      if (object.$$type == "Interface" || object.$$type == "Mixin") {
+        return '"' + object.name + '"';
+      }
+
+
       // qooxdoo object
       if (object instanceof qx.core.Object) {
         if (qxSerializer != null) {
@@ -299,7 +325,7 @@ qx.Class.define("qx.util.Serializer",
       }
 
       // localized strings
-      if (object instanceof qx.locale.LocalizedString) {
+      if (qx.locale && qx.locale.LocalizedString && object instanceof qx.locale.LocalizedString) {
         object = object.toString();
         // no return here because we want to have the string checks as well!
       }
