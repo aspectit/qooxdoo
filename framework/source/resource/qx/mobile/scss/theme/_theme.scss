@@ -3,7 +3,7 @@
 //
 
 $border-thickness: 1px;
-$dialog-border-thickness:2px;
+$dialog-border-thickness: 2px;
 $shadow-color: rgba(0,0,0,0.5);
  
 body {
@@ -43,9 +43,10 @@ body {
 }
 
 .bordered {
+  @include border-radius($group-border-radius);
+
   border: $border-thickness solid $group-border-color;
   background-color:$group-background-color;
-  @include border-radius($group-border-radius);
   padding:10px;
 }
 
@@ -59,28 +60,27 @@ $scShadowColorLight:rgba(0,0,0,0.2);
 $scGradientVerticalOffset:15px;
 
 .scroll-container {
-  border: $border-thickness solid $navigationpage-border-color;
   background-color:white;
 
   @include border-radius($input-border-radius);
-
   @include box-inset-multi-shadow(
         0px $scShadowOffset $scShadowOffset -1*$scShadowOffset $scShadowColorLight, 
         0px -1*$scShadowOffset $scShadowOffset -1*$scShadowOffset $scShadowColorLight
   );
+
+  border: $border-thickness solid $navigationpage-border-color;
 }
 
 .scroll-container:before {
   @include border-radius-top($input-border-radius);
-  position:absolute;
-  top:0px;
-  z-index:500;
-
   @include box-inset-multi-shadow(
       0px $scShadowOffset*1.4 $scShadowOffset -1*$scShadowOffset $scShadowColor, 
       0px 0px $scShadowOffset -1*$scShadowOffset $scShadowColor
   );
 
+  position:absolute;
+  top:0px;
+  z-index:500;
   content:"";
   width:100%;
   height:0px;
@@ -91,17 +91,17 @@ $scGradientVerticalOffset:15px;
 }
 
 .scroll-container:after {
-  @include border-radius-bottom($input-border-radius);
-  position:absolute;
-  bottom:0px;
-  z-index:500;
+  content:"";
 
+  @include border-radius-bottom($input-border-radius);
   @include box-inset-multi-shadow(
       0px 0px $scShadowOffset -1*$scShadowOffset $scShadowColor, 
       0px -1*$scShadowOffset*1.4 $scShadowOffset -1*$scShadowOffset $scShadowColor
   );
-
-  content:"";
+  
+  position:absolute;
+  bottom:0px;
+  z-index:500;
   width:100%;
   height:0px;
 }
@@ -116,9 +116,10 @@ $scGradientVerticalOffset:15px;
 //
 
 .text-field:not(.selectbox), .password-field, .number-field, .text-area {
+  @include border-radius($input-border-radius);
+
   border: $border-thickness solid $input-border-color;
   color:  $input-text-color;
-  @include border-radius($input-border-radius);
 }
 
 input.invalid {
@@ -131,8 +132,8 @@ input, .text-area {
 
 .scroll-container .text-area {
   @include border-radius(0);
-  border:2px solid transparent;
-  background:none;
+  border: 2px solid transparent;
+  background: none;
 }
 
 //
@@ -140,7 +141,7 @@ input, .text-area {
 //
 
 .navigationbar {
-   @include gradient-vertical(lighten($navigationbar-background-color, 10%), darken($navigationbar-background-color, 10%));
+   @include gradient-vertical($navigationbar-background-color, $navigationbar-background-color-2);
    color: $navigationbar-text-color; 
    height: $navigationbar-height;
 }
@@ -150,17 +151,16 @@ input, .text-area {
 //
 
 .navigationbar-button, .navigationbar-backbutton {
-  color: $navigationbarbutton-text-color;
-
-  @include gradient-vertical(lighten($navigationbarbutton-background-color, 10%), darken($navigationbarbutton-background-color, 10%));
-  border: $border-thickness solid $navigationbarbutton-border-color;
-
+  @include gradient-vertical($navigationbarbutton-background-color, $navigationbarbutton-background-color-2);
   @include border-radius($navigationbarbutton-border-radius);
+
+  color: $navigationbarbutton-text-color;
+  border: $border-thickness solid $navigationbarbutton-border-color;
 }
 
 .navigationbar-button.active, .navigationbar-backbutton.active {
+  @include gradient-vertical($navigationbarbutton-active-background-color, $navigationbarbutton-active-background-color-2);
   color: $navigationbarbutton-active-text-color;
-  @include gradient-vertical(lighten($navigationbarbutton-active-background-color, 20%), $navigationbarbutton-active-background-color);
   border: $border-thickness solid $navigationbarbutton-active-border-color;
 }
 
@@ -200,13 +200,13 @@ input, .text-area {
   @include transform(rotate(45deg));
   @include transform-origin(50% 50%);
 
-  border-top: $list-arrow-size solid $list-arrow-color;
-  border-right: $list-arrow-size solid $list-arrow-color;
+  border-top: $list-arrow-thickness solid $list-arrow-color;
+  border-right: $list-arrow-thickness solid $list-arrow-color;
   
   width: $list-arrow-size*2;
   height: $list-arrow-size*2;
   position: absolute;
-  right:15px;
+  right: 15px;
   top: 50%;
   margin-top: -1.5*($list-arrow-size);
 }
@@ -216,7 +216,7 @@ input, .text-area {
 }
 
 .list .list-item.active {
-  @include gradient-vertical(lighten($list-active-background-color, 20%), $list-active-background-color);
+  @include gradient-vertical($list-active-background-color, $list-active-background-color-2);
 }
 
 .list-item:first-child, .list-item:first-child a {
@@ -253,28 +253,25 @@ input, .text-area {
 }
 
 .form-row-group-first {
-  background-color: $form-background-color;
+  @include border-radius-top($form-border-radius);
 
+  background-color: $form-background-color;
   border-left:1px solid $form-border-color;
   border-right:1px solid $form-border-color;
   border-top:1px solid $form-border-color;
-
-  @include border-radius-top($form-border-radius);
-
   padding:2px;
   position:relative;
   top:2px;
 }
 
 .form-row-group-last {
+  @include border-radius-bottom($form-border-radius);
+
   background-color: $form-background-color;
   border-top:0px transparent;
   border-left:1px solid $form-border-color;
   border-right:1px solid $form-border-color;
   border-bottom:1px solid $form-border-color;
-
-  @include border-radius-bottom($form-border-radius);
-
   padding:2px;
   position:relative;
   top:-2px;
@@ -284,25 +281,26 @@ input, .text-area {
   margin-top:20px;
 }
 
+.form-row-content .label {
+  color: $form-label-text-color;
+}
+
 //
 // BUTTON
 //
 
 .button {
-  color: $button-text-color;
-
-  @include gradient-vertical(lighten($button-background-color, 10%), darken($button-background-color, 10%));
-
+  @include gradient-vertical($button-background-color,$button-background-color-2);
   @include border-radius($button-border-radius);
 
+  color: $button-text-color;
   border: $border-thickness solid $button-border-color;
 }
 
 .button.active {
+  @include gradient-vertical($button-active-background-color, $button-active-background-color-2);
+
   color:  $button-active-text-color;
-
-  @include gradient-vertical(lighten($button-active-background-color, 20%), $button-active-background-color);
-
   border: $border-thickness solid $button-active-border-color;
 }
 
@@ -315,14 +313,13 @@ $title-background-gradient-2:darken($dialog-background-color, 5%);
 
 .dialog, .popup {
   // Fallback if no gradient could be set.
-  background-color:$dialog-background-color;
+  background-color: $dialog-background-color;
 
   @include gradient-vertical-three($title-background-gradient-1, $title-background-gradient-2, $title-background-gradient-2, 20px);
-  border: $dialog-border-thickness solid $dialog-border-color;
-
   @include border-radius($dialog-border-radius);
   @include box-shadow(0px 2px 7px 0px $shadow-color);
 
+  border: $dialog-border-thickness solid $dialog-border-color;
   color: $dialog-title-text-color; 
 }
 
@@ -336,13 +333,13 @@ $arrow-size: 12px;
 
 // ARROW TOP
 
-.popupAnchorPointerTop:before, .popupAnchorPointerTopRight:before
+.anchor.top:before, .anchor.top.right:before
 {
   @include arrow;
   @include triangle-up($arrow-size+2, $dialog-border-color);
 }
 
-.popupAnchorPointerTop:after, .popupAnchorPointerTopRight:after
+.anchor.top:after, .anchor.top.right:after
 {
   @include arrow;
   @include triangle-up($arrow-size, $title-background-gradient-1);
@@ -350,44 +347,16 @@ $arrow-size: 12px;
 
 // ARROW BOTTOM
 
-.popupAnchorPointerBottom:before,.popupAnchorPointerBottomRight:before
+.anchor.bottom:before,.anchor.bottom.right:before
 {
   @include arrow;
   @include triangle-down($arrow-size+2, $dialog-border-color);
 }
 
-.popupAnchorPointerBottom:after,.popupAnchorPointerBottomRight:after
+.anchor.bottom:after,.anchor.bottom.right:after
 {
   @include arrow;
   @include triangle-down($arrow-size, $title-background-gradient-2);
-}
-
-// ARROW LEFT
-
-.popupAnchorPointerLeft:before
-{
-  @include arrow;
-  @include triangle-left($arrow-size+2, $dialog-border-color);
-}
-
-.popupAnchorPointerLeft:after
-{
-  @include arrow;
-  @include triangle-left($arrow-size, $title-background-gradient-2);
-}
-
-// ARROW RIGHT
-
-.popupAnchorPointerRight:before
-{
-  @include arrow;
-  @include triangle-right($arrow-size+2, $dialog-border-color);
-}
-
-.popupAnchorPointerRight:after
-{
-  @include arrow;
-  @include triangle-right($arrow-size, $title-background-gradient-2);
 }
 
 .dialogTitleUnderline:after {
@@ -399,100 +368,36 @@ $arrow-size: 12px;
 //
 
 .tabBar {
-  border-bottom: 3px solid $tabbar-active-background-color;
+  border-bottom: 3px solid $tabbar-active-background-color-2;
+  padding-top: $tabbar-button-distance;
+  padding-left: $tabbar-button-distance;
+  padding-right: $tabbar-button-distance;
 }
 
 .tabButton {
-  color:  $tabbar-inactive-text-color;
-  
-  @include gradient-vertical(lighten($tabbar-inactive-background-color,5%), darken($tabbar-inactive-background-color,15%));
+  @include gradient-vertical($tabbar-inactive-background-color, $tabbar-inactive-background-color-2);
+  @include border-radius-top($tabbar-border-radius);
 
-  $tab-button-border: $border-thickness solid lighten($tabbar-inactive-background-color, 10%);  
+  color:  $tabbar-inactive-text-color;
+
+  height:  $tabbar-height;
+  line-height:  $tabbar-height;
+
+  $tab-button-border: $border-thickness solid $tabbar-inactive-border-color;  
   border-top: $tab-button-border;
   border-left: $tab-button-border;
   border-right: $tab-button-border;
+}
 
-  @include border-radius-top($tabbar-border-radius);
+.tabButton + .tabButton {
+  margin-left: $tabbar-button-distance;
 }
 
 .tabButton.active, .tabButton.selected {
-  border: $border-thickness solid $tabbar-active-background-color;
- 
-  $tab-stop-1: lighten($tabbar-active-background-color, 20%);
-  $tab-stop-2: lighten($tabbar-active-background-color, 5%);
-  $tab-stop-3: $tabbar-active-background-color;
-  
-  @include gradient-vertical-five($tab-stop-1, $tab-stop-2, $tab-stop-2, $tab-stop-3, $tab-stop-3, 4%, 49%, 53%);
-}
+  @include gradient-vertical($tabbar-active-background-color, $tabbar-active-background-color-2);
 
-//
-// SLIDER
-//
-
-
-.slider {
-  @include border-radius($slider-border-radius);
-  @include box-inset-multi-shadow(0 2px 2px rgba(0,0,0,0.4), 0 8px 1px rgba(0,0,0,0.1));
-
-  background-color: $slider-background-color;
-  border: $border-thickness solid $slider-border-color;
-}
-
-.slider > div {
-  $color-stop-active-1: lighten($slider-active-area-color, 20%);
-  $color-stop-active-2: $slider-active-area-color;
-  @include gradient-vertical($color-stop-active-1, $color-stop-active-2);
-}
-
-.slider > div:after {
-  @include border-radius($slider-knob-border-radius);
-  @include box-shadow(0 0 2px $shadow-color);
-  @include gradient-vertical(#cfcfcf, #fdfdfd);
-  
-  border: $border-thickness solid $slider-border-color;
-
-}
-
-//
-// TOGGLEBUTTON
-//
-
-.toggleButton {
-  background-color: $togglebutton-background-color;
-
-  // Light inset border.
-  @include box-inset-multi-shadow(0 2px 2px rgba(0,0,0,0.4), 0 14px 1px rgba(0,0,0,0.1));
-  border: $border-thickness solid #9e9e9e;
-
-  @include border-radius($togglebutton-border-radius);
-}
-
-.toggleButton.checked {
-  @include box-inset-multi-shadow(0px 3px 2px rgba(0,0,0,0.4), 0px 14px 0px rgba(0,0,0,0.1));
-  background-color:$togglebutton-active-background-color;
-}
-
-.toggleButton.checked .toggleButtonSwitch {
-  @include box-shadow(-1px 0px 2px rgba(0,0,0,0.7));
-}
-
-.toggleButton.checked:before {
-  color: $togglebutton-active-text-color;
-}
-
-.toggleButton:not(.checked):before  {
-  color: $togglebutton-text-color;
-}
-
-.toggleButtonSwitch {
-  @include border-radius($togglebutton-border-radius);
-  
-  border: $border-thickness solid #E8E8E8;
-
-  @include box-shadow(1px 0 2px rgba(0,0,0,0.7));
-
-  background: #cfcfcf;
-  @include gradient-vertical (#cfcfcf, #fdfdfd);
+  border: $border-thickness solid $tabbar-active-border-color;
+  border-bottom: 0px solid transparent;
 }
 
 //
@@ -500,17 +405,19 @@ $arrow-size: 12px;
 //
 
 .checkbox {
+  @include border-radius($checkbox-border-radius * 3);
+  @include gradient-vertical($checkbox-background-color, $checkbox-background-color-2);
+
   position:relative;
   border:$border-thickness solid $checkbox-border-color;
 
   box-sizing:border-box;
-  background-color: #929292;
-  
-  @include border-radius($checkbox-border-radius * 3);
-  @include gradient-vertical($checkbox-background-color, $checkbox-background-color-2);
 }
 
 .checkbox:after {
+  @include transform(rotate(-45deg));
+  @include box-shadow(-1px 1px 1px 0px rgba(0,0,0,0.3));
+
   display:inline-block;
   opacity: 0;
   content:"";
@@ -522,9 +429,6 @@ $arrow-size: 12px;
   margin-top: 6px;
   border-top: 0;
   border-right: 0;
-
-  @include transform(rotate(-45deg));
-  @include box-shadow(-1px 1px 1px 0px rgba(0,0,0,0.3));
 }
 
 .checkbox.checked:after {
@@ -544,8 +448,8 @@ $arrow-size: 12px;
 
 // Color dot
 .radio.checked:after {
-  background: $radiobutton-dot-color; 
   @include box-shadow(1px 1px 1px 0px rgba(0,0,0,0.3));
+  background: $radiobutton-dot-color; 
 }
 
 // 
@@ -573,17 +477,17 @@ $arrow-size: 12px;
 // 
 
 .toolbar-button {
-  color: $toolbar-text-color;
- 
-  @include gradient-vertical(lighten($toolbar-background-color, 10%), darken($toolbar-background-color, 10%));
-  border: $border-thickness solid $toolbar-border-color;
-
+  @include gradient-vertical($toolbar-background-color,$toolbar-background-color-2);
   @include border-radius($toolbar-border-radius); 
+
+  color: $toolbar-text-color;
+  border: $border-thickness solid $toolbar-border-color;
 }
 
 .toolbar-button.active {
+  @include gradient-vertical($toolbar-active-background-color,$toolbar-active-background-color-2); 
+  
   color: $toolbar-active-text-color;
-  @include gradient-vertical(lighten($toolbar-active-background-color, 20%),$toolbar-active-background-color); 
 }
 
 //
@@ -591,8 +495,9 @@ $arrow-size: 12px;
 //
 
 .item-selected {
-  color: $menu-item-selected-text-color !important;
   @include gradient-vertical(lighten($menu-item-selected-background-color, 20%), $menu-item-selected-background-color);
+  
+  color: $menu-item-selected-text-color !important;
 }
 
 //
@@ -601,13 +506,14 @@ $arrow-size: 12px;
 
 .selectbox {
   @include border-radius($selectbox-border-radius); 
-  @include gradient-vertical(lighten($selectbox-background-color, 20%), darken($selectbox-background-color, 20%));
+  @include gradient-vertical($selectbox-background-color, $selectbox-background-color-2);
+
   border: $border-thickness solid $selectbox-border-color;
   color: $selectbox-text-color;
 }
 
-.selectbox:active {
-  @include gradient-vertical(lighten($selectbox-active-background-color, 20%),$selectbox-active-background-color);
+.selectbox.active {
+  @include gradient-vertical($selectbox-active-background-color,$selectbox-active-background-color-2);
   color: $selectbox-active-text-color;
 }
 
@@ -617,7 +523,7 @@ $arrow-size: 12px;
 }
 
 .selectbox-selected {
-  @include gradient-vertical(lighten($list-active-background-color, 20%), $list-active-background-color);
+  @include gradient-vertical($list-active-background-color, $list-active-background-color-2);
   color: $selectbox-item-selected-text-color !important;
 }
 
@@ -628,6 +534,8 @@ $arrow-size: 12px;
 $pagination-label-size:8px;
 
 .carousel-pagination-label {
+  @include border-radius($carousel-pagination-border-radius);
+
   border: 1px solid white;
   opacity:0.6;
   background-color: $carousel-pagination-background-color;
@@ -636,8 +544,6 @@ $pagination-label-size:8px;
   height:$pagination-label-size;
   text-align:center;
   line-height:$pagination-label-size;
-  @include border-radius($carousel-pagination-border-radius);
-
   font-size:1px;
   color:rgba(0,0,0,0);
 }
@@ -649,42 +555,6 @@ $pagination-label-size:8px;
 
 .carousel-pagination {
   top: -($pagination-label-size+15px);
-}
-
-//
-// PICKER
-//
-
-.picker-container {
-  background-color: $picker-spinning-wheel-background-color;
-  @include border-radius($picker-spinning-wheel-border-radius);
-}
-
-.picker-slot {
-  @include border-radius($picker-spinning-wheel-border-radius);
-}
-
-.picker-label {
-  color:  $picker-spinning-wheel-text-color;
-}
-
-.picker-slot:after {
-  background-color: $picker-spinning-wheel-divider-color;
-}
-
-// Spinning Wheel Overlay Gradient
-.picker-container:after {
-  @include border-radius($picker-spinning-wheel-border-radius);
-  @include gradient-vertical-four($picker-spinning-wheel-overlay-color-1,$picker-spinning-wheel-overlay-color-2,$picker-spinning-wheel-overlay-color-2,$picker-spinning-wheel-overlay-color-1,40%,60%);
-}
-
-// Selected Area Overlay
-.picker-container:before {
-  top: 35px;
-  height: 23px; 
-
-  border-top: 2px solid $picker-highlight-color;
-  border-bottom: 2px solid $picker-highlight-color;
 }
 
 //
@@ -704,7 +574,7 @@ $pagination-label-size:8px;
 }
 
 .drawer:not(.master-detail-master):not(.hidden) {
-   @include box-shadow(0px 0px 10px 5px $shadow-color);
+  @include box-shadow(0px 0px 10px 5px $shadow-color);
 }
 
 .drawer.top:not(.master-detail-master) {
@@ -724,6 +594,8 @@ $pagination-label-size:8px;
 }
 
 .drawer.below.left:before, .drawer.below.right:before, .drawer.below.top:before, .drawer.below.bottom:before {
+  @include box-inset-shadow(0px 0px 10px 5px $shadow-color);
+
   content:"";
   width:100%;
   height:100%;
@@ -731,8 +603,5 @@ $pagination-label-size:8px;
   top:0;
   left:0;
   z-index:500;
-
   pointer-events:none;
-  
-  @include box-inset-shadow(0px 0px 10px 5px $shadow-color);
 }

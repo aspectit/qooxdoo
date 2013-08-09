@@ -77,8 +77,36 @@ qx.Class.define("qx.ui.tree.VirtualTreeItem",
 
 
     // overridden
-    hasChildren : function() {
-      return !!this.getUserData("cell.children");
+    hasChildren : function()
+    {
+      var model = this.getModel();
+      var childProperty = this.getUserData("cell.childProperty");
+      var showLeafs = this.getUserData("cell.showLeafs");
+
+      return qx.ui.tree.core.Util.hasChildren(model, childProperty, showLeafs);
+    },
+
+
+    // apply method
+    _applyModel : function(value, old)
+    {
+      var childProperty = this.getUserData("cell.childProperty");
+
+      if (value != null && qx.ui.tree.core.Util.isNode(value, childProperty)) {
+        value.get(childProperty).addListener("changeLength", this._onChangeLength, this);
+      }
+
+      if (old != null && qx.ui.tree.core.Util.isNode(old, childProperty)) {
+        old.get(childProperty).removeListener("changeLength", this._onChangeLength, this);
+      }
+    },
+
+
+    /**
+     * Handler to update open/close icon when model length changed.
+     */
+    _onChangeLength : function() {
+      this._updateIndent();
     }
   }
 });

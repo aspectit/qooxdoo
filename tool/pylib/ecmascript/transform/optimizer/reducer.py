@@ -116,7 +116,7 @@ class ASTReducer(treeutil.NodeVisitor):
             else:
                 return ()
         operations['MUL'] = func.partial(opr, operator.mul)
-        operations['DIV'] = func.partial(opr, operator.div)
+        operations['DIV'] = func.partial(opr, operator.truediv)
         operations['MOD'] = func.partial(opr, operator.mod)
 
         # Have to distinguish between prefix and infix +/-
@@ -133,7 +133,7 @@ class ASTReducer(treeutil.NodeVisitor):
                     if operation=='+':
                         result = operator.add(op1,op2)
                     elif operation=='-':
-                        result = operation.sub(op1,op2)
+                        result = operator.sub(op1,op2)
             # string '+'
             elif operation=='+' and all([isinstance(x,types.StringTypes) for x in (op1,op2)]):
                 result = operator.add(op1,op2)

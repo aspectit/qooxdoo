@@ -67,6 +67,7 @@ qx.Class.define("qx.ui.mobile.form.Slider",
   {
     this.base(arguments);
     this._registerEventListener();
+    this._updateKnobPosition();
   },
 
 
@@ -134,6 +135,19 @@ qx.Class.define("qx.ui.mobile.form.Slider",
       check : "Boolean",
       init : false,
       apply : "_updateKnobPosition"
+    },
+
+
+    /**
+     * Adjusts which slider value should be displayed inside the knob.
+     * If <code>null</code> no value will be displayed.
+     */
+    displayValue :
+    {
+      init : "percent",
+      check : [ "value", "percent" ],
+      nullable : true, 
+      apply : "_applyDisplayValue"
     }
   },
 
@@ -226,7 +240,7 @@ qx.Class.define("qx.ui.mobile.form.Slider",
 
 
     /**
-     * Refreshs the slider.
+     * Refreshes the slider and the knob position.
      */
     _refresh : function()
     {
@@ -361,13 +375,27 @@ qx.Class.define("qx.ui.mobile.form.Slider",
       var position = Math.floor(this._percentToPosition(width, percent));
       var element = this._getKnobElement();
 
-      position = this._getOffsetForKnob(position);
-
       qx.bom.element.Style.set(element, "width", width - (width - position) + "px");
+
+      qx.bom.element.Attribute.set(element, "data-value", this.getValue());
+      qx.bom.element.Attribute.set(element, "data-percent", Math.floor(percent));
+    },
+
+
+    // Property apply
+    _applyDisplayValue : function(value, old ) {
+      if(old != null) {
+        this.removeCssClass(old);
+      }
+      if(value != null) {
+        this.addCssClass(value);
+      }
     },
 
 
     /**
+     * @deprecated {3.1} This method is not available anymore. 
+     * 
      * Determines whether the knob position needs an offset.
      * This offset is needed for preventing the knob to be shown outside the
      * range.
@@ -400,8 +428,8 @@ qx.Class.define("qx.ui.mobile.form.Slider",
 
       var percent = ((value - min) * 100) / this._getRange();
 
-      if(this.isReverseDirection()) {
-        return 100-percent;
+      if (this.isReverseDirection()) {
+        return 100 - percent;
       } else {
         return percent;
       }

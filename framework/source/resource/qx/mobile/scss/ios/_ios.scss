@@ -22,7 +22,7 @@
 .page {
   background-color: rgb(197,204,211);
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAABCAIAAACdaSOZAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABdJREFUeNpiPHrmCgMC/GNjYwNSAAEGADdNA3dnzPlQAAAAAElFTkSuQmCC);
-}
+} 
 
 .fontNormal {
   color: #666;
@@ -271,31 +271,18 @@ $scGradientVerticalOffset:15px;
 }
 
 //
-// SLIDER
-//
-
-.slider {
-  @include box-inset-multi-shadow(0 2px 2px rgba(0,0,0,0.4), 0 8px 1px rgba(0,0,0,0.1));
-
-  background-color: white;
-  border: 1px solid #d6d6d6;
-}
-
-.slider > div {
-  @include gradient-vertical-four(#007FEA, #6db5f3,#007FEA,#0056A1, 5%, 90%);
-}
-
-.slider > div:after {
-  @include border-radius(50px);
-  @include box-shadow(0 0 2px $shadow-color);
-  @include gradient-vertical(#cfcfcf, #fdfdfd);
-  
-  border: 1px solid #E8E8E8;
-}
-
-//
 // TABBAR
 //
+
+.tabButton {
+  padding-top: 4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  height: 45px;
+  line-height: 45px;
+  margin-left:4px;
+  margin-right:4px;
+}
 
 .tabBar {
   @include gradient-vertical-four(#232323, #111111, #000000, #000000, 50%, 51%);
@@ -514,13 +501,13 @@ $arrow-shadow:rgba(0,0,0,0.3);
 
 // ARROW TOP
 
-.popupAnchorPointerTop:before, .popupAnchorPointerTopRight:before
+.anchor.top:before, .anchor.top.right:before
 {
   @include arrow;
   @include triangle-up($arrow-size+2, $dialog-border-color);
 }
 
-.popupAnchorPointerTop:after, .popupAnchorPointerTopRight:after
+.anchor.top:after, .anchor.top.right:after
 {
   @include arrow;
   @include triangle-up($arrow-size, #6E7D9D);
@@ -528,93 +515,16 @@ $arrow-shadow:rgba(0,0,0,0.3);
 
 // ARROW BOTTOM
 
-.popupAnchorPointerBottom:before,.popupAnchorPointerBottomRight:before
+.anchor.bottom:before,.anchor.bottom.right:before
 {
   @include arrow;
   @include triangle-down($arrow-size+2, $dialog-border-color);
 }
 
-.popupAnchorPointerBottom:after,.popupAnchorPointerBottomRight:after
+.anchor.bottom:after,.anchor.bottom.right:after
 {
   @include arrow;
   @include triangle-down($arrow-size, #1D3566);
-}
-
-// ARROW LEFT
-
-.popupAnchorPointerLeft:before
-{
-  @include arrow;
-  @include triangle-left($arrow-size+2, $dialog-border-color);
-}
-
-.popupAnchorPointerLeft:after
-{
-  @include arrow;
-  @include triangle-left($arrow-size, #1D3566);
-}
-
-// ARROW RIGHT
-
-.popupAnchorPointerRight:before
-{
-  @include arrow;
-  @include triangle-right($arrow-size+2, $dialog-border-color);
-}
-
-.popupAnchorPointerRight:after
-{
-  @include arrow;
-  @include triangle-right($arrow-size, #1D3566);
-}
-
-//
-// TOGGLEBUTTON
-//
-
-.toggleButton {
-  // Light inset border.
-  @include box-inset-multi-shadow(0 2px 2px #999, 0 14px 1px #EAEAEA);
-  
-  border: 1px solid #9e9e9e ;
-  background-color: white;
-
-  @include border-radius(30px);
-}
-
-.toggleButton.checked {
-  // Light inset border.
-  @include box-inset-multi-shadow(0 3px 2px #0056A1, 0 14px 0px #007FEA);
-
-  @include border-radius(30px);
-  
-  // Background for checked toggle button
-  background: #2591ed; 
-  
-  background: -moz-linear-gradient(top,  #2591ed 0%, #2591ed 56%, #6db5f3 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#2591ed), color-stop(56%,#2591ed), color-stop(100%,#6db5f3));
-  background: -webkit-linear-gradient(top,  #2591ed 0%,#2591ed 56%,#6db5f3 100%); 
-  background: linear-gradient(top,  #2591ed 0%,#2591ed 56%,#6db5f3 100%); 
-}
-
-.toggleButton.checked .toggleButtonSwitch {
-  @include box-shadow(-1px 0 2px #4b4b4b);
-}
-
-.toggleButton.checked {
-  color: #ffffff;
-}
-
-.toggleButton:not(.checked) {
-  color: #888888;
-}
-
-.toggleButtonSwitch {
-  border: 1px solid #E8E8E8;
-
-  @include box-shadow(1px 0 2px #4b4b4b);
-  
-  @include gradient-vertical(#cfcfcf,#fdfdfd);
 }
 
 //

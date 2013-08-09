@@ -79,6 +79,22 @@ qx.Class.define("qx.test.io.rest.Resource",
       });
     },
 
+    __skip : function() {
+      if (qx.core.Environment.get("browser.name") == "safari" &&
+          qx.core.Environment.get("os.name") == "osx") {
+        this.require(["noReporter"]);
+      }
+    },
+
+    /**
+     * since we can't detect if the browser is under Selenium control
+     * in Safari/OS X (bug #7631), check for the Test Runner's Reporter view
+     * instead, which is only used for automated test runs.
+     */
+    hasNoReporter : function() {
+      return window.parent.qx.core.Init.getApplication().runner.view.classname !== "testrunner.view.Reporter";
+    },
+
     //
     // Configuration
     //
@@ -593,6 +609,7 @@ qx.Class.define("qx.test.io.rest.Resource",
     },
 
     "test: poll action": function() {
+      this.__skip();
       var res = this.res,
           sandbox = this.getSandbox();
 
@@ -651,6 +668,7 @@ qx.Class.define("qx.test.io.rest.Resource",
     },
 
     "test: poll action repeatedly ends previous timer": function() {
+      this.__skip();
       var res = this.res,
           sandbox = this.getSandbox(),
           msg;
@@ -670,6 +688,7 @@ qx.Class.define("qx.test.io.rest.Resource",
     },
 
     "test: poll many actions": function() {
+      this.__skip();
       var res = this.res,
           sandbox = this.getSandbox(),
           spy,
@@ -696,6 +715,7 @@ qx.Class.define("qx.test.io.rest.Resource",
     },
 
     "test: end poll action": function() {
+      this.__skip();
       var res = this.res,
           sandbox = this.getSandbox(),
           timer;
@@ -715,6 +735,7 @@ qx.Class.define("qx.test.io.rest.Resource",
     },
 
     "test: end poll action does not end polling of other action": function() {
+      this.__skip();
       var res = this.res,
           sandbox = this.getSandbox(),
           timer,
@@ -734,6 +755,7 @@ qx.Class.define("qx.test.io.rest.Resource",
     },
 
     "test: restart poll action": function() {
+      this.__skip();
       var res = this.res,
           sandbox = this.getSandbox(),
           timer;
