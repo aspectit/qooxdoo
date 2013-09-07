@@ -52,6 +52,15 @@ qx.Class.define("qx.test.bom.request.XhrWithRemote",
       this.req.dispose();
     },
 
+    __skip : function(skipOs) {
+      // certain tests fail if loaded through the Selenium proxy on Windows and OS X
+      if (qx.core.Environment.get("browser.name") == "chrome" &&
+          qx.lang.Array.contains(skipOs, qx.core.Environment.get("os.name")))
+      {
+        this.require(["noSelenium"]);
+      }
+    },
+
     //
     // Basic
     //
@@ -309,6 +318,53 @@ qx.Class.define("qx.test.bom.request.XhrWithRemote",
       });
     },
 
+    "test: overrideMimeType content type unchanged": function() {
+      this.require(["php", "noIe"]);
+
+      var req = this.req,
+          that = this;
+
+      var onloadAssertContentTypeUnchanged = function() {
+        that.resume(function() {
+          that.assertEquals("text/html;charset=iso-8859-1", req.getResponseHeader("Content-Type"));
+          that.assertEquals("ƒeƒXƒg", req.responseText);
+        });
+      };
+
+      var query = "?type="+encodeURIComponent("text/html;charset=iso-8859-1")+"&content=%83%65%83%58%83%67";
+      var url = this.getUrl("qx/test/xmlhttp/get_content.php") + query;
+
+      req.onload = onloadAssertContentTypeUnchanged;
+      req.open("GET", url);
+      req.send();
+      this.wait();
+    },
+
+
+    "test: overrideMimeType content type override": function() {
+      this.require(["php", "noIe"]);
+
+      var req = this.req,
+          that = this;
+
+      var onloadAssertContentTypeOverride = function() {
+        that.resume(function() {
+          // may or may not work - see API docs of overrideMimeType
+          // that.assertEquals("text/plain;charset=Shift-JIS", req.getResponseHeader("Content-Type"));
+          that.assertEquals("テスト", req.responseText);
+        });
+      };
+
+      var query = "?type="+encodeURIComponent("text/html;charset=iso-8859-1")+"&content=%83%65%83%58%83%67";
+      var url = this.getUrl("qx/test/xmlhttp/get_content.php") + query;
+
+      req.onload = onloadAssertContentTypeOverride;
+      req.open("GET", url);
+      req.overrideMimeType("text/plain;charset=Shift-JIS");
+      req.send();
+      this.wait();
+    },
+
     // BUGFIXES
 
     "test: progress to readyState DONE": function() {
@@ -564,6 +620,7 @@ qx.Class.define("qx.test.bom.request.XhrWithRemote",
     //
 
     "test: call onerror on network error": function() {
+      this.__skip(["win", "osx"]);
       var req = this.req;
 
       var that = this;
@@ -603,6 +660,7 @@ qx.Class.define("qx.test.bom.request.XhrWithRemote",
     },
 
     "test: throw error on network error when sync": function() {
+      this.__skip(["win", "osx"]);
       var req = this.req;
 
       // Network error (sync)
@@ -740,6 +798,7 @@ qx.Class.define("qx.test.bom.request.XhrWithRemote",
     },
 
     "test: call handler in order when request failed": function() {
+      this.__skip(["win", "osx"]);
       var req = this.req;
 
       var that = this;
@@ -790,6 +849,10 @@ qx.Class.define("qx.test.bom.request.XhrWithRemote",
 
     noCache: function(url) {
       return url + "?nocache=" + (new Date()).valueOf();
+    },
+
+    hasNoIe: function() {
+      return !(qx.core.Environment.get("engine.name") == "mshtml");
     },
 
     hasFile: function() {

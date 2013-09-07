@@ -686,6 +686,7 @@ qx.Class.define("qx.ui.basic.Image",
      */
     __setSource : function(el, source) {
       if (el.getNodeName() == "div") {
+
         var dec = qx.theme.manager.Decoration.getInstance().resolve(this.getDecorator());
         // if the decorator defines any CSS background-image
         if (dec) {

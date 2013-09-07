@@ -16,18 +16,20 @@ $navigationpage-border-color: #DDDDDD;
 
 // NavigationBar
 
-$navigationbar-background-color:  #323335;
+$navigationbar-background-color:  lighten(#323335, 10%);
+$navigationbar-background-color-2:  darken($navigationbar-background-color, 20%);
 $navigationbar-text-color:  white;
 $navigationbar-height:  45px;
 
 // NavigationBar Button
-
-$navigationbarbutton-border-radius: 4px;
-$navigationbarbutton-background-color:  #F4F4F4;
+ 
+$navigationbarbutton-border-radius:  4px;
+$navigationbarbutton-background-color:  lighten(#F4F4F4,10%);
+$navigationbarbutton-background-color-2:  darken(#F4F4F4,20%);
 $navigationbarbutton-border-color:  #888888;
 $navigationbarbutton-text-color:  #333333;
-
-$navigationbarbutton-active-background-color:  #3D72C9;
+$navigationbarbutton-active-background-color:  lighten(#3D72C9,20%);
+$navigationbarbutton-active-background-color-2:  #3D72C9;
 $navigationbarbutton-active-text-color:  white;
 $navigationbarbutton-active-border-color:  white;
  
@@ -51,10 +53,12 @@ $list-background-color: white;
 $list-title-text-color: #333333;
 $list-subtitle-text-color:  #3D72C9;
 $list-border-color: #DDDDDD;
-$list-active-background-color:  #3D72C9;
+$list-active-background-color:  lighten(#3D72C9, 20%);
+$list-active-background-color-2:  darken($list-active-background-color, 20%);
 $list-active-text-color:  white;
 $list-border-radius:  4px;
 $list-arrow-size: 3px;
+$list-arrow-thickness: 2px;
 $list-arrow-color: gray;
 $list-active-arrow-color: white;
 
@@ -62,6 +66,7 @@ $list-active-arrow-color: white;
 
 $form-background-color:  white;
 $form-title-text-color:  #3D72C9;
+$form-label-text-color:  #333333;
 $form-border-color:  #DDDDDD;
 $form-border-radius:  4px;
 
@@ -80,29 +85,44 @@ $checkbox-border-color:  #888888;
 $checkbox-background-color: darken(#F4F4F4, 20%); 
 $checkbox-background-color-2: lighten($checkbox-background-color, 20%); 
 
-// Radiobutton
+// RadioButton
 
 $radiobutton-dot-color: #3D72C9;
 $radiobutton-background-color: darken(#F4F4F4, 20%);
 $radiobutton-background-color-2: lighten($radiobutton-background-color, 20%);
 $radiobutton-border-color: #888888;
-$radiobutton-background-inner-color: #45484d;
 
 // Tabbar
 
-$tabbar-active-background-color:  #3D72C9;
-$tabbar-inactive-background-color:  #808080;
+$tabbar-height:  45px;
+$tabbar-active-background-color:  lighten(#3D72C9, 20%);
+$tabbar-active-background-color-2:  darken($tabbar-active-background-color,  20%);
+$tabbar-active-border-color:  lighten($tabbar-active-background-color-2, 20%);
+$tabbar-inactive-background-color:  lighten(#808080, 5%);
+$tabbar-inactive-background-color-2:  darken($tabbar-inactive-background-color, 15%);
+$tabbar-inactive-border-color:  lighten($tabbar-inactive-background-color, 20%);
 $tabbar-active-text-color:  white;
 $tabbar-inactive-text-color:  white;
 $tabbar-border-radius:  4px;
+$tabbar-button-distance:  4px;
 
 // ToggleButton
 
+$togglebutton-width:  95px;
+$togglebutton-height:  30px;
+$togglebutton-border-radius:  4px;
+$togglebutton-border-color:  #9e9e9e;
 $togglebutton-text-color:  #666666; 
-$togglebutton-background-color:  white;
-$togglebutton-active-background-color:  #3D72C9;
+$togglebutton-background-color:  darken(white,10%);
+$togglebutton-background-color-2:  white;
+$togglebutton-active-background-color:  darken(#3D72C9,10%);
+$togglebutton-active-background-color-2:  #3D72C9;
+$togglebutton-knob-background-color:  #cfcfcf;
+$togglebutton-knob-background-color-2:  #fdfdfd;
+$togglebutton-knob-width:  30px;
 $togglebutton-active-text-color:  white;
-$togglebutton-border-radius:  30px;
+$togglebutton-inset-shadow:  rgba(0,0,0,0.1);
+$togglebutton-knob-shadow:  rgba(0,0,0,0.4);
 
 // Carousel
 
@@ -117,33 +137,50 @@ $button-active-text-color:  white;
 $button-border-radius:  4px;
 $button-border-color:  #888888;
 $button-active-border-color:  #888888;
-$button-background-color: #F4F4F4;
-$button-active-background-color:  #3D72C9;
+$button-background-color:  lighten(#F4F4F4, 40%);
+$button-background-color-2:  darken($button-background-color, 20%);
+$button-active-background-color:  lighten(#3D72C9, 20%);
+$button-active-background-color-2:  darken($button-active-background-color, 20%);
 
 // SelectBox
 
 $selectbox-border-radius: 4px;
 $selectbox-border-color:  #9e9e9e; 
 $selectbox-text-color:  #333333;
-$selectbox-background-color:  #F4F4F4;
-$selectbox-active-background-color:  #3D72C9;
+$selectbox-background-color:  lighten(#F4F4F4,20%);
+$selectbox-background-color-2:  darken($selectbox-background-color,30%);
+$selectbox-active-background-color:  lighten(#3D72C9, 20%);
+$selectbox-active-background-color-2:  darken($selectbox-active-background-color, 30%);
 $selectbox-active-text-color:  white;
 $selectbox-item-selected-text-color:  white;
 $selectbox-item-selected-background-color:  #3D72C9;
 
 // Slider
 
-$slider-background-color:  white;
-$slider-active-area-color:  #3D72C9;
+$slider-height: 10px;
+$slider-background-color:  darken(white,10%);
+$slider-background-color-2:  white;
+$slider-active-area-color:  lighten(#3D72C9,10%);
+$slider-active-area-color-2:  #3D72C9;
 $slider-border-radius:  20px; 
 $slider-border-color:  #9e9e9e;
-$slider-knob-border-radius: 20px;
+$slider-knob-border-radius: 4px;
+$slider-knob-width: 30px;
+$slider-knob-height: 30px;
+$slider-knob-color:  #cfcfcf;
+$slider-knob-color-2:  #fdfdfd;
+$slider-knob-border-color:  #9e9e9e;
+$slider-shadow: rgba(0,0,0,0.4);
+$slider-font-size:  0.8em;
+$slider-font-color:  #888;
 
 // Toolbar  
 
 $toolbar-text-color:  #333333;
-$toolbar-background-color:  #F4F4F4;
-$toolbar-active-background-color:  #3D72C9;
+$toolbar-background-color:  lighten(#F4F4F4, 10%);
+$toolbar-background-color-2:  darken($toolbar-background-color, 20%);
+$toolbar-active-background-color:  lighten(#3D72C9, 20%);
+$toolbar-active-background-color-2:  darken($toolbar-active-background-color, 20%);
 $toolbar-active-text-color:  white;
 $toolbar-border-color:  #999;
 $toolbar-border-radius: 4px;
@@ -160,8 +197,12 @@ $picker-spinning-wheel-overlay-color-2: rgba(#F4F4F4, 0);
 $picker-spinning-wheel-text-color:  #333333; 
 $picker-spinning-wheel-background-color:  #F4F4F4;
 $picker-highlight-color:  rgba(#3D72C9, 0.5);
+$picker-highlight-border-width:  2px;
 $picker-spinning-wheel-border-radius:  4px;
 $picker-spinning-wheel-divider-color:  #888;
+$picker-spinning-wheel-divider-width:  2px;
+$picker-label-height: 25px;
+$picker-height: 150px;
 
 // Drawer
 
@@ -175,8 +216,10 @@ $collapsible-border-radius: 4px;
 $collapsible-header-border-color: #888888;
 $collapsible-header-text-color: #333333;
 $collapsible-header-active-text-color: white;
-$collapsible-header-background-color: #F4F4F4;
-$collapsible-header-active-background-color: #3D72C9;
+$collapsible-header-background-color: lighten(#F4F4F4, 10%);
+$collapsible-header-background-color-2: darken($collapsible-header-background-color, 20%);
+$collapsible-header-active-background-color: lighten(#3D72C9, 10%);
+$collapsible-header-active-background-color-2: darken($collapsible-header-active-background-color, 20%);
 $collapsible-header-padding: 10px;
 $collapsible-header-content-distance: 10px;
 $collapsible-content-border-color: #DDDDDD;

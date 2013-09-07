@@ -67,6 +67,23 @@
  * *bind*:
  * <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function/bind">MDN documentation</a> |
  * <a href="http://es5.github.com/#x15.3.4.5">Annotated ES5 Spec</a>
+ *
+ * Example for the <code>bind</code> method:
+ * <pre class='javascript'>
+ * // sample code, assumes the used variables are already defined
+ * 
+ * // the listener method demonstrates how to pass dynamic values
+ * // to a method using 'bind'
+ * var changeValueListener = function(value, event) {
+ *   // value is passed by the 'bind' method: its value is 'myArray[i]'
+ *   // second argument is passed by the 'on' method: its value is a event object
+ *   // 'this' is pointing to 'myComponent', since the first argument of 'bind' defines the context of the function call
+ * };
+ * var myArray = [ 0, 2, 4, 6 ];
+ * for (var i=0, j=myArray.length; i&lt;j; i++) {
+ *   myComponent.on("changeValue", changeValueListener.bind(myComponent, myArray[i]));
+ * }
+ * </pre>
  */
 qx.Bootstrap.define("qx.lang.normalize.Function", {
 
@@ -164,10 +181,10 @@ qx.Bootstrap.define("qx.lang.normalize.Function", {
         // 17. Set the attributes of the length own property of F to the values
         //   specified in 15.3.5.1.
 
-        // TODO
+        // (Not implemented but in the spec)
         // 18. Set the [[Extensible]] internal property of F to true.
 
-        // TODO
+        // (Not implemented but in the spec)
         // 19. Let thrower be the [[ThrowTypeError]] function Object (13.2.3).
         // 20. Call the [[DefineOwnProperty]] internal method of F with
         //   arguments "caller", PropertyDescriptor {[[Get]]: thrower, [[Set]]:

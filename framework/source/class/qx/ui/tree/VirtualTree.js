@@ -499,7 +499,7 @@ qx.Class.define("qx.ui.tree.VirtualTree",
 
     // Interface implementation
     isNode : function(item) {
-      return qx.Class.hasProperty(item.constructor, this.getChildProperty());
+      return qx.ui.tree.core.Util.hasChildren(item, this.getChildProperty());
     },
 
 
@@ -510,27 +510,8 @@ qx.Class.define("qx.ui.tree.VirtualTree",
 
 
     // Interface implementation
-    hasChildren : function(node)
-    {
-      var children = node.get(this.getChildProperty());
-      if (children == null) {
-        return false;
-      }
-
-      if (this.isShowLeafs()) {
-        return children.length > 0;
-      }
-      else
-      {
-        for (var i = 0; i < children.getLength(); i++)
-        {
-          var child = children.getItem(i);
-          if (this.isNode(child)) {
-            return true;
-          }
-        }
-      }
-      return false;
+    hasChildren : function(node) {
+      return qx.ui.tree.core.Util.hasChildren(node, this.getChildProperty(), !this.isShowLeafs());
     },
 
 
@@ -908,11 +889,14 @@ qx.Class.define("qx.ui.tree.VirtualTree",
         }
       }
 
-      this._provider.removeBindings();
-      this.__lookupTable.removeAll();
-      this.__lookupTable.append(lookupTable);
-      this.__updateRowCount();
-      this._updateSelection();
+      if (!qx.lang.Array.equals(this.__lookupTable.toArray(), lookupTable))
+      {
+        this._provider.removeBindings();
+        this.__lookupTable.removeAll();
+        this.__lookupTable.append(lookupTable);
+        this.__updateRowCount();
+        this._updateSelection();
+      }
     },
 
 

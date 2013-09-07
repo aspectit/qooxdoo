@@ -113,7 +113,7 @@ qx.Class.define("mobiletweets.Application",
       manager.addDetail(tweetsPage);
 
       // Create an instance of the Tweet class
-      var tweetPage = new mobiletweets.page.Tweet();
+      var tweetPage = new mobiletweets.page.TweetDetail();
 
       // Add page to manager
       manager.addDetail(tweetPage);
@@ -166,7 +166,6 @@ qx.Class.define("mobiletweets.Application",
     {
       // Mocked Identica Tweets API
       // Create a new JSONP store instance with the given url
-      var self = this;
       var url = "http://demo.qooxdoo.org/" + qx.core.Environment.get("qx.version") + "/tweets_step4.5/resource/tweets/service.js";
 
       var store = new qx.data.store.Jsonp();
