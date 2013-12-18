@@ -465,6 +465,10 @@ qx.Class.define("qx.data.SingleValueBinding",
               listeners.push(listener);
             }
 
+            // Workaround for http://bugzilla.qooxdoo.org/show_bug.cgi?id=8014
+            if (target == null)
+              break;
+
             // add a new listener
             if (qx.Class.implementsInterface(target, qx.data.IListData)) {
               var eventName = "change";
