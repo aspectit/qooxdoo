@@ -128,7 +128,7 @@ qx.Class.define("qx.ui.mobile.layout.Card",
 
     // overridden
     _getCssClasses : function() {
-      return ["layout-card","vbox"];
+      return ["layout-card","qx-vbox"];
     },
 
 
@@ -138,7 +138,7 @@ qx.Class.define("qx.ui.mobile.layout.Card",
       this.base(arguments);
       if (widget) {
         widget.addCssClass("layout-card-item");
-        widget.addCssClass("boxFlex1");
+        widget.addCssClass("qx-flex1");
         widget.exclude();
       }
     },
@@ -198,16 +198,29 @@ qx.Class.define("qx.ui.mobile.layout.Card",
       }
 
       this.__nextWidget = widget;
+
+
       if (this.__currentWidget && this.getShowAnimation() && qx.core.Environment.get("css.transform.3d")) {
         properties = properties || {};
 
+        // both are explicit identity checks for null
+        if (properties.animation === null || this.getCardAnimation().getMap()[properties.animation] === null) {
+          this._swapWidget();
+          return;
+        }
+
         this.__animation = properties.animation || this.getDefaultAnimation();
 
-        properties.reverse = properties.reverse == null ? false : properties.reverse;
+        if (properties.action && properties.action === "back") {
+          this.__reverse = true;
+        } else {
+          properties.reverse = properties.reverse === null ? false : properties.reverse;
+          this.__reverse = properties.reverse;
+        }
 
-        this.__reverse = properties.fromHistory || properties.reverse;
-
-        this.__startAnimation(widget);
+        qx.bom.AnimationFrame.request(function() {
+          this.__startAnimation(widget);
+        }, this);
       } else {
         this._swapWidget();
       }
@@ -219,9 +232,11 @@ qx.Class.define("qx.ui.mobile.layout.Card",
      */
     _swapWidget : function() {
       if (this.__currentWidget) {
+        this.__currentWidget.removeCssClass("active");
         this.__currentWidget.exclude();
       }
       this.__currentWidget = this.__nextWidget;
+      this.__currentWidget.addCssClass("active");
     },
 
 
@@ -233,7 +248,7 @@ qx.Class.define("qx.ui.mobile.layout.Card",
      */
     _fixWidgetSize : function(widget) {
       if(widget) {
-        var hasResizeMixin = qx.Class.hasMixin(widget.constructor,qx.ui.mobile.core.MResize)
+        var hasResizeMixin = qx.Class.hasMixin(widget.constructor,qx.ui.mobile.core.MResize);
         if(hasResizeMixin) {
           // Size has to be fixed for animation.
           widget.fixSize();
@@ -266,10 +281,10 @@ qx.Class.define("qx.ui.mobile.layout.Card",
      */
     __startAnimation : function(widget)
     {
+      if (widget.isDisposed()) {
+        return;
+      }
       // Fix size of current and next widget, then start animation.
-      this._fixWidgetSize(this.__currentWidget);
-      this._fixWidgetSize(this.__nextWidget);
-
       this.__inAnimation = true;
 
       this.fireDataEvent("animationStart", [this.__currentWidget, widget]);
@@ -278,13 +293,13 @@ qx.Class.define("qx.ui.mobile.layout.Card",
 
       var onAnimationEnd = qx.lang.Function.bind(this._onAnimationEnd, this);
 
-      if(qx.core.Environment.get("event.mspointer")) {
+      if(qx.core.Environment.get("browser.name") == "iemobile" || qx.core.Environment.get("browser.name") == "ie") {
         qx.bom.Event.addNativeListener(fromElement, "MSAnimationEnd", onAnimationEnd, false);
         qx.bom.Event.addNativeListener(toElement, "MSAnimationEnd", onAnimationEnd, false);
+      } else {
+        qx.event.Registration.addListener(fromElement, "animationEnd", this._onAnimationEnd, this);
+        qx.event.Registration.addListener(toElement, "animationEnd", this._onAnimationEnd, this);
       }
-
-      qx.event.Registration.addListener(fromElement, "animationEnd", this._onAnimationEnd, this);
-      qx.event.Registration.addListener(toElement, "animationEnd", this._onAnimationEnd, this);
 
       var fromCssClasses = this.__getAnimationClasses("out");
       var toCssClasses = this.__getAnimationClasses("in");
@@ -324,15 +339,16 @@ qx.Class.define("qx.ui.mobile.layout.Card",
         var fromElement = this.__currentWidget.getContainerElement();
         var toElement = this.__nextWidget.getContainerElement();
 
-        qx.event.Registration.removeListener(fromElement, "animationEnd", this._onAnimationEnd, this);
-        qx.event.Registration.removeListener(toElement, "animationEnd", this._onAnimationEnd, this);
+        if(qx.core.Environment.get("browser.name") == "iemobile" || qx.core.Environment.get("browser.name") == "ie") {
+          qx.bom.Event.removeNativeListener(fromElement, "MSAnimationEnd", this._onAnimationEnd, false);
+          qx.bom.Event.removeNativeListener(toElement, "MSAnimationEnd", this._onAnimationEnd, false);
+        } else {
+          qx.event.Registration.removeListener(fromElement, "animationEnd", this._onAnimationEnd, this);
+          qx.event.Registration.removeListener(toElement, "animationEnd", this._onAnimationEnd, this);
+        }
 
         qx.bom.element.Class.removeClasses(fromElement, this.__getAnimationClasses("out"));
         qx.bom.element.Class.removeClasses(toElement, this.__getAnimationClasses("in"));
-
-        // Release fixed widget size, for further layout adaption.
-        this._releaseWidgetSize(this.__currentWidget);
-        this._releaseWidgetSize(this.__nextWidget);
 
         this._swapWidget();
         this._widget.removeCssClass("animationParent");
@@ -356,5 +372,10 @@ qx.Class.define("qx.ui.mobile.layout.Card",
       }
       return classes;
     }
+  },
+
+
+  destruct : function() {
+    this._disposeObjects("__cardAnimation");
   }
 });

@@ -123,12 +123,6 @@ qx.Class.define("qx.ui.mobile.page.Page",
   },
 
 
- /*
-  *****************************************************************************
-     EVENTS
-  *****************************************************************************
-  */
-
   events :
   {
     /** Fired when the lifecycle method {@link #initialize} is called */
@@ -146,8 +140,10 @@ qx.Class.define("qx.ui.mobile.page.Page",
     /** Fired when the lifecycle method {@link #resume} is called */
     "resume" : "qx.event.type.Event",
 
-    /** Fired when the method {@link #back} is called. Data indicating
-     *  whether the action was triggered by a key event or not.
+    /**
+     * Fired when the method {@link #back} is called and not prevented by
+     * {@link qx.application.Mobile#back}. Data indicating whether
+     * the action was triggered by a key event or not.
      */
     "back" : "qx.event.type.Data",
 
@@ -159,14 +155,6 @@ qx.Class.define("qx.ui.mobile.page.Page",
   },
 
 
-
-
- /*
-  *****************************************************************************
-     PROPERTIES
-  *****************************************************************************
-  */
-
   properties :
   {
     // overridden
@@ -174,6 +162,16 @@ qx.Class.define("qx.ui.mobile.page.Page",
     {
       refine : true,
       init : "page"
+    },
+
+
+    /**
+     * The current active life cycle state of this page.
+     */
+    lifeCycleState: {
+      init: null,
+      check: ["initialize", "start", "stop", "resume", "wait", "pause"],
+      apply: "_applyLifeCycleState"
     }
   },
 
@@ -191,6 +189,9 @@ qx.Class.define("qx.ui.mobile.page.Page",
     // overridden
     show : function(properties)
     {
+      if (qx.ui.mobile.page.Page._currentPage) {
+        qx.ui.mobile.page.Page._currentPage.stop();
+      }
       qx.ui.mobile.page.Page._currentPage = this;
       this.initialize();
       this.start();
@@ -212,15 +213,23 @@ qx.Class.define("qx.ui.mobile.page.Page",
      * by the used page manager when the back button was pressed. Return <code>true</code>
      * to exit the application.
      *
+     * The back request can prevented by calling the {@link qx.event.type.Event#preventDefault} on
+     * the {@link qx.application.Mobile#back} event.
+     *
      * @param triggeredByKeyEvent {Boolean} Whether the back action was triggered by a key event.
      * @return {Boolean} Whether the exit should be exit or not. Return <code>true</code
      *     to exit the application. Only needed for Android PhoneGap applications.
      */
     back : function(triggeredByKeyEvent)
     {
-      this.fireDataEvent("back", triggeredByKeyEvent);
-      var value = this._back(triggeredByKeyEvent);
-      return value || false;
+      if (qx.core.Init.getApplication().fireDataEvent("back", triggeredByKeyEvent, null, true))
+      {
+        this.fireDataEvent("back", triggeredByKeyEvent);
+        var value = this._back(triggeredByKeyEvent);
+        return value || false;
+      } else {
+        return false;
+      }
     },
 
 
@@ -270,7 +279,7 @@ qx.Class.define("qx.ui.mobile.page.Page",
       {
         this._initialize();
         this.__initialized = true;
-        this.fireEvent("initialize");
+        this.setLifeCycleState("initialize");
       }
     },
 
@@ -302,11 +311,11 @@ qx.Class.define("qx.ui.mobile.page.Page",
      * Lifecycle method. Called by the page manager after the {@link #initialize}
      * method when the page is shown. Fires the <code>start</code> event. You should
      * register all your event listener when this event occurs, so that no page
-     * updates are down when page is not shown.
+     * updates are done when page is not shown.
      */
     start : function() {
       this._start();
-      this.fireEvent("start");
+      this.setLifeCycleState("start");
     },
 
 
@@ -329,8 +338,11 @@ qx.Class.define("qx.ui.mobile.page.Page",
      */
     stop : function()
     {
+      if(!this.isInitialized()) {
+        return;
+      }
       this._stop();
-      this.fireEvent("stop");
+      this.setLifeCycleState("stop");
     },
 
 
@@ -353,7 +365,7 @@ qx.Class.define("qx.ui.mobile.page.Page",
      */
     pause : function() {
       this._pause();
-      this.fireEvent("pause");
+      this.setLifeCycleState("pause");
     },
 
 
@@ -377,7 +389,7 @@ qx.Class.define("qx.ui.mobile.page.Page",
      */
     resume : function() {
       this._resume();
-      this.fireEvent("resume");
+      this.setLifeCycleState("resume");
     },
 
 
@@ -400,7 +412,7 @@ qx.Class.define("qx.ui.mobile.page.Page",
      */
     wait : function() {
       this._wait();
-      this.fireEvent("wait");
+      this.setLifeCycleState("wait");
     },
 
 
@@ -413,6 +425,16 @@ qx.Class.define("qx.ui.mobile.page.Page",
     _wait : function()
     {
 
+    },
+
+
+    // property apply
+    _applyLifeCycleState : function(value, old) {
+      if(value == "start" || value == "stop") {
+        qx.core.Init.getApplication().fireEvent(value);
+      }
+
+      this.fireEvent(value);
     }
   },
 

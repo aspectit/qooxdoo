@@ -49,7 +49,7 @@ qx.Class.define("qx.ui.menu.AbstractButton",
     this._setLayout(new qx.ui.menu.ButtonLayout);
 
     // Add listeners
-    this.addListener("click", this._onClick);
+    this.addListener("tap", this._onTap);
     this.addListener("keypress", this._onKeyPress);
 
     // Add command listener
@@ -228,22 +228,34 @@ qx.Class.define("qx.ui.menu.AbstractButton",
 
 
     /**
-     * Event listener for click
+     * Event listener for tap
      *
-     * @param e {qx.event.type.Mouse} mouseup event
+     * @param e {qx.event.type.Pointer} pointer event
      */
-    _onClick : function(e) {
-      // pass
+    _onTap : function(e)
+    {
+      if (e.isLeftPressed()) {
+        this.execute();
+        qx.ui.menu.Manager.getInstance().hideAll();
+      }
+
+      // right click
+      else {
+        // only prevent contextmenu event if button has no further context menu.
+        if (!this.getContextMenu()) {
+          qx.ui.menu.Manager.getInstance().preventContextMenuOnce();
+        }
+      }
     },
 
 
     /**
-     * Event listener for mouseup event
+     * Event listener for keypress event
      *
      * @param e {qx.event.type.KeySequence} keypress event
      */
     _onKeyPress : function(e) {
-      // pass
+      this.execute();
     },
 
 

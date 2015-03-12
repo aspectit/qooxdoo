@@ -30,7 +30,7 @@ qx.Bootstrap.define("qx.bom.client.Scroll",
   {
     /**
      * Check if the scrollbars should be positioned on top of the content. This
-     * is true of OSX Lion when the scrollbars dissapear automatically.
+     * is true of OSX Lion when the scrollbars disappear automatically.
      *
      * @internal
      *
@@ -42,7 +42,7 @@ qx.Bootstrap.define("qx.bom.client.Scroll",
       var osx = qx.bom.client.OperatingSystem.getName() === "osx";
       var nativeScrollBars = qx.core.Environment.get("qx.nativeScrollBars");
 
-      return scrollBarWidth == 0 && osx && nativeScrollBars;
+      return scrollBarWidth === 0 && osx && nativeScrollBars;
     },
 
 
@@ -54,9 +54,36 @@ qx.Bootstrap.define("qx.bom.client.Scroll",
      * @return {Boolean} <code>true</code> if the current device is capable to
      * use native scroll.
      */
-    getNativeScroll : function() {
-      return qx.core.Environment.get("os.name") == "ios" &&
-        parseInt(qx.core.Environment.get("browser.version")) > 4;
+    getNativeScroll : function()
+    {
+      // iOS 8+
+      if (qx.core.Environment.get("os.name") == "ios" &&
+        parseInt(qx.core.Environment.get("browser.version"), 10) > 7) {
+        return true;
+      }
+
+      // Firefox
+      if (qx.core.Environment.get("browser.name") == "firefox") {
+        return true;
+      }
+
+      // Android 4.4+
+      if (qx.core.Environment.get("os.name") == "android")
+      {
+        var osVersion = qx.core.Environment.get("os.version");
+        var splitVersion = osVersion.split(".");
+        if (splitVersion[0] > 4 ||
+            (splitVersion.length > 1 && splitVersion[0] > 3 && splitVersion[1] > 3)) {
+          return true;
+        }
+      }
+
+      // IE 10+
+      if (qx.core.Environment.get("event.mspointer")) {
+        return true;
+      }
+
+      return false;
     }
   },
 

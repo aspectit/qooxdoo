@@ -145,8 +145,7 @@ qx.Class.define("qx.ui.basic.Label",
      *   <li>The label will always take the same enabled state as the buddy
      *       widget.
      *   </li>
-     *   <li>A click on the label will focus the buddy widget.
-     *   </li>
+     *   <li>A tap on the label will focus the buddy widget.</li>
      * </ul>
      * This is the behavior of the for attribute of HTML:
      * http://www.w3.org/TR/html401/interact/forms.html#adef-for
@@ -225,8 +224,7 @@ qx.Class.define("qx.ui.basic.Label",
   {
     __font : null,
     __invalidContentSize : null,
-    __buddyEnabledBinding : null,
-    __clickListenerId : null,
+    __tapListenerId : null,
     __webfontListenerId : null,
 
 
@@ -434,16 +432,15 @@ qx.Class.define("qx.ui.basic.Label",
     {
       if (old != null)
       {
-        old.removeBinding(this.__buddyEnabledBinding);
-        this.__buddyEnabledBinding = null;
-        this.removeListenerById(this.__clickListenerId);
-        this.__clickListenerId = null;
+        this.removeRelatedBindings(old);
+        this.removeListenerById(this.__tapListenerId);
+        this.__tapListenerId = null;
       }
 
       if (value != null)
       {
-        this.__buddyEnabledBinding = value.bind("enabled", this, "enabled");
-        this.__clickListenerId = this.addListener("click", function() {
+        value.bind("enabled", this, "enabled");
+        this.__tapListenerId = this.addListener("tap", function() {
           // only focus focusable elements [BUG #3555]
           if (value.isFocusable()) {
             value.focus.apply(value);
@@ -518,6 +515,16 @@ qx.Class.define("qx.ui.basic.Label",
     _onWebFontStatusChange : function(ev)
     {
       if (ev.getData().valid === true) {
+
+        // safari has trouble resizing, adding it again fixed the issue [BUG #8786]
+        if (qx.core.Environment.get("browser.name") == "safari" &&
+          parseFloat(qx.core.Environment.get("browser.version")) >= 8) {
+            window.setTimeout(function() {
+              this.__invalidContentSize = true;
+              qx.ui.core.queue.Layout.add(this);
+            }.bind(this), 0);
+        }
+
         this.__invalidContentSize = true;
         qx.ui.core.queue.Layout.add(this);
       }
@@ -552,18 +559,10 @@ qx.Class.define("qx.ui.basic.Label",
       qx.locale.Manager.getInstance().removeListener("changeLocale", this._onChangeLocale, this);
     }
 
-    // remove the binding
-    if (this.__buddyEnabledBinding != null) {
-      var buddy = this.getBuddy();
-      if (buddy != null && !buddy.isDisposed()) {
-        buddy.removeBinding(this.__buddyEnabledBinding);
-      }
-    }
-
     if (this.__font && this.__webfontListenerId) {
       this.__font.removeListenerById(this.__webfontListenerId);
     }
 
-    this.__font = this.__buddyEnabledBinding = null;
+    this.__font = null;
   }
 });

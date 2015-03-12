@@ -116,7 +116,7 @@ qx.Class.define("qx.ui.mobile.dialog.Manager",
      * @param text {String} The text to display in the confirm box
      * @param handler {Function} The handler to call when the <code>OK</code> button
      *     was pressed. The first parameter of the function is the <code>index</code>
-     *     of the pressed button, starting from 1.
+     *     of the pressed button, starting from 0.
      * @param scope {Object} The scope of the handler
      * @param buttons {String[]} Each text entry of the array represents a button and
      *     its title
@@ -287,6 +287,23 @@ qx.Class.define("qx.ui.mobile.dialog.Manager",
       dialog.setModal(true);
       dialog.setTitle(title);
 
+      // prevent the back action until the dialog is visible
+      var onBackButton = function(evt)
+      {
+        if(dialog.isVisible() && !!evt.getData()) {
+          evt.preventDefault();
+        }
+      };
+      dialog.addListener("changeVisibility", function(evt)
+      {
+        var application = qx.core.Init.getApplication();
+        if (evt.getData() === "visible") {
+          application.addListener("back", onBackButton, this);
+        } else {
+          application.removeListener("back", onBackButton, this);
+        }
+      });
+
       if(dialogType == qx.ui.mobile.dialog.Manager.WAITING_DIALOG)
       {
         var waitingWidget = new qx.ui.mobile.container.Composite(new qx.ui.mobile.layout.HBox().set({alignX: "center"}));
@@ -297,22 +314,25 @@ qx.Class.define("qx.ui.mobile.dialog.Manager",
       {
         var labelWidget = new qx.ui.mobile.container.Composite(new qx.ui.mobile.layout.HBox().set({alignX: "center"}));
         labelWidget.add(new qx.ui.mobile.basic.Label(text));
+        labelWidget.addCssClass("gap");
         widget.add(labelWidget);
         if(dialogType == qx.ui.mobile.dialog.Manager.INPUT_DIALOG)
         {
           var inputWidget = new qx.ui.mobile.container.Composite(new qx.ui.mobile.layout.HBox().set({alignX: "center"}));
+          inputWidget.addCssClass("gap");
           var inputText = new qx.ui.mobile.form.TextField();
           inputWidget.add(inputText);
           widget.add(inputWidget);
         }
 
-        var container = new qx.ui.mobile.container.Composite(new qx.ui.mobile.layout.HBox().set({alignX: "center"}));
+        var buttonContainer = new qx.ui.mobile.container.Composite(new qx.ui.mobile.layout.HBox().set({alignX: "center"}));
+        buttonContainer.addCssClass("gap");
         for(var i=0, l=buttons.length; i<l; i++)
         {
           var button = new qx.ui.mobile.form.Button(buttons[i]);
           /* see the comment in android.css for width: 0 for toolbar-button class*/
           button.addCssClass('dialog-button');
-          container.add(button, {flex:1});
+          buttonContainer.add(button, {flex:1});
           var callback = (function(index){
             return function()
             {
@@ -325,13 +345,15 @@ qx.Class.define("qx.ui.mobile.dialog.Manager",
           })(i);
           button.addListener("tap", callback);
         }
-        widget.add(container);
+        widget.add(buttonContainer);
       }
-      dialog.setModal(true);
+
       dialog.show();
+
       if(inputText) {
         inputText.getContainerElement().focus();
       }
+
       return dialog;
     }
   }

@@ -11,6 +11,18 @@ framework itself. Some contributions are actively maintained, others are rather
 stale, so you may find there code of any stage of maturity (and consequently,
 immaturity).
 
+Where to find what?
+===================
+
+This page deals with **how to use contributions** as well as what to bear in mind
+when **writing your own contributions**. If you are interested in **what contributions
+are available** check out the `catalog website <http://qooxdoo.org/contrib/catalog>`__,
+which makes finding a suitable contrib much easier.
+
+
+More Context
+------------
+
 With %{qooxdoo} 3.0 a new contribution infrastructure was introduced. The old
 contrib platform was *repository-based*, meaning that all contributions had to
 be in a certain source repository on SourceForge to be recognized as
@@ -145,7 +157,7 @@ proxies:
   Internet Options.
 * On MacOS, the Internet Config is queried in this case.
 * See the `module documentation
-  <http://docs.python.org/release/2.5.4/lib/module-urllib.html>`__ for more
+  <http://docs.python.org/2/library/urllib.html>`__ for more
   details.
 
 The remainder of this chapter now details the maintainer view, or how to provide
@@ -256,6 +268,7 @@ to label your contrib with one or more of these supported categories:
 * drawing
 * tool
 * backend
+* utility
 
 We will use this information to categorize the contribs in a future
 web interface. If you provide more than one category, the first one
@@ -294,10 +307,40 @@ as the Manifest's download URL, with e.g. *branch_name* being *master* and *suff
 being *.zip*.
 
 
-Future Work: Web Interface to the Catalog
-============================================
+Pull Request Maintenance
+========================
 
-We're planning to also have a web interface to the catalog that
-might be a bit nicer than using Github's code browsing facility, maybe together
-with searching and sorting capabilities.
+This list should ease validating pull requests:
 
+* Check pull request manually - is something obvious missing?
+* Review the changes on your machine in a *contrib-catalog* clone:
+
+  * `Merge it locally <https://help.github.com/articles/merging-a-pull-request>`__ e.g. by
+    ``curl https://github.com/qooxdoo/contrib-catalog/pull/{n}.patch | git am``
+  * Validate the Manifest: ``./generate.py validate-manifest ../path/to/catalog/Manifest.json``
+  * Is an (optional) archive download (e.g. *\*.zip/\*.tar.gz*) provided? Then a
+    valid SHA1 checksum has to be provided too or the contrib can't be used.
+  * The SHA1 checksum can be checked like this:
+
+    * ``curl -LO https://github.com/{user}/{contrib}/archive/master.(zip|tar.gz)``
+
+    * ``shasum master.(zip|tar.gz)`` XOR ``openssl dgst -sha1 master.(zip|tar.gz)``
+
+  * You can also try out the catalog changes locally (not always needed):
+
+    * Adapt the *CONTRIB_CATALOG_BASEURL* setting of the *base.json* within your
+      qooxdoo clone to let it point to your own contrib-catalog repo and
+      then create a new app which uses the new contrib -
+      is the contrib downloaded correctly?
+
+* If everything is okay use the *"Merge pull request"* button from GitHub.
+
+If there are merge conflicts or something is wrong/missing just point out the
+issues and ask the author of the pull request for improvement. If the pull
+request was created `like GitHub recommends it
+<https://help.github.com/articles/using-pull-requests>`__ there is no need for
+another pull request:
+
+  "After your pull request is sent, any new commits pushed to your branch will
+  automatically be added to the pull request. This is especially useful if you
+  need to make more changes."

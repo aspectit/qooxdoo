@@ -343,7 +343,8 @@ qx.Theme.define("qx.theme.classic.Appearance",
           padding         : states.lead ? [ 2, 4 ] : [ 3, 5 ],
           backgroundColor : states.selected ? "background-selected" : undefined,
           textColor       : states.selected ? "text-selected" : undefined,
-          decorator       : states.lead ? "lead-item" : undefined
+          decorator       : states.lead ? "lead-item" : undefined,
+          opacity : states.drag ? 0.5 : undefined
         };
       }
     },
@@ -1233,7 +1234,8 @@ qx.Theme.define("qx.theme.classic.Appearance",
         return {
           padding : [2, 3, 2, 0],
           icon : states.opened ? "icon/16/places/folder-open.png" : "icon/16/places/folder.png",
-          iconOpened : "icon/16/places/folder-open.png"
+          iconOpened : "icon/16/places/folder-open.png",
+          opacity : states.drag ? 0.5 : undefined
         };
       }
     },
@@ -1268,7 +1270,8 @@ qx.Theme.define("qx.theme.classic.Appearance",
       style : function(states)
       {
         return {
-          icon : "icon/16/mimetypes/text-plain.png"
+          icon : "icon/16/mimetypes/text-plain.png",
+          opacity : states.drag ? 0.5 : undefined
         };
       }
     },
@@ -1313,7 +1316,8 @@ qx.Theme.define("qx.theme.classic.Appearance",
         return {
           icon : (states.opened
                   ? "icon/16/places/folder-open.png"
-                  : "icon/16/places/folder.png")
+                  : "icon/16/places/folder.png"),
+          opacity : states.drag ? 0.5 : undefined
         }
       }
     },
@@ -1326,7 +1330,8 @@ qx.Theme.define("qx.theme.classic.Appearance",
       style : function(states)
       {
         return {
-          icon : "icon/16/mimetypes/text-plain.png"
+          icon : "icon/16/mimetypes/text-plain.png",
+          opacity : states.drag ? 0.5 : undefined
         }
       }
     },
@@ -2639,24 +2644,6 @@ qx.Theme.define("qx.theme.classic.Appearance",
     "cell-date" : "cell",
     "cell-html" : "cell",
 
-
-    /*
-    ---------------------------------------------------------------------------
-      HTMLAREA
-    ---------------------------------------------------------------------------
-    */
-
-    "htmlarea" :
-    {
-      "include" : "widget",
-
-      style : function(states)
-      {
-        return {
-          backgroundColor : "white"
-        }
-      }
-    },
 
     /*
     ---------------------------------------------------------------------------

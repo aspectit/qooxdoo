@@ -208,7 +208,7 @@ qx.Bootstrap.define("qx.dev.FakeServer", {
      * <a href="http://sinonjs.org/docs/#fakeServer">Sinon.JS: Fake Server</a> for details.
      */
     respondWith : function(method, urlRegExp, response) {
-      this.__fakeServer.respondWith(method, urlRegExp, response);
+      this.getFakeServer().respondWith(method, urlRegExp, response);
     },
 
 
@@ -236,8 +236,7 @@ qx.Bootstrap.define("qx.dev.FakeServer", {
       this.removeFilter(this.__filter);
       this.__filter = null;
       this.__fakeServer.restore();
-      this.__fakeServer = null,
-      this.getFakeServer();
+      this.__fakeServer = null;
     },
 
 

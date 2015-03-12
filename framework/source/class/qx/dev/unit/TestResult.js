@@ -128,6 +128,8 @@ qx.Class.define("qx.dev.unit.TestResult",
      * @param testFunction {Function} The test function
      * @param self {Object?} The context in which to run the test function
      * @param resume {Boolean?} Resume a currently waiting test
+     *
+     * @return {var} The return value of the test function
      */
     run : function(test, testFunction, self, resume)
     {
@@ -151,7 +153,7 @@ qx.Class.define("qx.dev.unit.TestResult",
         var qxEx = new qx.type.BaseError("Error in asynchronous test", "resume() called before wait()");
         this._createError("failure", [qxEx], test);
         this.fireDataEvent("endTest", test);
-        return;
+        return undefined;
       }
 
       this.fireDataEvent("startTest", test);
@@ -200,12 +202,14 @@ qx.Class.define("qx.dev.unit.TestResult",
             this.fireDataEvent("endTest", test);
           }
 
-          return;
+          return undefined;
         }
       }
 
+      var returnValue;
+
       try {
-        testFunction.call(self || window);
+        returnValue = testFunction.call(self || window);
       }
       catch(ex)
       {
@@ -225,7 +229,7 @@ qx.Class.define("qx.dev.unit.TestResult",
                 "Asynchronous Test Error",
                 "Timeout reached before resume() was called."
               );
-            }
+            };
             var timeoutFunc = (ex.getDeferredFunction() ? ex.getDeferredFunction() : defaultTimeoutFunction);
             var context = (ex.getContext() ? ex.getContext() : window);
             this._timeout[test.getFullName()] = qx.event.Timer.once(function() {
@@ -279,6 +283,8 @@ qx.Class.define("qx.dev.unit.TestResult",
         this.__removeListeners(test.getTestClass()[test.getName()]);
       }
       */
+
+      return returnValue;
     },
 
 
@@ -305,7 +311,6 @@ qx.Class.define("qx.dev.unit.TestResult",
 
 
     /**
-     * EXPERIMENTAL
      * Wraps the AUT's qx.event.Registration.addListener function so that it
      * stores references to all added listeners in an array attached to the
      * current test function. This is done so that any listeners left over after
@@ -336,7 +341,6 @@ qx.Class.define("qx.dev.unit.TestResult",
 
 
     /**
-     * EXPERIMENTAL
      * Removes any listeners left over after a test's run.
      *
      * @param testFunction {qx.dev.unit.TestFunction} The current test

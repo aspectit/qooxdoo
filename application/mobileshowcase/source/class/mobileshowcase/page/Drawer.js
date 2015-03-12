@@ -22,14 +22,12 @@
  */
 qx.Class.define("mobileshowcase.page.Drawer",
 {
-  extend : qx.ui.mobile.page.NavigationPage,
+  extend : mobileshowcase.page.Abstract,
 
   construct : function()
   {
     this.base(arguments, false);
     this.setTitle("Drawer");
-    this.setShowBackButton(true);
-    this.setBackButtonText("Back");
   },
 
 
@@ -39,7 +37,7 @@ qx.Class.define("mobileshowcase.page.Drawer",
     _createDrawer : function(orientation) {
       var drawer = new qx.ui.mobile.container.Drawer(this, new qx.ui.mobile.layout.VBox());
       drawer.setOrientation(orientation);
-      drawer.setTouchOffset(0);
+      drawer.setTapOffset(0);
       drawer.setPositionZ("below");
       return drawer;
     },
@@ -48,9 +46,11 @@ qx.Class.define("mobileshowcase.page.Drawer",
     /** Factory method for the a demo drawer's content. */
     _createDrawerContent : function(target) {
       var closeDrawerButton = new qx.ui.mobile.form.Button("Close");
-      closeDrawerButton.addListener("tap", function(){target.hide()},this);
+      closeDrawerButton.addListener("tap", function() {
+        target.hide();
+      }, this);
 
-      var drawerContent = new qx.ui.mobile.form.Group([new qx.ui.mobile.basic.Label("This the "+target.getOrientation()+" drawer."), closeDrawerButton]);
+      var drawerContent = new qx.ui.mobile.form.Group([new qx.ui.mobile.form.Label("This is the "+target.getOrientation()+" drawer."), closeDrawerButton]);
       return drawerContent;
     },
 
@@ -78,67 +78,46 @@ qx.Class.define("mobileshowcase.page.Drawer",
       var drawerSize = 175;
 
       var drawerBottom = this._createDrawer("bottom");
-      drawerBottom.setHeight(drawerSize);
+      drawerBottom.setSize(drawerSize);
       drawerBottom.add(this._createDrawerContent(drawerBottom));
 
       var drawerTop = this._createDrawer("top");
-      drawerTop.setHeight(drawerSize);
+      drawerTop.setSize(drawerSize);
       drawerTop.add(this._createDrawerContent(drawerTop));
 
       var drawerLeft = this._createDrawer("left");
-      drawerLeft.setWidth(drawerSize);
+      drawerLeft.setSize(drawerSize);
       drawerLeft.add(this._createDrawerContent(drawerLeft));
 
       var drawerRight = this._createDrawer("right");
-      drawerRight.setWidth(drawerSize);
+      drawerRight.setSize(drawerSize);
       drawerRight.add(this._createDrawerContent(drawerRight));
 
       // Z POSITION TOGGLE BUTTON
-
-      var frontBackToggleButton = new qx.ui.mobile.form.ToggleButton(false, "Above","Below", 13);
-
-      frontBackToggleButton.addListener("changeValue",function() {
-        this._togglePositionZ(drawerLeft);
-        this._togglePositionZ(drawerRight);
-        this._togglePositionZ(drawerTop);
-        this._togglePositionZ(drawerBottom);
-      },this);
+      var group = new qx.ui.mobile.form.Group([], false);
+      var form = new qx.ui.mobile.form.Form();
+      var radioGroup = new qx.ui.mobile.form.RadioGroup();
+      var radioAbove = new qx.ui.mobile.form.RadioButton();
+      radioAbove.setModel("above");
+      var radioBelow = new qx.ui.mobile.form.RadioButton();
+      radioBelow.setModel("below");
+      radioGroup.add(radioAbove);
+      radioGroup.add(radioBelow);
+      form.add(radioAbove, "Above");
+      form.add(radioBelow, "Below");
+      radioGroup.bind("modelSelection[0]", drawerRight, "positionZ");
+      radioGroup.bind("modelSelection[0]", drawerLeft, "positionZ");
+      radioGroup.bind("modelSelection[0]", drawerTop, "positionZ");
+      radioGroup.bind("modelSelection[0]", drawerBottom, "positionZ");
+      group.add(new qx.ui.mobile.form.renderer.Single(form));
 
       // PAGE CONTENT
 
-      var toggleModeGroup = new qx.ui.mobile.form.Group([frontBackToggleButton]);
-
       this.getContent().add(new qx.ui.mobile.form.Title("Position"));
-      this.getContent().add(toggleModeGroup);
+      this.getContent().add(group);
 
       this.getContent().add(new qx.ui.mobile.form.Title("Action"));
-      this.getContent().add(this._createDrawerMenu([drawerTop,drawerRight,drawerBottom,drawerLeft]));
-    },
-
-
-    /**
-     * Toggles the z-Index position of the target drawer.
-     */
-    _togglePositionZ : function(target) {
-      qx.bom.element.Style.set(target.getContainerElement(),"transitionDuration","0s");
-
-      if(target.getPositionZ() == "above") {
-        target.setPositionZ("below")
-      }
-      else {
-        target.setPositionZ("above")
-      }
-
-      qx.event.Timer.once(function() {
-        qx.bom.element.Style.set(this,"transitionDuration", null);
-      },target.getContainerElement(),0);
-    },
-
-
-    // overridden
-    _back : function()
-    {
-      qx.core.Init.getApplication().getRouting().executeGet("/", {reverse:true});
+      this.getContent().add(this._createDrawerMenu([drawerTop, drawerRight, drawerBottom, drawerLeft]));
     }
   }
 });

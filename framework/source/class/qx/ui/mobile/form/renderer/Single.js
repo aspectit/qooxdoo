@@ -35,11 +35,12 @@ qx.Class.define("qx.ui.mobile.form.renderer.Single",
     this._rows = [];
     this._labels = [];
     this.base(arguments,form);
+    this.addCssClass("single");
   },
 
 
   statics : {
-    
+
     /** @type {Array} qx.Mobile form widgets which are rendered in one single line. */
     ONE_LINE_WIDGETS : [
       qx.ui.mobile.form.ToggleButton,
@@ -55,9 +56,17 @@ qx.Class.define("qx.ui.mobile.form.renderer.Single",
 
   members :
   {
-
     _rows : null,
     _labels : null,
+
+
+    _onFormChange : function() {
+      this._disposeArray("_labels");
+      this._disposeArray("_rows");
+      this._rows = [];
+      this._labels = [];
+      this.base(arguments);
+    },
 
     /**
      * A collection of error containers used to keep the error messages
@@ -89,7 +98,7 @@ qx.Class.define("qx.ui.mobile.form.renderer.Single",
         if(item instanceof widget) {
           return true;
         }
-      };
+      }
 
       return false;
     },
@@ -97,30 +106,37 @@ qx.Class.define("qx.ui.mobile.form.renderer.Single",
 
     // override
     addItems : function(items, names, title) {
-      if(title != null)
+      if(title !== null)
       {
         this._addGroupHeader(title);
       }
 
       this._addGroupHeaderRow();
-      for(var i=0, l=items.length; i<l; i++)
-      {
+      for (var i = 0, l = items.length; i < l; i++) {
         var item = items[i];
         var name = names[i];
-        var isLastItem = (i==items.length-1);
+        var isLastItem = (i == items.length - 1);
 
-        if(item instanceof qx.ui.mobile.form.TextArea) {
-          this._addInScrollComposite(item,name);
-        } else {
-          if(this._isOneLineWidget(item)) {
-            this._addInOneLine(item, name);
+        if (item instanceof qx.ui.mobile.form.TextArea) {
+          if (qx.core.Environment.get("qx.mobile.nativescroll") == false)
+          {
+            this._addToScrollContainer(item, name);
           } else {
-            this._addInSeparateLines(item, name);
+            this._addRow(item, name, new qx.ui.mobile.layout.VBox());
+          }
+        } else {
+          if (this._isOneLineWidget(item)) {
+            this._addRow(item, name, new qx.ui.mobile.layout.HBox());
+          } else {
+            this._addRow(item, name, new qx.ui.mobile.layout.VBox());
           }
         }
 
+        if (!item.isValid()) {
+          this.showErrorForItem(item);
+        }
 
-        if(!isLastItem) {
+        if (!isLastItem) {
           this._addSeparationRow();
         }
       }
@@ -130,57 +146,33 @@ qx.Class.define("qx.ui.mobile.form.renderer.Single",
 
 
     /**
-     * Wraps the given item with a {@link qx.ui.mobile.container.ScrollComposite} and
-     * calls _addInSeparateLines() with the composite as item.
+     * Wraps the given item with a {@link qx.ui.mobile.container.Scroll scroll} container.
      * @param item {qx.ui.mobile.core.Widget} A form item to render.
      * @param name {String} A name for the form item.
      */
-    _addInScrollComposite : function(item,name) {
-      var scrollContainer = new qx.ui.mobile.container.ScrollComposite();
-      scrollContainer.add(item,{flex:1});
-      this._addInSeparateLines(scrollContainer,name);
+    _addToScrollContainer : function(item,name) {
+      var scrollContainer = new qx.ui.mobile.container.Scroll();
+      scrollContainer.addCssClass("form-row-scroll");
+
+      scrollContainer.add(item, {
+        flex: 1
+      });
+
+      this._addRow(scrollContainer,name,new qx.ui.mobile.layout.VBox());
     },
 
 
     /**
-     * Adds a label and the widgets in two separate lines (rows).
-     * @param item {qx.ui.mobile.core.Widget} A form item to render.
-     * @param name {String} A name for the form item.
-     */
-    _addInSeparateLines : function(item, name) {
-      var labelRow = new qx.ui.mobile.form.Row();
-      labelRow.addCssClass("form-row-content");
-
-      var itemRow = new qx.ui.mobile.form.Row();
-      itemRow.addCssClass("form-row-content");
-
-      if(name) {
-        var label = new qx.ui.mobile.form.Label(name);
-        label.setLabelFor(item.getId());
-
-        labelRow.add(label);
-        this._labels.push(label);
-
-        this._add(labelRow);
-        this._rows.push(labelRow);
-      }
-
-      itemRow.add(item);
-      this._add(itemRow);
-      this._rows.push(itemRow);
-    },
-
-
-    /**
-     * Adds a label and it according widget in one line (row).
-     * @param item {qx.ui.mobile.core.Widget} A form item to render.
-     * @param name {String} A name for the form item.
-     */
-    _addInOneLine : function(item, name) {
-      var row = new qx.ui.mobile.form.Row(new qx.ui.mobile.layout.HBox());
+    * Adds a label and its according widget in a row and applies the given layout.
+    * @param item {qx.ui.mobile.core.Widget} A form item to render.
+    * @param name {String} A name for the form item.
+    * @param layout {qx.ui.mobile.layout.Abstract} layout of the rendered row.
+    */
+    _addRow : function(item, name, layout) {
+      var row = new qx.ui.mobile.form.Row(layout);
       row.addCssClass("form-row-content");
 
-      if(name != null) {
+      if(name !== null) {
         var label = new qx.ui.mobile.form.Label(name);
         label.setLabelFor(item.getId());
         row.add(label, {flex:1});
@@ -197,7 +189,7 @@ qx.Class.define("qx.ui.mobile.form.renderer.Single",
      */
     _addSeparationRow : function() {
       var row = new qx.ui.mobile.form.Row();
-      row.addCssClass("form-separation-row")
+      row.addCssClass("form-separation-row");
       this._add(row);
       this._rows.push(row);
     },
@@ -208,7 +200,7 @@ qx.Class.define("qx.ui.mobile.form.renderer.Single",
      */
     _addGroupHeaderRow : function() {
       var row = new qx.ui.mobile.form.Row();
-      row.addCssClass("form-row-group-first")
+      row.addCssClass("form-row-group-first");
       this._add(row);
       this._rows.push(row);
     },
@@ -219,7 +211,7 @@ qx.Class.define("qx.ui.mobile.form.renderer.Single",
      */
     _addGroupFooterRow : function() {
       var row = new qx.ui.mobile.form.Row();
-      row.addCssClass("form-row-group-last")
+      row.addCssClass("form-row-group-last");
       this._add(row);
       this._rows.push(row);
     },
@@ -257,7 +249,7 @@ qx.Class.define("qx.ui.mobile.form.renderer.Single",
       var errorNode = qx.dom.Element.create('div');
       errorNode.innerHTML = item.getInvalidMessage();
       qx.bom.element.Class.add(errorNode, 'form-element-error');
-      qx.dom.Element.insertAfter(errorNode, item.getLayoutParent().getContainerElement());
+      qx.dom.Element.insertAfter(errorNode, this._getParentRow(item).getContainerElement());
       this.__errorMessageContainers.push(errorNode);
     },
 
@@ -267,7 +259,7 @@ qx.Class.define("qx.ui.mobile.form.renderer.Single",
      * @param item {qx.ui.form.IForm} form item which should be hidden.
      */
     showItem : function(item) {
-      item.getLayoutParent().removeCssClass("exclude");
+      this._getParentRow(item).removeCssClass("exclude");
     },
 
 
@@ -276,13 +268,30 @@ qx.Class.define("qx.ui.mobile.form.renderer.Single",
      * @param item {qx.ui.form.IForm} form item which should be hidden.
      */
     hideItem : function(item) {
-      item.getLayoutParent().addCssClass("exclude");
+      this._getParentRow(item).addCssClass("exclude");
+    },
+
+
+    /**
+    * Returns the parent row of the item.
+    *
+    * @param item {qx.ui.form.IForm} the form item.
+    * @return {qx.ui.mobile.core.Widget} the parent row.
+    */
+    _getParentRow : function(item) {
+      var parent = item.getLayoutParent();
+
+      while (!parent.hasCssClass("form-row")) {
+        parent = parent.getLayoutParent();
+      }
+
+      return parent;
     },
 
 
     // override
     resetForm : function() {
-      for(var i=0; i < this.__errorMessageContainers.length; i++) {
+      for (var i = 0; i < this.__errorMessageContainers.length; i++) {
         qx.dom.Element.remove(this.__errorMessageContainers[i]);
       }
     }

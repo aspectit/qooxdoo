@@ -191,6 +191,20 @@ qx.Bootstrap.define("qx.bom.client.Plugin",
 
     /**
      * Fetches the version of the pdf plugin.
+     *
+     * There are two built-in PDF viewer shipped with browsers:
+     *
+     * <ul>
+     *  <li>Chrome PDF Viewer</li>
+     *  <li>PDF.js (Firefox)</li>
+     * </ul>
+     *
+     * While the Chrome PDF Viewer is implemented as plugin and therefore
+     * detected by this method PDF.js is <strong>not</strong>.
+     *
+     * See the dedicated environment key (<em>plugin.pdfjs</em>) instead,
+     * which you might check additionally.
+     *
      * @return {String} The version of the plugin, if available,
      *  an empty string otherwise
      * @internal
@@ -247,6 +261,20 @@ qx.Bootstrap.define("qx.bom.client.Plugin",
 
     /**
      * Checks if the pdf plugin is available.
+     *
+     * There are two built-in PDF viewer shipped with browsers:
+     *
+     * <ul>
+     *  <li>Chrome PDF Viewer</li>
+     *  <li>PDF.js (Firefox)</li>
+     * </ul>
+     *
+     * While the Chrome PDF Viewer is implemented as plugin and therefore
+     * detected by this method PDF.js is <strong>not</strong>.
+     *
+     * See the dedicated environment key (<em>plugin.pdfjs</em>) instead,
+     * which you might check additionally.
+     *
      * @return {Boolean} <code>true</code> if the plugin is available
      * @internal
      */
@@ -276,10 +304,22 @@ qx.Bootstrap.define("qx.bom.client.Plugin",
 
       // IE checks
       if (qx.bom.client.Engine.getName() == "mshtml") {
-        var obj = new ActiveXObject(activeXName);
-
         try {
-          var version = obj.versionInfo;
+          var obj = new ActiveXObject(activeXName);
+          var version;
+
+          // pdf version detection
+          if (obj.GetVersions && obj.GetVersions()) {
+            version = obj.GetVersions().split(',');
+            if (version.length > 1) {
+              version = version[0].split('=');
+              if (version.length === 2) {
+                return version[1];
+              }
+            }
+          }
+
+          version = obj.versionInfo;
           if (version != undefined) {
             return version;
           }
@@ -337,8 +377,7 @@ qx.Bootstrap.define("qx.bom.client.Plugin",
       // IE checks
       if (qx.bom.client.Engine.getName() == "mshtml") {
 
-        var control = window.ActiveXObject;
-        if (!control) {
+        if (!this.getActiveX()) {
           return false;
         }
 

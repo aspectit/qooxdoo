@@ -38,20 +38,20 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'qooxdoo'
-copyright = u'2012, qooxdoo developers'
+copyright = u'2013, qooxdoo developers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '3.1'
+version = '4.1'
 # The full version, including alpha/beta/rc tags.
-release = '3.1'
+release = '4.1'
 
 # qooxdoo Source Text Macros
 # use e.g. as "%{version}" anywhere in .rst files
-vMajor = "3"
+vMajor = "4"
 vMinor = "1"
 vPatch = ""
 qxmacros = {

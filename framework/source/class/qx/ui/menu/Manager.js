@@ -50,9 +50,9 @@ qx.Class.define("qx.ui.menu.Manager",
     var el = document.body;
     var Registration = qx.event.Registration;
 
-    // React on mouse events, but on native, to support inline applications
-    Registration.addListener(window.document.documentElement, "mousedown", this._onMouseDown, this, true);
-    Registration.addListener(el, "mousewheel", this._onMouseWheel, this, true);
+    // React on pointer/mouse events, but on native, to support inline applications
+    Registration.addListener(window.document.documentElement, "pointerdown", this._onPointerDown, this, true);
+    Registration.addListener(el, "roll", this._onRoll, this, true);
 
     // React on keypress events
     Registration.addListener(el, "keydown", this._onKeyUpDown, this, true);
@@ -67,11 +67,11 @@ qx.Class.define("qx.ui.menu.Manager",
     }
 
     // Create open timer
-    this.__openTimer = new qx.event.Timer;
+    this.__openTimer = new qx.event.Timer();
     this.__openTimer.addListener("interval", this._onOpenInterval, this);
 
     // Create close timer
-    this.__closeTimer = new qx.event.Timer;
+    this.__closeTimer = new qx.event.Timer();
     this.__closeTimer.addListener("interval", this._onCloseInterval, this);
   },
 
@@ -383,8 +383,6 @@ qx.Class.define("qx.ui.menu.Manager",
     },
 
 
-
-
     /*
     ---------------------------------------------------------------------------
       TIMER EVENT HANDLERS
@@ -425,27 +423,68 @@ qx.Class.define("qx.ui.menu.Manager",
     },
 
 
+    /*
+    ---------------------------------------------------------------------------
+      CONTEXTMENU EVENT HANDLING
+    ---------------------------------------------------------------------------
+    */
+
+
+    /**
+     * Internal function registers a handler to stop next
+     * <code>contextmenu</code> event.
+     * This function will be called by {@link qx.ui.menu.Button#_onTap}, if
+     * right click was pressed.
+     *
+     * @internal
+     */
+    preventContextMenuOnce : function()
+    {
+      qx.event.Registration.addListener(document.body, "contextmenu", this.__onPreventContextMenu, this, true);
+    },
+
+
+    /**
+     * Internal event handler to stop <code>contextmenu</code> event bubbling,
+     * if target is inside the opened menu.
+     *
+     * @param e {qx.event.type.Mouse} contextmenu event
+     *
+     * @internal
+     */
+    __onPreventContextMenu : function(e)
+    {
+      var target = e.getTarget();
+      target = qx.ui.core.Widget.getWidgetByElement(target, true);
+      if (this._isInMenu(target)) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+
+      // stop only once
+      qx.event.Registration.removeListener(document.body, "contextmenu", this.__onPreventContextMenu, this, true);
+    },
 
 
     /*
     ---------------------------------------------------------------------------
-      MOUSE EVENT HANDLERS
+      POINTER EVENT HANDLERS
     ---------------------------------------------------------------------------
     */
 
     /**
-     * Event handler for mousedown events
+     * Event handler for pointerdown events
      *
-     * @param e {qx.event.type.Mouse} mousedown event
+     * @param e {qx.event.type.Pointer} pointerdown event
      */
-    _onMouseDown : function(e)
+    _onPointerDown : function(e)
     {
       var target = e.getTarget();
       target = qx.ui.core.Widget.getWidgetByElement(target, true);
 
-      // If the target is 'null' the click appears on a DOM element witch is not
+      // If the target is 'null' the tap appears on a DOM element witch is not
       // a widget. This happens normally with an inline application, when the user
-      // clicks not in the inline application. In this case all all currently
+      // taps not in the inline application. In this case all all currently
       // open menus should be closed.
       if (target == null) {
         this.hideAll();
@@ -453,13 +492,13 @@ qx.Class.define("qx.ui.menu.Manager",
       }
 
       // If the target is the one which has opened the current menu
-      // we ignore the mousedown to let the button process the event
-      // further with toggling or ignoring the click.
+      // we ignore the pointerdown to let the button process the event
+      // further with toggling or ignoring the tap.
       if (target.getMenu && target.getMenu() && target.getMenu().isVisible()) {
         return;
       }
 
-      // All clicks not inside a menu will hide all currently open menus
+      // All taps not inside a menu will hide all currently open menus
       if (this.__objects.length > 0 && !this._isInMenu(target)) {
         this.hideAll();
       }
@@ -840,11 +879,11 @@ qx.Class.define("qx.ui.menu.Manager",
 
 
     /**
-     * Event handler for mousewheel which hides all windows on scroll.
+     * Event handler for roll which hides all windows on scroll.
      *
-     * @param e {qx.event.type.MouseWheel} The mouse wheel event.
+     * @param e {qx.event.type.Roll} The roll event.
      */
-    _onMouseWheel : function(e) {
+    _onRoll : function(e) {
       var target = e.getTarget();
       target = qx.ui.core.Widget.getWidgetByElement(target, true);
 
@@ -852,6 +891,7 @@ qx.Class.define("qx.ui.menu.Manager",
         this.__objects.length > 0
         && !this._isInMenu(target)
         && !this._isMenuOpener(target)
+        && !e.getMomentum()
       ) {
         this.hideAll();
       }
@@ -872,8 +912,8 @@ qx.Class.define("qx.ui.menu.Manager",
     var Registration = qx.event.Registration;
     var el = document.body;
 
-    // React on mousedown/mouseup events
-    Registration.removeListener(window.document.documentElement, "mousedown", this._onMouseDown, this, true);
+    // React on pointerdown events
+    Registration.removeListener(window.document.documentElement, "pointerdown", this._onPointerDown, this, true);
 
     // React on keypress events
     Registration.removeListener(el, "keydown", this._onKeyUpDown, this, true);

@@ -24,7 +24,7 @@
  * This is especially useful whenever a developer want to work on text level,
  * e.g. for an editor.
  */
-qx.Class.define("qx.bom.Range",
+qx.Bootstrap.define("qx.bom.Range",
 {
   /*
   *****************************************************************************
@@ -65,7 +65,6 @@ qx.Class.define("qx.bom.Range",
                 case "file":
                 case "submit":
                   return node.createTextRange();
-                  break;
 
                 default:
                   return qx.bom.Selection.getSelectionObject(qx.dom.Node.getDocument(node)).createRange();
@@ -76,7 +75,6 @@ qx.Class.define("qx.bom.Range",
             case "body":
             case "button":
               return node.createTextRange();
-            break;
 
             default:
               return qx.bom.Selection.getSelectionObject(qx.dom.Node.getDocument(node)).createRange();

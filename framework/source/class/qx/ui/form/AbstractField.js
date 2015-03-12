@@ -50,11 +50,11 @@ qx.Class.define("qx.ui.form.AbstractField",
     __addPlaceholderRules : function() {
       var colorManager = qx.theme.manager.Color.getInstance();
       var color = colorManager.resolve("text-placeholder");
+      var selector;
 
       if (qx.core.Environment.get("engine.name") == "gecko") {
-        var selector;
         // see https://developer.mozilla.org/de/docs/CSS/:-moz-placeholder for details
-        if (parseFloat(qx.core.Environment.get("engine.version")) >= 19) {
+       if (parseFloat(qx.core.Environment.get("engine.version")) >= 19) {
           selector = "input::-moz-placeholder, textarea::-moz-placeholder";
         } else {
           selector = "input:-moz-placeholder, textarea:-moz-placeholder";
@@ -847,7 +847,7 @@ qx.Class.define("qx.ui.form.AbstractField",
     /**
      * Remove the fake placeholder
      */
-    _onMouseDownPlaceholder : function() {
+    _onPointerDownPlaceholder : function() {
       window.setTimeout(function() {
         this.focus();
       }.bind(this), 0);
@@ -897,7 +897,7 @@ qx.Class.define("qx.ui.form.AbstractField",
           "visibility" : "hidden"
         });
 
-        this._placeholder.addListener("mousedown", this._onMouseDownPlaceholder, this);
+        this._placeholder.addListener("pointerdown", this._onPointerDownPlaceholder, this);
       }
       return this._placeholder;
     },
@@ -1021,7 +1021,7 @@ qx.Class.define("qx.ui.form.AbstractField",
   destruct : function()
   {
     if (this._placeholder) {
-      this._placeholder.removeListener("mousedown", this._onMouseDownPlaceholder, this);
+      this._placeholder.removeListener("pointerdown", this._onPointerDownPlaceholder, this);
       var parent = this._placeholder.getParent();
       if (parent) {
         parent.remove(this._placeholder);

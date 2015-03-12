@@ -60,14 +60,6 @@ qx.Class.define("qx.ui.root.Application",
     this.__window = qx.dom.Node.getWindow(doc);
     this.__doc = doc;
 
-    // disable the tap highlight color for touch devices
-    if (qx.core.Environment.get("event.touch") && qx.core.Environment.get("qx.emulatemouse")) {
-      // only apply if the body is really already there (just in case)
-      if (doc.body) {
-        doc.body.style["WebkitTapHighlightColor"] = "rgba(0,0,0,0)";
-      }
-    }
-
     // Base call
     this.base(arguments);
 
@@ -84,6 +76,25 @@ qx.Class.define("qx.ui.root.Application",
     qx.ui.core.FocusHandler.getInstance().connectTo(this);
 
     this.getContentElement().disableScrolling();
+
+    // quick fix for [BUG #7680]
+    this.getContentElement().setStyle("-webkit-backface-visibility", "hidden");
+
+    // prevent scrolling on touch devices
+    this.addListener("touchmove", this.__stopScrolling, this);
+
+    // handle focus for iOS which seems to deny any focus action
+    if (qx.core.Environment.get("os.name") == "ios") {
+      this.getContentElement().addListener("tap", function(e) {
+        var widget = qx.ui.core.Widget.getWidgetByElement(e.getTarget());
+        while (widget && !widget.isFocusable()) {
+          widget = widget.getLayoutParent();
+        }
+        if (widget && widget.isFocusable()) {
+          widget.getContentElement().focus();
+        }
+      }, this, true);
+    }
   },
 
 
@@ -192,6 +203,29 @@ qx.Class.define("qx.ui.root.Application",
         throw new Error("The root widget does not support 'left', or 'top' paddings!");
       }
       this.base(arguments, value, old, name);
+    },
+
+
+    /**
+     * Handler for the native 'touchstart' on the window which prevents
+     * the native page scrolling.
+     * @param e {qx.event.type.Touch} The qooxdoo touch event.
+     */
+    __stopScrolling : function(e) {
+      var node = e.getOriginalTarget();
+      while (node && node.style) {
+        var touchAction = qx.bom.element.Style.get(node, "touch-action") !== "none" &&
+          qx.bom.element.Style.get(node, "touch-action") !== "";
+        var webkitOverflowScrolling = qx.bom.element.Style.get(node, "-webkit-overflow-scrolling") === "touch";
+        var overflowX = qx.bom.element.Style.get(node, "overflowX") != "hidden";
+        var overflowY = qx.bom.element.Style.get(node, "overflowY") != "hidden";
+
+        if (touchAction || webkitOverflowScrolling || overflowY || overflowX) {
+          return;
+        }
+        node = node.parentNode;
+      }
+      e.preventDefault();
     }
   },
 

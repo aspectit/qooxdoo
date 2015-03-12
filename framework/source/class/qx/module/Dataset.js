@@ -56,7 +56,6 @@ qx.Bootstrap.define("qx.module.Dataset", {
       if (this[0] && this[0].nodeType === 1) {
         return qx.bom.element.Dataset.get(this[0], name);
       }
-      return null;
     },
 
     /**
@@ -71,7 +70,16 @@ qx.Bootstrap.define("qx.module.Dataset", {
       if (this[0] && this[0].nodeType === 1) {
         return qx.bom.element.Dataset.getAll(this[0]);
       }
-      return null;
+      return {};
+    },
+
+
+    /**
+    * Checks if any element in the collection has a "data-*" attribute
+    * @return {Boolean} True if any element in the collection has a "data-*" attribute
+    */
+    hasData : function() {
+      return qx.bom.element.Dataset.hasData(this[0]);
     },
 
 
@@ -98,7 +106,8 @@ qx.Bootstrap.define("qx.module.Dataset", {
       "getData" : statics.getData,
       "setData" : statics.setData,
       "removeData" : statics.removeData,
-      "getAllData" : statics.getAllData
+      "getAllData" : statics.getAllData,
+      "hasData" : statics.hasData
     });
 
    }

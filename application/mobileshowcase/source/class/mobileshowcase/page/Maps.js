@@ -25,13 +25,11 @@
  */
 qx.Class.define("mobileshowcase.page.Maps",
 {
-  extend : qx.ui.mobile.page.NavigationPage,
+  extend : mobileshowcase.page.Abstract,
 
   construct : function() {
     this.base(arguments,false);
     this.setTitle("Maps");
-    this.setShowBackButton(true);
-    this.setBackButtonText("Back");
 
     this._geolocationEnabled = qx.core.Environment.get("html.geolocation");
   },
@@ -71,7 +69,7 @@ qx.Class.define("mobileshowcase.page.Maps",
      * and drawing markers.
      */
     _redrawMap : function () {
-      if(this._mapnikLayer!= null) {
+      if(this._mapnikLayer !== null) {
         this._map.updateSize();
         this._mapnikLayer.redraw();
       }
@@ -96,6 +94,11 @@ qx.Class.define("mobileshowcase.page.Maps",
 
     // overridden
     _createContent : function() {
+      // Disable menu for Windows Phone 8.
+      if (navigator.userAgent.match(/IEMobile\/10\.0/)) {
+        return null;
+      }
+
       var menuContainer = new qx.ui.mobile.container.Composite();
       menuContainer.setId("mapMenu");
 
@@ -104,7 +107,7 @@ qx.Class.define("mobileshowcase.page.Maps",
       descriptionLabel.addCssClass("osmMapLabel");
 
       // TOGGLE BUTTON
-      var toggleNavigationButton = new qx.ui.mobile.form.ToggleButton(true,"Show","Hide",12);
+      var toggleNavigationButton = new qx.ui.mobile.form.ToggleButton(true,"ON","OFF",12);
 
       // SHOW MY POSITION BUTTON
       this._showMyPositionButton = new qx.ui.mobile.form.Button("Find me!");
@@ -168,16 +171,16 @@ qx.Class.define("mobileshowcase.page.Maps",
      * @param longitude {Number} the longitude of the position.
      * @param latitude {Number} the latitude of the position.
      * @param zoom {Integer} zoom level.
-     * @param showMarker {Boolean} if a marker should be drawn at the defined position. 
+     * @param showMarker {Boolean} if a marker should be drawn at the defined position.
      */
     _zoomToPosition : function(longitude, latitude, zoom, showMarker) {
-      var fromProjection = new OpenLayers.Projection("EPSG:4326"); 
+      var fromProjection = new OpenLayers.Projection("EPSG:4326");
       var toProjection = new OpenLayers.Projection("EPSG:900913");
       var mapPosition = new OpenLayers.LonLat(longitude,latitude).transform(fromProjection, toProjection);
 
       this._map.setCenter(mapPosition, zoom);
 
-      if(showMarker == true) {
+      if(showMarker === true) {
         this._setMarkerOnMap(this._map, mapPosition);
       }
     },
@@ -189,12 +192,12 @@ qx.Class.define("mobileshowcase.page.Maps",
      * @param mapPosition {Map} the map position.
      */
     _setMarkerOnMap : function(map, mapPosition) {
-      if (this._markers == null) {
+      if (this._markers === null) {
         this._markers = new OpenLayers.Layer.Markers("Markers");
         map.addLayer(this._markers);
       }
 
-      if (this._myPositionMarker != null) {
+      if (this._myPositionMarker !== null) {
         this._markers.removeMarker(this._myPositionMarker);
       }
 
@@ -213,7 +216,7 @@ qx.Class.define("mobileshowcase.page.Maps",
      */
     _initGeoLocation : function() {
       var geo = qx.bom.GeoLocation.getInstance();
-      geo.addListener("position", this._onGeolocationSuccess,this)
+      geo.addListener("position", this._onGeolocationSuccess,this);
       geo.addListener("error", this._onGeolocationError,this);
     },
 
@@ -237,7 +240,7 @@ qx.Class.define("mobileshowcase.page.Maps",
       var buttons = [];
       buttons.push(qx.locale.Manager.tr("OK"));
       var title = "Problem with Geolocation";
-      var text = "Please activate location services on your browser and device."
+      var text = "Please activate location services on your browser and device.";
       qx.ui.mobile.dialog.Manager.getInstance().confirm(title, text, function() {
       }, this, buttons);
     },
@@ -252,18 +255,6 @@ qx.Class.define("mobileshowcase.page.Maps",
     },
 
 
-    // overridden
-    _back : function()
-    {
-      qx.core.Init.getApplication().getRouting().executeGet("/", {reverse:true});
-    },
-
-
-    /*
-    *****************************************************************************
-      DESTRUCTOR
-    *****************************************************************************
-    */
     destruct : function()
     {
       this._disposeObjects("_mapUri","_map","_myPositionMarker","_markers","_showMyPositionButton","_mapnikLayer");

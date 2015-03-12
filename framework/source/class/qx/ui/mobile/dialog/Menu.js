@@ -57,14 +57,14 @@ qx.Class.define("qx.ui.mobile.dialog.Menu",
       this.__selectionList.setModel(itemsModel);
     }
 
-    var menuContainer = new qx.ui.mobile.container.Composite();
+    this.__menuContainer = new qx.ui.mobile.container.Composite();
     this.__clearButton = this._createClearButton();
     this.__listScroller = this._createListScroller(this.__selectionList);
 
-    menuContainer.add(this.__listScroller);
-    menuContainer.add(this.__clearButton);
+    this.__menuContainer.add(this.__listScroller);
+    this.__menuContainer.add(this.__clearButton);
 
-    this.base(arguments, menuContainer, anchor);
+    this.base(arguments, this.__menuContainer, anchor);
 
     if(anchor) {
       this.setModal(false);
@@ -102,16 +102,6 @@ qx.Class.define("qx.ui.mobile.dialog.Menu",
     {
       refine : true,
       init : "menu"
-    },
-
-
-    /**
-     * Indicates whether the menu should disappear when tap/click on blocker.
-     */
-    hideOnBlockerClick :
-    {
-      check : "Boolean",
-      init : false
     },
 
 
@@ -167,6 +157,17 @@ qx.Class.define("qx.ui.mobile.dialog.Menu",
       check : "Integer",
       apply : "_applySelectedIndex",
       nullable : true
+    },
+
+
+    /**
+    * This value defines how much list items are visible inside the menu.
+    */
+    visibleListItems :
+    {
+      check : "Integer",
+      apply : "_updatePosition",
+      nullable : true
     }
   },
 
@@ -182,18 +183,14 @@ qx.Class.define("qx.ui.mobile.dialog.Menu",
     __selectionList: null,
     __clearButton : null,
     __listScroller : null,
+    __menuContainer : null,
 
 
     // overidden
     show : function() {
       this.base(arguments);
 
-      if(this.getHideOnBlockerClick()) {
-        this._getBlocker().addListenerOnce("tap", this.hide, this);
-      }
-
       this.scrollToItem(this.getSelectedIndex());
-
     },
 
 
@@ -211,30 +208,42 @@ qx.Class.define("qx.ui.mobile.dialog.Menu",
 
 
     /**
-     * Creates the scrollComposite for the selectionList. Override this to customize the widget.
+     * Creates the scroll container for the selectionList. Override this to customize the widget.
      * @param selectionList {qx.ui.mobile.list.List} The selectionList of this menu.
-     * @return {qx.ui.mobile.container.ScrollComposite} the scrollComposite which contains selectionList of this menu.
+     * @return {qx.ui.mobile.container.Scroll} the scroll container which contains the selectionList of this menu.
      */
     _createListScroller : function(selectionList) {
-      var listScroller = new qx.ui.mobile.container.ScrollComposite();
-      listScroller.add(selectionList, {flex:1});
+      var listScroller = new qx.ui.mobile.container.Scroll({"snap":".list-item"});
+      listScroller.add(selectionList, {
+        flex: 1
+      });
       listScroller.addCssClass("menu-scroller");
-      listScroller.setHeight(null);
       return listScroller;
+    },
+
+
+    /**
+    * Getter for the scroll container which contains a @see {qx.ui.mobile.list.List} with the choosable items.
+    * @return {qx.ui.mobile.container.Scroll} the scroll container which contains the selectionList of this menu.
+    */
+    _getListScroller : function() {
+      return this.__listScroller;
     },
 
 
     // overridden
     _updatePosition : function() {
-      var titleHeight = 0;
-      var titleWidget = this.getTitleWidget();
-      if(titleWidget != null) {
-         titleHeight = qx.bom.element.Dimension.getHeight(titleWidget.getContainerElement());
+      var parentHeight = qx.ui.mobile.dialog.Popup.ROOT.getHeight();
+      var listScrollerHeight = parseInt(parentHeight, 10) * 0.75;
+      listScrollerHeight = parseInt(listScrollerHeight,10);
+
+      if (this.getVisibleListItems() !== null) {
+        var newListScrollerHeight = this.__selectionList.getListItemHeight() * this.getVisibleListItems();
+        listScrollerHeight = Math.min(newListScrollerHeight, listScrollerHeight);
       }
 
-      // Menu max height has to be smaller than screen height.
-      var maxHeight = qx.bom.Viewport.getHeight();
-      this.__listScroller.setHeight(maxHeight-titleHeight*3+"px");
+      qx.bom.element.Style.set(this.__listScroller.getContainerElement(), "maxHeight", listScrollerHeight + "px");
+
       this.base(arguments);
     },
 
@@ -267,8 +276,16 @@ qx.Class.define("qx.ui.mobile.dialog.Menu",
       // Add an changeSelection event
       selectionList.addListener("changeSelection", this.__onListChangeSelection, this);
       selectionList.addListener("tap", this._onSelectionListTap, this);
-
       return selectionList;
+    },
+
+
+    /**
+    * Getter for the selectionList of the menu.
+    * @return {qx.ui.mobile.list.List} The selectionList of this menu.
+    */
+    getSelectionList : function() {
+      return this.__selectionList;
     },
 
 
@@ -296,7 +313,6 @@ qx.Class.define("qx.ui.mobile.dialog.Menu",
      */
     __onListChangeSelection : function (evt) {
       this.setSelectedIndex(evt.getData());
-      this._render();
     },
 
 
@@ -313,10 +329,12 @@ qx.Class.define("qx.ui.mobile.dialog.Menu",
     _applySelectedIndex : function(value, old) {
       var listModel = this.__selectionList.getModel();
 
-      if(listModel != null) {
+      if(listModel !== null) {
         var selectedItem = listModel.getItem(value);
         this.fireDataEvent("changeSelection", {index: value, item: selectedItem});
       }
+
+      this._render();
     },
 
 
@@ -332,7 +350,7 @@ qx.Class.define("qx.ui.mobile.dialog.Menu",
 
     // property apply
     _applyClearButtonLabel : function(value, old) {
-       this.__clearButton.setValue(value);
+      this.__clearButton.setValue(value);
     },
 
 
@@ -351,32 +369,19 @@ qx.Class.define("qx.ui.mobile.dialog.Menu",
      * @param index {Integer}, the index of the listItem to which the listScroller should scroll to.
      */
     scrollToItem : function(index) {
-      if(this.__selectionList.getModel() != null) {
-        var listScrollChild = this.__listScroller.getScrollContainer();
-        var listScrollHeight = listScrollChild.getContainerElement().scrollHeight;
-        var listItemHeight = listScrollHeight/this.__selectionList.getModel().length;
+      if (index !== null && this.__selectionList.getModel() != null) {
+        var listItems = qxWeb("#"+this.__listScroller.getId()+ " .list-item");
+        var targetListItemElement = listItems[index];
+        this.__listScroller.scrollToElement(targetListItemElement);
       }
-
-
-      var scrollY = 0;
-      if(index != null) {
-        scrollY = index * listItemHeight;
-      }
-
-      this.__listScroller.scrollTo(0,-scrollY);
     }
   },
 
-  /*
-  *****************************************************************************
-      DESTRUCTOR
-  *****************************************************************************
-  */
 
   destruct : function()
   {
     this.__selectionList.removeListener("tap", this._onSelectionListTap, this);
-    this._disposeObjects("__selectionList","__clearButton","__listScroller");
+    this._disposeObjects("__selectionList","__clearButton","__listScroller","__menuContainer");
   }
 
 });

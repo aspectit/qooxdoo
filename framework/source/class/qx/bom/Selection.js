@@ -22,8 +22,10 @@
 /**
  * Low-level selection API to select elements like input and textarea elements
  * as well as text nodes or elements which their child nodes.
+ *
+ * @ignore(qx.bom.Element, qx.bom.Element.blur)
  */
-qx.Class.define("qx.bom.Selection",
+qx.Bootstrap.define("qx.bom.Selection",
 {
   /*
   *****************************************************************************
@@ -597,7 +599,6 @@ qx.Class.define("qx.bom.Selection",
     {
       "selection" : function(node)
       {
-        var sel = qx.bom.Selection.getSelectionObject(qx.dom.Node.getDocument(node));
         var rng = qx.bom.Range.get(node);
         var parent = rng.parentElement();
 
@@ -606,7 +607,11 @@ qx.Class.define("qx.bom.Selection",
         // only collapse if the selection is really on the given node
         // -> compare the two parent elements of the ranges with each other and
         // the given node
+        if (qx.dom.Node.isText(node)) {
+          node = node.parentNode;
+        }
         if (parent == documentRange.parentElement() && parent == node) {
+          var sel = qx.bom.Selection.getSelectionObject(qx.dom.Node.getDocument(node));
           sel.empty();
         }
       },
@@ -620,7 +625,9 @@ qx.Class.define("qx.bom.Selection",
         if (qx.dom.Node.isElement(node) && (nodeName == "input" || nodeName == "textarea"))
         {
           node.setSelectionRange(0, 0);
-          qx.bom.Element.blur(node);
+          if (qx.bom.Element && qx.bom.Element.blur) {
+            qx.bom.Element.blur(node);
+          }
         }
         // if the given node is the body/document node -> collapse the selection
         else if (qx.dom.Node.isDocument(node) || nodeName == "body")

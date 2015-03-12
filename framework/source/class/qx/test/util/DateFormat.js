@@ -26,6 +26,7 @@ qx.Class.define("qx.test.util.DateFormat",
 
   // result contain an object with what should be expected, the result to test the date against
   __dates : [
+    {'date' : new Date(2000, 2, 14), 'result' : {}},
     {'date' : new Date(2006, 2, 14), 'result' : {}},
     {'date' : new Date(2007, 3, 14), 'result' : {}},
     {'date' : new Date(2009, 10, 30), 'result' : {}},
@@ -122,6 +123,58 @@ qx.Class.define("qx.test.util.DateFormat",
       var dateFmt = new qx.util.format.DateFormat();
       this.assertNull(dateFmt.format(invalidDate));
       dateFmt.dispose();
+    },
+
+    testWeeksInDateParsing : function()
+    {
+      var dateFormat,
+          testDate,
+          parsedDate;
+
+      dateFormat = new qx.util.format.DateFormat("EEEE d MMMM yyyy ww");
+
+      testDate = (new Date(2014, 0, 1)).getTime();
+      parsedDate = dateFormat.parse("Wednesday 1 January 2014 01");
+      this.assertIdentical(testDate, parsedDate.getTime(), "ww - 01, should have been parsed");
+
+      try {
+        parsedDate = dateFormat.parse("Wednesday 1 January 2014 1");
+      } catch(e) {
+        parsedDate = new Date();
+      }
+
+      this.assertNotIdentical(testDate, parsedDate.getTime(), "ww - 1, should not have been parsed");
+
+      try {
+        parsedDate = dateFormat.parse("Wednesday 1 January 2014 ");
+      } catch(e) {
+        parsedDate = new Date();
+      }
+
+      this.assertNotIdentical(testDate, parsedDate.getTime(), "ww - '', should not have been parsed");
+
+      testDate = (new Date(2014, 4, 6)).getTime();
+      parsedDate = dateFormat.parse("Tuesday 6 May 2014 19");
+      this.assertIdentical(testDate, parsedDate.getTime(), "ww - 19, should have been parsed");
+
+      dateFormat = new qx.util.format.DateFormat("EEEE d MMMM yyyy w");
+      parsedDate = dateFormat.parse("Tuesday 6 May 2014 19");
+      this.assertIdentical(testDate, parsedDate.getTime(), "w - 19, should have been parsed");
+
+      testDate = (new Date(2014, 0, 1)).getTime();
+      parsedDate = dateFormat.parse("Wednesday 1 January 2014 01");
+      this.assertIdentical(testDate, parsedDate.getTime(), "w - 01, should have been parsed");
+
+      parsedDate = dateFormat.parse("Wednesday 1 January 2014 1");
+      this.assertIdentical(testDate, parsedDate.getTime(), "w - 1, should have been parsed");
+
+      try {
+        parsedDate = dateFormat.parse("Wednesday 1 January 2014 ");
+      } catch(e) {
+        parsedDate = new Date();
+      }
+
+      this.assertNotIdentical(testDate, parsedDate.getTime(), "w - '', should not have been parsed");
     },
 
     testTimeZone : function()

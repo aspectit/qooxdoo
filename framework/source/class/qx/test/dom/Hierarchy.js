@@ -30,6 +30,13 @@ qx.Class.define("qx.test.dom.Hierarchy",
       document.body.appendChild(this.__renderedElement);
 
       this.__unRenderedElement = qx.dom.Element.create("div");
+
+      this.__notDisplayedElement = qx.dom.Element.create("div");
+      document.body.appendChild(this.__notDisplayedElement);
+      qx.bom.element.Style.set(this.__notDisplayedElement, "display", "none");
+
+      this.__childOfNotDisplayedElement = qx.dom.Element.create("div");
+      this.__notDisplayedElement.appendChild(this.__childOfNotDisplayedElement);
     },
 
 
@@ -50,6 +57,9 @@ qx.Class.define("qx.test.dom.Hierarchy",
 
       this.__unRenderedElement = null;
 
+      document.body.removeChild(this.__notDisplayedElement);
+      this.__notDisplayedElement = null;
+
       if (this.__iframe) {
         document.body.removeChild(this.__iframe);
         this.__iframe = null;
@@ -61,13 +71,17 @@ qx.Class.define("qx.test.dom.Hierarchy",
     {
       this.assertTrue(qx.dom.Hierarchy.isRendered(this.__renderedElement));
       this.assertFalse(qx.dom.Hierarchy.isRendered(this.__unRenderedElement));
+      this.assertTrue(qx.dom.Hierarchy.isRendered(this.__notDisplayedElement));
+      this.assertTrue(qx.dom.Hierarchy.isRendered(this.__childOfNotDisplayedElement));
     },
 
 
     testIsRenderedIframe : function()
     {
       this.__iframe = qx.bom.Iframe.create();
-      qx.bom.Iframe.setSource(this.__iframe, "http://qooxdoo.org");
+      var src = qx.util.ResourceManager.getInstance().toUri("qx/static/blank.html");
+      src = qx.util.Uri.getAbsolute(src);
+      qx.bom.Iframe.setSource(this.__iframe, src);
       document.body.appendChild(this.__iframe);
 
       qx.event.Registration.addListener(this.__iframe, "load", function(e) {

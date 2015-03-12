@@ -97,7 +97,7 @@ qx.Class.define("feedreader.model.Model",
       );
       staticFeedFolder.getFeeds().push(
         new feedreader.model.Feed(
-          "Surfin' Safari", "http://webkit.org/blog/feed/", "static"
+          "Firefox Future Releases", "http://blog.mozilla.org/futurereleases/feed/", "static"
         )
       );
 
@@ -117,7 +117,7 @@ qx.Class.define("feedreader.model.Model",
       );
       userFeedFolder.getFeeds().push(
         new feedreader.model.Feed(
-          "Opera Desktop Blog", "http://my.opera.com/desktopteam/xml/rss/blog/", "user"
+          "Opera Desktop Team", "http://blogs.opera.com/desktop/feed/", "user"
         )
       );
 

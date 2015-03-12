@@ -89,15 +89,11 @@ qx.Class.define("qx.event.dispatch.MouseCapture",
     // overridden
     dispatchEvent : function(target, event, type)
     {
-      // Conforming to the MS implementation a mouse click will stop mouse
-      // capturing. The event is "eaten" by the capturing handler.
-      if (!qx.event.handler.MouseEmulation.ON) {
-        if (type == "click") {
-          event.stopPropagation();
+      if (type == "click") {
+        event.stopPropagation();
 
-          this.releaseCapture();
-          return;
-        }
+        this.releaseCapture();
+        return;
       }
 
       if (
@@ -128,7 +124,15 @@ qx.Class.define("qx.event.dispatch.MouseCapture",
       "dblclick": 1,
       "mousemove": 1,
       "mouseout": 1,
-      "mouseover": 1
+      "mouseover": 1,
+
+      "pointerdown" : 1,
+      "pointerup" : 1,
+      "pointermove" : 1,
+      "pointerover" : 1,
+      "pointerout" : 1,
+      "tap" : 1,
+      "dbltap" : 1
     },
 
 
@@ -163,9 +167,8 @@ qx.Class.define("qx.event.dispatch.MouseCapture",
       }
 
       // turn on native mouse capturing if the browser supports it
-      this.nativeSetCapture(element, containerCapture);
-      if (this.hasNativeCapture)
-      {
+      if (this.hasNativeCapture) {
+        this.nativeSetCapture(element, containerCapture);
         var self = this;
         qx.bom.Event.addNativeListener(element, "losecapture", function()
         {
@@ -210,13 +213,19 @@ qx.Class.define("qx.event.dispatch.MouseCapture",
     },
 
 
-    /** Whether the browser has native mouse capture support */
-    hasNativeCapture : qx.core.Environment.get("engine.name") == "mshtml",
+    /** Whether the browser should use native mouse capturing */
+    hasNativeCapture : (qx.core.Environment.get("engine.name") == "mshtml" &&
+      qx.core.Environment.get("browser.documentmode") < 9 ||
+      (parseInt(qx.core.Environment.get("os.version"), 10) > 7 && qx.core.Environment.get("browser.documentmode") > 9)
+    ),
 
 
     /**
      * If the browser supports native mouse capturing, sets the mouse capture to
      * the object that belongs to the current document.
+     *
+     * Please note that under Windows 7 (but not Windows 8), capturing is
+     * not only applied to mouse events as expected, but also to native pointer events.
      *
      * @param element {Element} The capture DOM element
      * @param containerCapture {Boolean?true} If true all events originating in

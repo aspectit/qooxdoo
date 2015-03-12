@@ -22,7 +22,9 @@
  *
  * @require(qx.module.Animation)
  * @require(qx.module.Manipulating)
+ * @require(qx.module.Traversing)
  * @require(qx.module.Template)
+ * @require(qx.module.event.GestureHandler)
  */
 qx.Class.define("demobrowser.demo.animation.Scroll",
 {
@@ -38,22 +40,22 @@ qx.Class.define("demobrowser.demo.animation.Scroll",
       var data = {items : []};
       for (var i=0; i < 30; i++) {
         data.items.push(i);
-      };
+      }
 
       // add 5 lists to the body
-      for (var i=0; i < 5; i++) {
+      for (var j=0; j < 5; j++) {
         q.template.get("list-template", data).appendTo(document.body);
-      };
+      }
 
       // set a default scroll top
       this.reset();
-      q("#resetbutton").on("click", this.reset, this);
+      q("#resetbutton").on("tap", this.reset, this);
 
-      q("#startbutton").on("click", function() {
+      q("#startbutton").on("tap", function() {
         q(".list").addClass("scrolling").setScrollTop(250, 2000).once("animationEnd", function() {
           q(".list").removeClass("scrolling");
         });
-      })
+      });
 
     },
 

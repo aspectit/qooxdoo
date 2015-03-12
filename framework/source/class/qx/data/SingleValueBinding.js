@@ -26,8 +26,11 @@ qx.Class.define("qx.data.SingleValueBinding",
 
   statics :
   {
-    /** internal reference for all bindings */
+    /** internal reference for all bindings indexed by source object */
     __bindings: {},
+
+    /** internal reference for all bindings indexed by target object */
+    __bindingsByTarget : {},
 
 
     /**
@@ -215,13 +218,21 @@ qx.Class.define("qx.data.SingleValueBinding",
 
           // get and store the next source
           if (source["get" + qx.lang.String.firstUp(propertyNames[i])] == null) {
-            source = null;
+            source = undefined;
           } else if (arrayIndexValues[i] !== "") {
-            source = source["get" + qx.lang.String.firstUp(propertyNames[i])](arrayIndexValues[i]);
+            var itemIndex = arrayIndexValues[i] === "last" ?
+              source.length - 1 : arrayIndexValues[i];
+            source = source["get" + qx.lang.String.firstUp(propertyNames[i])](itemIndex);
           } else {
             source = source["get" + qx.lang.String.firstUp(propertyNames[i])]();
+            // the value should be undefined if we can not find the last part of the property chain
+            if (source === null && (propertyNames.length - 1) != i) {
+              source = undefined;
+            }
           }
           if (!source) {
+            // call the converter if no source could be found on binding creation
+            this.__setInitialValue(source, targetObject, targetPropertyChain, options, sourceObject);
             break;
           }
         }
@@ -321,16 +332,15 @@ qx.Class.define("qx.data.SingleValueBinding",
               ignoreConverter = match ? match.length > 0 : false;
             }
 
-            var data = null;
             if (!ignoreConverter) {
-              data = context.options.converter();
+              this.__setTargetValue(
+                context.targetObject,
+                context.targetPropertyChain,
+                context.options.converter()
+              );
+            } else {
+              this.__resetTargetValue(context.targetObject, context.targetPropertyChain);
             }
-
-            this.__setTargetValue(
-              context.targetObject,
-              context.targetPropertyChain,
-              data
-            );
           } else {
             this.__resetTargetValue(context.targetObject, context.targetPropertyChain);
           }
@@ -565,39 +575,8 @@ qx.Class.define("qx.data.SingleValueBinding",
      * @return {var?undefined} Returns the set value if defined.
      */
     resolvePropertyChain : function(o, propertyChain) {
-      var source = this.__getTargetFromChain(o, propertyChain);
-
-      var value;
-      if (source != null) {
-        // geht the name of the last property
-        var lastProperty = propertyChain.substring(
-          propertyChain.lastIndexOf(".") + 1, propertyChain.length
-        );
-
-        // check for arrays
-        if (lastProperty.charAt(lastProperty.length - 1) == "]") {
-          // split up the chain into property and index
-          var index = lastProperty.substring(
-            lastProperty.lastIndexOf("[") + 1, lastProperty.length - 1
-          );
-          var prop = lastProperty.substring(0, lastProperty.lastIndexOf("["));
-
-          // get the array
-          var sourceArray = source["get" + qx.lang.String.firstUp(prop)]();
-          if (index == "last") {
-            index = sourceArray.length - 1;
-          }
-          if (sourceArray != null) {
-            value = sourceArray.getItem(index);
-          }
-
-        } else {
-          // set the given value
-          value = source["get" + qx.lang.String.firstUp(lastProperty)]();
-        }
-      }
-
-      return value;
+      var properties = this.__getPropertyChainArray(propertyChain);
+      return this.__getTargetFromChain(o, properties, properties.length);
     },
 
 
@@ -651,17 +630,18 @@ qx.Class.define("qx.data.SingleValueBinding",
     __resetTargetValue : function(targetObject, targetPropertyChain)
     {
       // get the last target object of the chain
-      var target = this.__getTargetFromChain(targetObject, targetPropertyChain);
+      var properties = this.__getPropertyChainArray(targetPropertyChain);
+      var target = this.__getTargetFromChain(targetObject, properties);
       if (target != null) {
         // get the name of the last property
-        var lastProperty = targetPropertyChain.substring(
-          targetPropertyChain.lastIndexOf(".") + 1, targetPropertyChain.length
-        );
+        var lastProperty = properties[properties.length - 1];
         // check for an array and set the value to null
-        if (lastProperty.charAt(lastProperty.length - 1) == "]") {
+        var index = this.__getArrayIndex(lastProperty);
+        if (index) {
           this.__setTargetValue(targetObject, targetPropertyChain, null);
           return;
         }
+
         // try to reset the property
         if (target["reset" + qx.lang.String.firstUp(lastProperty)] != undefined) {
           target["reset" + qx.lang.String.firstUp(lastProperty)]();
@@ -686,37 +666,57 @@ qx.Class.define("qx.data.SingleValueBinding",
     __setTargetValue : function(targetObject, targetPropertyChain, value)
     {
       // get the last target object of the chain
-      var target = this.__getTargetFromChain(targetObject, targetPropertyChain);
-      if (target != null) {
-        // geht the name of the last property
-        var lastProperty = targetPropertyChain.substring(
-          targetPropertyChain.lastIndexOf(".") + 1, targetPropertyChain.length
-        );
+      var properties = this.__getPropertyChainArray(targetPropertyChain);
+      var target = this.__getTargetFromChain(targetObject, properties);
+      if (target) {
+        // get the name of the last property
+        var lastProperty = properties[properties.length - 1];
 
-        // check for arrays
-        if (lastProperty.charAt(lastProperty.length - 1) == "]") {
-          // split up the chain into property and index
-          var index = lastProperty.substring(lastProperty.lastIndexOf("[") + 1, lastProperty.length - 1);
-          var prop = lastProperty.substring(0, lastProperty.lastIndexOf("["));
-
-          // get the array
-          var targetArray = targetObject;
-          if (!qx.Class.implementsInterface(targetArray, qx.data.IListData)) {
-            targetArray = target["get" + qx.lang.String.firstUp(prop)]();
+        // check for array notation
+        var index = this.__getArrayIndex(lastProperty);
+        if (index) {
+          if (index === "last") {
+            // check for the 'last' notation
+            index = target.length - 1;
           }
-
-          if (index == "last") {
-            index = targetArray.length - 1;
-          }
-          if (targetArray != null) {
-            targetArray.setItem(index, value);
-          }
-
+          target.setItem(index, value);
         } else {
-          // set the given value
           target["set" + qx.lang.String.firstUp(lastProperty)](value);
         }
       }
+    },
+
+
+    /**
+     * Returns the index from a property using bracket notation, e.g.
+     * "[42]" returns "42", "[last]" returns "last"
+     *
+     * @param propertyName {String} A property name
+     * @return {String|null} Array index or null if the property name does
+     * not use bracket notation
+     */
+    __getArrayIndex: function(propertyName) {
+      var arrayExp = /^\[(\d+|last)\]$/;
+        var arrayMatch = propertyName.match(arrayExp);
+        if (arrayMatch) {
+          return  arrayMatch[1];
+        }
+        return null;
+    },
+
+
+    /**
+     * Converts a property chain string into a list of properties and/or
+     * array indexes
+     * @param targetPropertyChain {String} property chain
+     * @return {String[]} Array of property names
+     */
+    __getPropertyChainArray: function(targetPropertyChain) {
+      // split properties (dot notation) and array indexes (bracket notation)
+      return targetPropertyChain.replace(/\[/g, ".[").split(".")
+        .filter(function(prop) {
+          return prop !== "";
+        });
     },
 
 
@@ -726,40 +726,32 @@ qx.Class.define("qx.data.SingleValueBinding",
      *
      * @param targetObject {qx.core.Object} The object where the property chain
      *   starts.
-     * @param targetPropertyChain {String} The names of the properties,
-     *   separated with a dot.
+     * @param targetProperties {String[]} Array containing the names of the properties
+     * @param index {Number?} The array index of the last property to be considered.
+     * Default: The last item's index
      * @return {qx.core.Object | null} The object on which the last property
      *   should be set.
      */
-    __getTargetFromChain : function(targetObject, targetPropertyChain)
+    __getTargetFromChain : function(targetObject, targetProperties, index)
     {
-      var properties = targetPropertyChain.split(".");
+      index = index || targetProperties.length - 1;
       var target = targetObject;
-      // ignore the last property
-      for (var i = 0; i < properties.length - 1; i++) {
-        try {
-          var property = properties[i];
-          // if there is an array notation
-          if (property.indexOf("]") == property.length - 1) {
-            var index = property.substring(
-              property.indexOf("[") + 1, property.length - 1
-            );
-            property = property.substring(0, property.indexOf("["));
-          }
-          // in case there is a property infront of the brackets
-          if (property != "") {
-            target = target["get" + qx.lang.String.firstUp(property)]();
-          }
 
-          // if there is an index, we can be sure its an array
-          if (index != null) {
-            // check for the 'last' notation
-            if (index == "last") {
-              index = target.length - 1;
+      for (var i = 0; i < index; i++) {
+        try {
+          var property = targetProperties[i];
+
+          // array notation
+          var arrIndex = this.__getArrayIndex(property);
+          if (arrIndex) {
+            if (arrIndex === "last") {
+              // check for the 'last' notation
+              arrIndex = target.length - 1;
             }
-            // get the array item
-            target = target.getItem(index);
-            index = null;
+            target = target.getItem(arrIndex);
+          }
+          else {
+            target = target["get" + qx.lang.String.firstUp(property)]();
           }
         } catch (ex) {
           return null;
@@ -1028,13 +1020,24 @@ qx.Class.define("qx.data.SingleValueBinding",
       id, sourceObject, sourceEvent, targetObject, targetProperty
     )
     {
+      var hash;
+
       // add the listener id to the internal registry
-      if (this.__bindings[sourceObject.toHashCode()] === undefined) {
-        this.__bindings[sourceObject.toHashCode()] = [];
+      hash = sourceObject.toHashCode();
+      if (this.__bindings[hash] === undefined) {
+        this.__bindings[hash] = [];
       }
-      this.__bindings[sourceObject.toHashCode()].push(
-        [id, sourceObject, sourceEvent, targetObject, targetProperty]
-      );
+
+      var binding = [id, sourceObject, sourceEvent, targetObject, targetProperty];
+      this.__bindings[hash].push(binding);
+
+
+      // add same binding data indexed by target object
+      hash = targetObject.toHashCode();
+      if (this.__bindingsByTarget[hash] === undefined) {
+        this.__bindingsByTarget[hash] = [];
+      }
+      this.__bindingsByTarget[hash].push(binding);
     },
 
 
@@ -1069,7 +1072,8 @@ qx.Class.define("qx.data.SingleValueBinding",
         return options.converter(value, model, sourceObject, targetObject);
       // try default conversion
       } else {
-        var target = this.__getTargetFromChain(targetObject, targetPropertyChain);
+        var properties = this.__getPropertyChainArray(targetPropertyChain);
+        var target = this.__getTargetFromChain(targetObject, properties);
         var lastProperty = targetPropertyChain.substring(
           targetPropertyChain.lastIndexOf(".") + 1, targetPropertyChain.length
         );
@@ -1175,12 +1179,22 @@ qx.Class.define("qx.data.SingleValueBinding",
       }
 
       // remove the id from the internal reference system
-      var bindings = this.__bindings[sourceObject.toHashCode()];
+      var bindings = this.getAllBindingsForObject(sourceObject);
       // check if the binding exists
       if (bindings != undefined) {
         for (var i = 0; i < bindings.length; i++) {
           if (bindings[i][0] == id) {
-            qx.lang.Array.remove(bindings, bindings[i]);
+            // remove binding data from internal reference indexed by target object
+            var target = bindings[i][3];
+            if (this.__bindingsByTarget[target.toHashCode()]) {
+              qx.lang.Array.remove(this.__bindingsByTarget[target.toHashCode()], bindings[i]);
+            }
+
+            // remove binding data from internal reference indexed by source object
+            var source = bindings[i][1];
+            if (this.__bindings[source.toHashCode()]) {
+              qx.lang.Array.remove(this.__bindings[source.toHashCode()], bindings[i]);
+            }
             return;
           }
         }
@@ -1208,12 +1222,49 @@ qx.Class.define("qx.data.SingleValueBinding",
       }
 
       // get the bindings
-      var bindings = this.__bindings[object.toHashCode()];
+      var bindings = this.getAllBindingsForObject(object);
       if (bindings != undefined)
       {
         // remove every binding with the removeBindingFromObject function
         for (var i = bindings.length - 1; i >= 0; i--) {
           this.removeBindingFromObject(object, bindings[i][0]);
+        }
+      }
+    },
+
+
+    /**
+     * Removes all bindings between given objects.
+     *
+     * @param object {qx.core.Object} The object of which the bindings should be
+     *   removed.
+     * @param relatedObject {qx.core.Object} The object of which related
+     *   bindings should be removed.
+     * @throws {qx.core.AssertionError} If the object is not in the internal
+     *   registry of the bindings.
+     * @throws {Error} If one of the bindings listed internally can not be
+     *   removed.
+     */
+    removeRelatedBindings : function(object, relatedObject) {
+      // check for the null value
+      if (qx.core.Environment.get("qx.debug")) {
+        qx.core.Assert.assertNotNull(object,
+          "Can not remove the bindings for null object!");
+        qx.core.Assert.assertNotNull(relatedObject,
+          "Can not remove the bindings for null object!");
+      }
+
+      // get the bindings
+      var bindings = this.getAllBindingsForObject(object);
+      if (bindings != undefined)
+      {
+        // remove every binding with the removeBindingFromObject function
+        for (var i = bindings.length - 1; i >= 0; i--) {
+          var source = bindings[i][1];
+          var target = bindings[i][3];
+          if (source === relatedObject || target === relatedObject) {
+            this.removeBindingFromObject(object, bindings[i][0]);
+          }
         }
       }
     },
@@ -1230,12 +1281,19 @@ qx.Class.define("qx.data.SingleValueBinding",
      *   sourceEvent, targetObject and targetProperty in that order.
      */
     getAllBindingsForObject : function(object) {
+      var hash = object.toHashCode();
       // create an empty array if no binding exists
-      if (this.__bindings[object.toHashCode()] === undefined) {
-        this.__bindings[object.toHashCode()] = [];
+      if (this.__bindings[hash] === undefined) {
+        this.__bindings[hash] = [];
       }
 
-      return this.__bindings[object.toHashCode()];
+      // get all bindings of object as source
+      var sourceBindings = this.__bindings[hash];
+
+      // get all bindings of object as target
+      var targetBindings = this.__bindingsByTarget[hash] ? this.__bindingsByTarget[hash] : [];
+
+      return qx.lang.Array.unique(sourceBindings.concat(targetBindings));
     },
 
 

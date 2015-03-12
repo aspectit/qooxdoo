@@ -36,7 +36,7 @@ qx.Class.define("qx.test.ui.tree.virtual.Tree",
       this.assertEquals(200, this.tree.getHeight(), "Init value for 'height' is wrong!");
       this.assertEquals(25, this.tree.getItemHeight(), "Init value for 'itemHeight' is wrong!");
       this.assertEquals(25, this.tree.getPane().getRowConfig().getDefaultItemSize(), "Init value for 'itemHeight' is wrong!");
-      this.assertEquals("dblclick", this.tree.getOpenMode(), "Init value for 'openMode' is wrong!");
+      this.assertEquals("dbltap", this.tree.getOpenMode(), "Init value for 'openMode' is wrong!");
       this.assertFalse(this.tree.getHideRoot(), "Init value for 'hideRoot' is wrong!");
       this.assertNull(this.tree.getModel(), "Init value for 'model' is wrong!");
       this.assertNull(this.tree.getLabelPath(), "Init value for 'labelPath' is wrong!");
@@ -45,7 +45,7 @@ qx.Class.define("qx.test.ui.tree.virtual.Tree",
       this.assertNull(this.tree.getIconOptions(), "Init value for 'iconOptions' is wrong!");
       this.assertNull(this.tree.getDelegate(), "Init value for 'delegate' is wrong!");
       this.assertNull(this.tree.getChildProperty(), "Init value for 'childProperty' is wrong!");
-      this.assertTrue(this.tree.getPane().hasListener("cellDblclick"), "Init listener 'cellDblclick' is wrong!");
+      this.assertTrue(this.tree.getPane().hasListener("cellDbltap"), "Init listener 'cellDbltap' is wrong!");
     },
 
 
@@ -485,9 +485,9 @@ qx.Class.define("qx.test.ui.tree.virtual.Tree",
     },
 
 
-    testSetOpenModeWithClick : function()
+    testSetOpenModeWithTap : function()
     {
-      this.tree.setOpenMode("click");
+      this.tree.setOpenMode("tap");
       this.__testOpenMode(false, true);
 
       this.tree.resetOpenMode();
@@ -505,18 +505,18 @@ qx.Class.define("qx.test.ui.tree.virtual.Tree",
     },
 
 
-    __testOpenMode : function(dblclick, click)
+    __testOpenMode : function(dbltap, tap)
     {
       var pane = this.tree.getPane();
       this.assertEquals(
-        dblclick,
-        pane.hasListener("cellDblclick"),
-        "Expected " + (dblclick ? "" : "no ") + " listener for 'cellDblclick'!"
+        dbltap,
+        pane.hasListener("cellDbltap"),
+        "Expected " + (dbltap ? "" : "no ") + " listener for 'cellDbltap'!"
       );
       this.assertEquals(
-        click,
-        pane.hasListener("cellClick"),
-        "Expected " + (click ? "" : "no ") + " listener for 'cellClick'!"
+        tap,
+        pane.hasListener("cellTap"),
+        "Expected " + (tap ? "" : "no ") + " listener for 'cellTap'!"
       );
     },
 
@@ -553,6 +553,36 @@ qx.Class.define("qx.test.ui.tree.virtual.Tree",
     },
 
 
+    testOpenNodeWithoutScrolling : function()
+    {
+      var root = this.createModelAndSetModel(1);
+      qx.ui.core.queue.Manager.flush();
+
+      // open and select the fifth leaf of fifth branch
+      var item4_4 = root.getChildren().getItem(4).getChildren().getItem(4);
+      this.tree.openNodeAndParents(item4_4);
+      this.tree.setSelection(new qx.data.Array([item4_4]));
+      qx.ui.core.queue.Manager.flush();
+
+      // store y scroll position
+      var scrollY = this.tree.getScrollY();
+
+      // open third node without auto scrolling
+      this.tree.openNodeWithoutScrolling(root.getChildren().getItem(2));
+      qx.ui.core.queue.Manager.flush();
+
+      // check scroll y position
+      this.assertEquals(this.tree.getScrollY(), scrollY, "Y position of scroller must not be changed");
+
+      // close the third node, but use API to automatically scroll selected into view
+      this.tree.closeNode(root.getChildren().getItem(2));
+      qx.ui.core.queue.Manager.flush();
+
+      // check scroll y position
+      this.assertNotEquals(this.tree.getScrollY(), scrollY, "Y position of scroller must be changed");
+    },
+
+
     /*
     ---------------------------------------------------------------------------
       HELPER METHOD TO CALCULATE THE VISIBLE ITEMS
@@ -575,7 +605,7 @@ qx.Class.define("qx.test.ui.tree.virtual.Tree",
     __openNodes : function(nodes)
     {
       for (var i = 0; i < nodes.length; i++) {
-        this.tree.openNode(nodes[i]);
+        this.tree.openNodeWithoutScrolling(nodes[i]);
       }
     },
 
@@ -586,11 +616,5 @@ qx.Class.define("qx.test.ui.tree.virtual.Tree",
         nativeArray[i].dispose();
       }
     }
-  },
-
-
-  destruct : function() {
-    qx.Class.undefine("qx.test.ui.tree.virtual.Leaf");
-    qx.Class.undefine("qx.test.ui.tree.virtual.Node");
   }
 });

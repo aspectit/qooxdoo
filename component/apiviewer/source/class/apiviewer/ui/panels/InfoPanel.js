@@ -19,7 +19,11 @@
      * Fabian Jakobs (fjakobs)
 
 ************************************************************************ */
-
+/**
+ * @require(qx.module.event.GestureHandler)
+ * @require(qx.module.Attribute)
+ * @require(qx.module.event.Native)
+ */
 qx.Class.define("apiviewer.ui.panels.InfoPanel", {
 
   type : "abstract",
@@ -1151,6 +1155,7 @@ qx.Class.define("apiviewer.ui.panels.InfoPanel", {
         html.add('</table>');
 
         this.getBodyElement().innerHTML = html.get();
+        this._postProcessLinks(this.getBodyElement());
         apiviewer.ui.AbstractViewer.fixLinks(this.getBodyElement());
         apiviewer.ui.AbstractViewer.highlightCode(this.getBodyElement());
         this.getBodyElement().style.display = !this.getIsOpen() ? "none" : "";
@@ -1273,6 +1278,7 @@ qx.Class.define("apiviewer.ui.panels.InfoPanel", {
 
         // Update content
         textDiv.innerHTML = this.getItemTextHtml(node, this.getDocNode(), showDetails);
+        this._postProcessLinks(textDiv);
         apiviewer.ui.AbstractViewer.fixLinks(textDiv);
         apiviewer.ui.AbstractViewer.highlightCode(textDiv);
       }
@@ -1281,6 +1287,50 @@ qx.Class.define("apiviewer.ui.panels.InfoPanel", {
         this.error("Toggling item details failed");
         this.error(exc);
       }
+    },
+
+
+    /**
+     * Convert mouseup and click listener attached to tap / pointerup listener.
+     * @param el {Element} The element containing the links.
+     */
+    _postProcessLinks : function(el) {
+      if (el._processed) {
+        return;
+      }
+      q(el).on("pointerup", function(e) {
+        var target = e.getTarget();
+        var mouseup = target.getAttribute("onmouseup");
+        if (mouseup) {
+          target.removeAttribute("onmouseup");
+          target.setAttribute("oldonmouseup", mouseup);
+        } else {
+          mouseup = target.getAttribute("oldonmouseup");
+        }
+
+        if (mouseup) {
+          Function(mouseup)();
+        }
+      });
+
+      q(el).on("tap", function(e) {
+        var onClickValue = "event.preventDefault ? event.preventDefault() : event.returnValue = false; return false;";
+        var target = e.getTarget();
+        var click = target.getAttribute("onclick");
+        if (click && click != onClickValue) {
+          target.removeAttribute("onclick");
+          target.setAttribute("oldonclick", click);
+          target.setAttribute("onclick", onClickValue);
+        } else {
+          click = target.getAttribute("oldonclick");
+        }
+
+        if (click) {
+          Function(click)();
+        }
+      });
+
+      el._processed = true;
     }
   },
 

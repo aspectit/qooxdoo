@@ -37,6 +37,7 @@ qx.Class.define("qx.ui.mobile.layout.CardAnimation",
     this.base(arguments);
 
     this._cardAnimationsMap = {
+      "none": null,
       "slide": {
         "in": qx.util.Animation.SLIDE_LEFT_IN,
         "out": qx.util.Animation.SLIDE_LEFT_OUT,
@@ -111,17 +112,6 @@ qx.Class.define("qx.ui.mobile.layout.CardAnimation",
     */
     getAnimation : function(animationName, direction, reverse)
     {
-      // @deprecated { 3.0.1 } "Animation 'dissolve' is deprecated. Please use 'fade' instead."
-      if(animationName == "dissolve") 
-      {
-        animationName = "fade";
-
-        if (qx.core.Environment.get("qx.debug")) {
-          this.warn("Animation 'dissolve' is deprecated. Please use 'fade' instead.");
-        }
-      }
-      // ----
-
       if (qx.core.Environment.get("qx.debug")) {
         if (!reverse) {
           this.assertNotUndefined(this._cardAnimationsMap[animationName], "Animation '" + animationName + "' is not defined.");
@@ -156,8 +146,7 @@ qx.Class.define("qx.ui.mobile.layout.CardAnimation",
   },
 
 
-  destruct : function()
-  {
-    this._disposeObjects("_cardAnimationsMap");
+  destruct : function() {
+    this._cardAnimationsMap = null;
   }
 });

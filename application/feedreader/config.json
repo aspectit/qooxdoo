@@ -15,6 +15,32 @@
     }
   ],
 
+  "export" :
+    [
+      "api",
+      "api-data",
+      "build",
+      "build-mobile",
+      "build-website",
+      "clean",
+      "distclean",
+      "fix",
+      "info",
+      "inspector",
+      "lint",
+      "migration",
+      "pretty",
+      "profiling",
+      "source",
+      "source-all",
+      "source-hybrid",
+      "source-mobile",
+      "source-website",
+      "translation",
+      "validate-config",
+      "validate-manifest"
+    ],
+
   "default-job" : "source",
 
   "let" :
@@ -35,8 +61,6 @@
       "build-script",
       "image-combine",
       "libraries",
-      "simulation-build",
-      "simulation-run",
       "translation"
     ],
 
@@ -60,8 +84,7 @@
     {
       "environment" :
       {
-        "qx.nativeScrollBars" : true,
-        "qx.emulatemouse" : true
+        "qx.nativeScrollBars" : true
       },
 
       "compile-options" :
@@ -191,17 +214,21 @@
         "APPLICATION_MAIN_CLASS" : "${APPLICATION}.MobileApplication"
       },
 
-      "environment" :
-      {
-        "qx.mobile.emulatetouch" : true
-      },
-
       "compile-options" :
       {
-        "paths" : { "file" : "source/script/${APPLICATION}-mobile.js" }
+        "paths": {
+          "file": "source/script/${APPLICATION}-mobile.js",
+          "loader-template": "${QOOXDOO_PATH}/tool/data/generator/mobile.loader.tmpl.js"
+        }
       },
 
-      "=packages" : {}
+      "=packages" : {},
+
+      "add-css" : [
+        { "uri" : "./resource/${APPLICATION}/css/indigo.css" }
+      ],
+
+      "run": ["compile-scss"]
     },
 
 
@@ -239,42 +266,29 @@
         "target" : "${BUILD_PATH}"
       },
 
-      "=packages" : {}
+      "=packages" : {},
+
+      "add-css" : [
+        { "uri" : "./resource/${APPLICATION}/css/indigo.css" }
+      ],
+
+      "run": ["compile-scss"]
     },
 
-
-    // -- Simulation Jobs ------------------------------------------------------
-
-    "simulation-run" :
+    "compile-scss" :
     {
-      "environment" :
-      {
-        "simulator.selServer"   : "${SELENIUM_SERVER}",
-        "simulator.selPort"     : "${SELENIUM_PORT}",
-        "simulator.testBrowser" : "${SELENIUM_BROWSER}",
-        "simulator.autHost"     : "${AUT_HOST}",
-        "simulator.autPath"     : "${AUT_PATH}",
-        "simulator.reportServer": "${SIMULATOR_REPORTSERVER}",
-        "simulator.applicationLog" : true,
-        "simulator.globalErrorLogging" : true
-      }
-    },
-
-    "simulation-build" :
-    {
+      "desc"   : "Compile the theme scss once",
+      "extend" : ["cache"],
       "let" :
       {
-        "SIMULATION_INCLUDE" : "feedreader.simulation.ria.*"
-      }
-    },
-
-    "simulation-build-mobile" :
-    {
-      "extend" : ["simulation-build"],
-
-      "let" :
+        "QX_MOBILE_THEME_PATH" : "$${QOOXDOO_PATH}/framework/source/resource/qx/mobile/scss",
+        "QX_SHARED_THEME_PATH" : "$${QOOXDOO_PATH}/framework/source/resource/qx/scss",
+        "MOBILE_RESOURCE_PATH" : "source/resource/$${APPLICATION}"
+      },
+      "shell" :
       {
-        "SIMULATION_INCLUDE" : "feedreader.simulation.mobile.*"
+        "command" : "sass -C -t compressed -I ${QX_MOBILE_THEME_PATH} -I ${QX_SHARED_THEME_PATH} --update ${MOBILE_RESOURCE_PATH}/scss:${MOBILE_RESOURCE_PATH}/css",
+        "command-not-found" : "It seems that Sass (http://sass-lang.com/) is not installed and/or executable, which is needed for the SCSS-compilation."
       }
     },
 

@@ -119,12 +119,10 @@ qx.Class.define("qx.data.Array",
      * <li>end: The end index of the change.</li>
      * <li>type: The type of the change as a String. This can be 'add',
      * 'remove', 'order' or 'add/remove'</li>
-     * <li>items: The items which has been changed (as a JavaScript array)
-     *   either the added or removed items. 'items' is deprecated: Please use added and removed instead.</li>
      * <li>added: The items which has been added (as a JavaScript array)</li>
      * <li>removed: The items which has been removed (as a JavaScript array)</li>
      */
-    "change" : "qx.event.type.Data", // items property is @deprecated {3.0}
+    "change" : "qx.event.type.Data",
 
 
     /**
@@ -198,7 +196,6 @@ qx.Class.define("qx.data.Array",
           start: this.length - 1,
           end: this.length - 1,
           type: "remove",
-          items: [item],
           removed : [item],
           added : []
         }, null
@@ -236,7 +233,6 @@ qx.Class.define("qx.data.Array",
             start: this.length - 1,
             end: this.length - 1,
             type: "add",
-            items: [arguments[i]],
             added: [arguments[i]],
             removed : []
           }, null
@@ -261,7 +257,7 @@ qx.Class.define("qx.data.Array",
       this.__updateEventPropagation(0, this.length);
 
       this.fireDataEvent("change",
-        {start: 0, end: this.length - 1, type: "order", items: null, added: [], removed: []}, null
+        {start: 0, end: this.length - 1, type: "order", added: [], removed: []}, null
       );
 
       // fire change bubbles event
@@ -307,7 +303,6 @@ qx.Class.define("qx.data.Array",
           start: 0,
           end: this.length -1,
           type: "remove",
-          items: [item],
           removed : [item],
           added : []
         }, null
@@ -320,7 +315,8 @@ qx.Class.define("qx.data.Array",
      * Returns a new array based on the range specified by the parameters.
      *
      * @param from {Number} The start index.
-     * @param to {Number?null} The end index. If omitted, slice extracts to the
+     * @param to {Number?null} The zero-based end index. <code>slice</code> extracts
+     *   up to but not including <code>to</code>. If omitted, slice extracts to the
      *   end of the array.
      *
      * @return {qx.data.Array} A new array containing the given range of values.
@@ -331,8 +327,9 @@ qx.Class.define("qx.data.Array",
 
 
     /**
-     * Method to remove and add new elements to the array. For every remove or
-     * add an event will be fired.
+     * Method to remove and add new elements to the array. A change event
+     * will be fired for every removal or addition unless the array is
+     * identical before and after splicing.
      *
      * @param startIndex {Integer} The index where the splice should start
      * @param amount {Integer} Defines number of elements which will be removed
@@ -360,7 +357,7 @@ qx.Class.define("qx.data.Array",
           if (addedItems[i] !== returnArray[i]) {
             break;
           }
-          // if all added and removed items are queal
+          // if all added and removed items are equal
           if (i == addedItems.length -1) {
             // prevent all events and return a new array
             return new qx.data.Array();
@@ -370,18 +367,15 @@ qx.Class.define("qx.data.Array",
       // fire an event for the change
       var removed = amount > 0;
       var added = arguments.length > 2;
-      var items = null;
       if (removed || added) {
         var addedItems = qx.lang.Array.fromArguments(arguments, 2);
 
         if (returnArray.length == 0) {
           var type = "add";
           var end = startIndex + addedItems.length;
-          items = addedItems;
         } else if (addedItems.length == 0) {
           var type = "remove";
           var end = this.length - 1;
-          items = returnArray;
         } else {
           var type = "add/remove";
           var end = startIndex + Math.abs(addedItems.length - returnArray.length);
@@ -391,7 +385,6 @@ qx.Class.define("qx.data.Array",
             start: startIndex,
             end: end,
             type: type,
-            items: items,
             added : addedItems,
             removed : returnArray
           }, null
@@ -411,16 +404,22 @@ qx.Class.define("qx.data.Array",
       this.__updateEventPropagation(startIndex + (arguments.length - 2) - amount, this.length);
 
       // fire the changeBubble event
-      var value = [];
-      for (var i=2; i < arguments.length; i++) {
-        value[i-2] = arguments[i];
-      };
-      var endIndex = (startIndex + Math.max(arguments.length - 3 , amount - 1));
-      var name = startIndex == endIndex ? endIndex : startIndex + "-" + endIndex;
-      this.fireDataEvent("changeBubble", {
-        value: value, name: name + "", old: returnArray, item: this
-      });
+      if (removed || added) {
+        var value = [];
+        for (var i = 2; i < arguments.length; i++) {
+          value[i-2] = arguments[i];
+        }
+        var endIndex = (startIndex + Math.max(arguments.length - 3 , amount - 1));
+        var name = startIndex == endIndex ? endIndex : startIndex + "-" + endIndex;
 
+        var eventData = {
+          value: value,
+          name: name + "",
+          old: returnArray,
+          item: this
+        };
+        this.fireDataEvent("changeBubble", eventData);
+      }
       return (new qx.data.Array(returnArray));
     },
 
@@ -450,7 +449,7 @@ qx.Class.define("qx.data.Array",
       this.__updateEventPropagation(0, this.length);
 
       this.fireDataEvent("change",
-        {start: 0, end: this.length - 1, type: "order", items: null, added: [], removed: []}, null
+        {start: 0, end: this.length - 1, type: "order", added: [], removed: []}, null
       );
 
       // fire change bubbles event
@@ -491,7 +490,6 @@ qx.Class.define("qx.data.Array",
             start: 0,
             end: this.length - 1,
             type: "add",
-            items: [arguments[i]],
             added : [arguments[i]],
             removed : []
           }, null
@@ -564,7 +562,6 @@ qx.Class.define("qx.data.Array",
           start: index,
           end: index,
           type: "add/remove",
-          items: [item],
           added: [item],
           removed: [oldItem]
         }, null
@@ -744,7 +741,6 @@ qx.Class.define("qx.data.Array",
           start: 0,
           end: oldLength - 1,
           type: "remove",
-          items: items,
           removed : items,
           added : []
         }, null
@@ -758,7 +754,7 @@ qx.Class.define("qx.data.Array",
      *
      * @param array {Array|qx.data.IListData} The items of this array will
      * be appended.
-     * @throws {Error} if the second argument is not an array.
+     * @throws {Error} if the argument is not an array.
      */
     append : function(array)
     {
@@ -801,7 +797,6 @@ qx.Class.define("qx.data.Array",
           start: oldLength,
           end: this.length - 1,
           type: "add",
-          items: array,
           added : array,
           removed : []
         }, null

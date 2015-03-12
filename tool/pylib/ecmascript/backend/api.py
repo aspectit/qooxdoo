@@ -93,11 +93,6 @@ def createPackageDoc(text, packageName, docTree = None):
             package = addChildIf(package, *(handleJSDocDecsription(attrib)))
 
         elif attrib["category"] == "see":
-            #if not "name" in attrib:
-            #    addError(docTree, "Missing target for see in '%s' package documentation." % packageName)
-            #else:
-            #    seeNode = tree.Node("see").set("name", attrib["name"])
-            #    package.addChild(seeNode)
             package = addChildIf(package, *(handleJSDocSee(attrib)))
 
     return docTree
@@ -807,7 +802,7 @@ def handleFunction(funcItem, name, commentAttributes, classNode, reportMissingDe
 
     # Read all description, param and return attributes
     isAbstract = handleFunctionOtherAttributes(classNode, funcItem, name, commentAttributes, node, isAbstract)
-    
+
     # Check for documentation errors
     if node.hasChild("params"):
         paramsListNode = node.getChild("params")
@@ -833,11 +828,6 @@ def handleFunctionOtherAttributes(classNode, funcItem, name, commentAttributes, 
             node = addChildIf(node, *(handleJSDocDecsription(attrib, funcItem)))
 
         elif attrib["category"] == "see":
-            #if "name" in attrib:
-            #    seeNode = tree.Node("see").set("name", attrib["name"])
-            #    node.addChild(seeNode)
-            #else:
-            #    addError(node, "Missing target for see.", funcItem)
             node = addChildIf(node, *(handleJSDocSee(attrib)))
 
         elif attrib["category"] in ("attach", "attachStatic"):
@@ -972,7 +962,7 @@ def handleJSDocDecsription(attrib_desc, treeItem=None):
             err_node = createError("Documentation is missing.", treeItem)
         descNode = tree.Node("desc").set("text", attrib_desc["text"])
     return descNode, err_node
-         
+
 def handleJSDocSee(attrib_see, treeItem=None):
     result_node = None
     err_node = None
@@ -1007,6 +997,12 @@ def findAttachMethods(docTree):
                     cmethod.set("isStatic", False)
                 cmethod.set("sourceClass", child.get("sourceClass"))
                 cmethod.set("sourceMethod", method.get("name"))
+                clazz = None
+                for node in treeutil.findNode(docTree, ["class"], [("fullName", child.get("sourceClass"))]):
+                    clazz = node
+                if clazz and "group" in clazz.attributes:
+                    cmethod.set("group", clazz.attributes["group"])
+
 
     return attachMap
 
@@ -1217,12 +1213,10 @@ def classNodeFromDocTree(docTree, fullClassName, commentAttributes = None):
             if attrib["category"] == "description":
                 classNode = addChildIf(classNode, *(handleJSDocDecsription(attrib)))
 
+            elif attrib["category"] == "group":
+                classNode.set("group", attrib["name"])
+
             elif attrib["category"] == "see":
-                #if not "name" in attrib:
-                #    addError(classNode, "Missing target for see.")
-                #    continue
-                #seeNode = tree.Node("see").set("name", attrib["name"])
-                #classNode.addChild(seeNode)
                 classNode = addChildIf(classNode, *(handleJSDocSee(attrib)))
 
         if package:
@@ -1897,7 +1891,10 @@ def checkLink(link, docTree, index):
 
         # unknown class item
         if not "#" + targetItemName in index["__index__"]:
-            brokenLinks[ref] = link
+            # the index doesn't tell us if the class is static
+            # so we have to assume #construct is a valid target
+            if targetItemName != "construct":
+                brokenLinks[ref] = link
             continue
 
         classHasItem = False

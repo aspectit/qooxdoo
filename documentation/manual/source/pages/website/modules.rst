@@ -217,10 +217,35 @@ Matchmedia
 A module for mediaqueries evaluation. This module is a wrapper for `media.match.js
 <https://github.com/paulirish/matchMedia.js/>`__ that implements a polyfill for
 ``window.matchMedia`` when it's not supported natively.
-
 ::
 
   q.matchMedia("screen and (min-width: 480px)").matches // true or false
+
+
+Media queries and css classes
+*****************************
+Adds screen size classes (e.g. small-only or medium-up) by pre-defined media queries using em. The range goes from small to medium, large and xlarge up to xxlarge:
+
++----------------+-----------------------+
+| class name     | size                  |
++================+=======================+
+| small          | 0em – 40em            |
++----------------+-----------------------+
+| medium         | 40.063em – 64em       |
++----------------+-----------------------+
+| large          | 64.063em – 90em       |
++----------------+-----------------------+
+| xlarge         | 90.063em – 120em      |
++----------------+-----------------------+
+| xxlarge        | 120.063em             |
++----------------+-----------------------+
+
+The suffix of the class name indicates either that the current screen is larger than this size (-up) or in that range (-only).
+
+::
+
+   q.addSizeClasses();
+   console.log(q("html").getClass());
 
 
 Messaging
@@ -338,6 +363,36 @@ and generic helpers e.g. for requesting the type of a value.
 
   // General
   q.type.get(val); // "String", "Array", "Object", "Function" ...
+
+
+Widget
+******
+The Widget module contains a collection of self-contained UI elements. They can be created from pre-existing
+HTML or entirely from JavaScript and customized by overwriting default rendering templates.
+See the dedicated manual page for more information:
+
+:ref:`%{Website} Widgets <pages/website/widgets#widgets>`
+
+::
+
+  // JS-only widget creation
+  q.create('<div></div>').slider().appendTo(document.body);
+
+  // Changing the configuration of an existing widget
+  q(".qx-slider").setConfig("step", [2, 4, 8, 16, 32]).render();
+
+  // Modifying an existing widget's rendering template
+  q(".qx-slider")
+  .setTemplate("knobContent", '<span id="knob-label">{{value}}</span>')
+  .render();
+
+  // Events
+  q(".qx-slider").on("changeValue", function(value) {
+    console.log("New slider value:", value);
+  });
+
+  // Disposal (clean up DOM references to prevent memory leaks)
+  q(".qx-slider").dispose().remove();
 
 ------------
 

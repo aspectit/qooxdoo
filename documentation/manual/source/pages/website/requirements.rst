@@ -14,16 +14,19 @@ Code written against the %{Website} API will run in all major web browsers, part
 
 .. list-table::
 
-   * - .. image:: /_static/ie.png 
-     - Internet Explorer 6+
-   * - .. image:: /_static/ff.png 
-     - Firefox 2+
-   * - .. image:: /_static/opera.png 
-     - Opera 9+
-   * - .. image:: /_static/safari.png 
-     - Safari 3+
-   * - .. image:: /_static/chrome.png 
-     - Chrome 2+
+   * - .. image:: /_static/logo_ie_24x24.png
+     - Internet Explorer 8+
+   * - .. image:: /_static/logo_firefox_24x24.png
+     - Firefox 3.5+
+   * - .. image:: /_static/logo_opera_24x24.png
+     - Opera 15+
+   * - .. image:: /_static/logo_safari_24x24.png
+     - Safari 6+
+   * - .. image:: /_static/logo_chrome_24x24.png
+     - Chrome
+
+%{Website} widgets are currently experimental and will not work in all browsers.
+
 
 
 Installation and Setup

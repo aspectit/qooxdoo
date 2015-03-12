@@ -7,7 +7,7 @@ This cheat sheet summarizes the options available for the generator and its Json
 Command-line Options
 =====================
 
-::
+.. code-block:: none
 
     shell> generator.py -h
     Usage: generator.py [options] job,...
@@ -32,8 +32,6 @@ Command-line Options
       -m KEY:VAL, --macro=KEY:VAL
                             define/overwrite a global 'let' macro KEY with value
                             VAL
-      -d, --daemon          (EXPERIMENTAL - DON'T USE) puts the generator in
-                            daemon mode
       -I, --no-progress-indicator
                             suppress animated progress indication
 
@@ -69,8 +67,8 @@ Default Jobs
     * - profiling
       - includer job, to activate profiling
     * - simulation-build
-      - create a runner app for simulated interaction tests
-    * - simulation-run
+      - create a runner app for simulated interaction tests (deprecated)
+    * - simulation-run (deprecated)
       - launches simulated interaction tests generated with simulation-build
     * - source
       - create source version of current application
@@ -78,8 +76,6 @@ Default Jobs
       - create source version of current application, with all classes
     * - source-httpd-config
       - generate a httpd configuration for the source version
-    * - source-hybrid
-      - create a hybrid application (application classes as individual files, others concatenated)
     * - source-hybrid
       - create a hybrid application (application classes as individual files, others concatenated)
     * - source-server
@@ -339,7 +335,6 @@ Here are the configuration keys with their individual value syntax.
     "ignore-catch-param"            : (true|false),
     "ignore-deprecated-symbols"     : (true|false),
     "ignore-environment-nonlit-key" : (true|false),
-    "ignore-finally-without-catch"  : (true|false),
     "ignore-multiple-mapkeys"       : (true|false),
     "ignore-multiple-vardecls"      : (true|false),
     "ignore-no-loop-block"          : (true|false),

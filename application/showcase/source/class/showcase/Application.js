@@ -145,8 +145,7 @@ qx.Class.define("showcase.Application",
         new showcase.page.tree.Page(),
         new showcase.page.theme.Page(),
         new showcase.page.i18n.Page(),
-        new showcase.page.dragdrop.Page(),
-        new showcase.page.htmleditor.Page()
+        new showcase.page.dragdrop.Page()
       );
 
       // application routing
@@ -173,9 +172,14 @@ qx.Class.define("showcase.Application",
 
       listController.bind("selection[0].readyState", this, "showLoadIndicator", {
         converter: function(value) {
+          if (value === undefined) {
+            return false;
+          }
           return value !== "complete";
         }
       });
+
+      this.__stack.setSelection([startPage]);
 
       listController.setDelegate({
         configureItem: function(item) {

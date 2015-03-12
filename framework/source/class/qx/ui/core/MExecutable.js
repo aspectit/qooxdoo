@@ -49,11 +49,13 @@ qx.Mixin.define("qx.ui.core.MExecutable",
   {
     /**
      * A command called if the {@link #execute} method is called, e.g. on a
-     * button click.
+     * button tap.
      */
     command :
     {
-      check : "qx.ui.core.Command",
+      check : function(value) {
+        return value instanceof qx.ui.core.Command || value instanceof qx.ui.command.Command;
+      },
       apply : "_applyCommand",
       event : "changeCommand",
       nullable : true

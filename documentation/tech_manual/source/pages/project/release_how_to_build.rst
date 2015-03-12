@@ -27,7 +27,8 @@ Customize the code base
 * Remove unstable code or code for future releases.
 * ``generate.py fix`` in framework, each application and component. This could be done with the release makefile and the ``fix`` job.
 * Copy the .po files from the `Translation <http://qooxdoo.org/contrib/project/translation>`_ contrib to their designated places; ``generate.py translation``, commit .po files. (covered by this `bug <http://bugzilla.qooxdoo.org/show_bug.cgi?id=5429>`__).
-* Set ``tool/pylib/generator/runtime/Cache.py:CACHE_REVISION`` a unique value (e.g. a commit hash prefix); this ensures old caches of the users will be cleared.
+* Set ``tool/pylib/generator/runtime/Cache.py:CACHE_REVISION`` to a unique value (e.g. a commit hash prefix); this ensures old caches of the users will be cleared.
+* Set ``tool/grunt/lib/qx/tool/Cache.js:CACHE_REVISION`` to a unique value (e.g. a commit hash prefix); this ensures old caches of the users will be cleared.
 * Run ``generate.py api-verify`` in framework, and fix problematic links.
 * Run ``make linkcheck`` in the manual (documentation/manual), and fix problematic links where necessary.
 
@@ -40,7 +41,7 @@ Migration data
   * Change directory to ``tool/data/migration/``.
   * Create a new directory **major.minor.revision**.
   * Grep for deprecation tags in framework code.
-  * Extract API changes from git diff against the previous release. 
+  * Extract API changes from git diff against the previous release.
   * Add migration files and commit these to git (or the empty folder if there are no files needed).
 
 * Code-change  ``tool/bin/migrator.py``:
@@ -55,7 +56,7 @@ Migration data
 Migrate applications and components
 -----------------------------------
 
-In each of the standard applications/components that need it, run 
+In each of the standard applications/components that need it, run
 ::
 
     generate.py migration
@@ -83,7 +84,7 @@ But check the results before committing :-) . You can run the script multiple ti
 .. _pages/project/release_how_to_build.rst#update_bugzilla:
 
 Update Bugzilla
---------------- 
+---------------
 
 *(bugzilla.qooxdoo.org)*
 
@@ -107,6 +108,9 @@ Idealy, use a fresh directory for a checkout, not your normal workspace. This as
 .. code-block:: bash
 
     $ git clone git://github.com/qooxdoo/qooxdoo.git
+    # or
+    $ git clean -d -x -f
+
 
 If you are using your normal workspace, make at least sure to run a *distclean*.
 
@@ -122,7 +126,6 @@ Creating demo apps
 
 .. code-block:: bash
 
-    $ cd $qooxdoo
     $ make DO_RELEASE=1 -f tool/admin/release/Makefile.release publish-build
 
 The ``publish-build`` target will create the standard apps as is regularly done for the online demos. This is usually what you want for the application and component tests.
@@ -134,12 +137,24 @@ Creating release archives
 
 .. code-block:: bash
 
-    $ cd $qooxdoo
     $ make DO_RELEASE=1 -f tool/admin/release/Makefile.release release-sdk-sans-clean
 
 This will create release kit(s) in the ``./release`` subdirectory.
 
 The ``$qooxdoo`` root directory should be made available through a local web server so that testers can access both the applications and the archives.
+
+.. _pages/project/release_how_to_build.rst#pre_publish_demos:
+
+Pre-publish demos
+------------------
+
+Do a ``publish`` of the demos before testing starts. This assures that all links are working which are exercised during release testing. This includes links to the manual, Demobrowser and Playground, but also library links like ``q.min.js`` that are used in CodePen examples.
+
+.. code-block:: bash
+
+    $ make DO_RELEASE=1 -f tool/admin/release/Makefile.release publish
+
+This means that the new version of the demos and manual will be online on our production machine, but the ``current`` link is not updated yet, and the version is not yet announced so there is little issue for confusion for the users.
 
 .. _pages/project/release_how_to_build.rst#test:
 
@@ -178,8 +193,40 @@ Use the controls on the File Manager view.
   * By default, the latest uploaded file will be in the prominent (green) "Download" button shown on the `SF project home page <http://sourceforge.net/projects/qooxdoo/>`_.
   * If this is not the file you want, go again to the File Manager, select the desired file, and click on the ``i`` icon (tooltip "View details") to the right of it.
   * In the drop-down dialog, locate the ``Default Download For:`` section, and click ``Select all``. This will make this file the default download for all client platforms (as SF tries client OS detection).
-  * Hit the ``Save`` button before leaving the form. 
+  * Hit the ``Save`` button before leaving the form.
 * Upload a ``readme.rst`` file into the same folder with the release version and the essential links (usually project/about, release notes and manual; see older releases). This will be displayed automatically when the page is rendered. (This feature is such that any file containing the string "readme" in its name (case-insensitive) will be used in this way. Sourceforge supports various `markup formats <https://sourceforge.net/p/forge/documentation/Files-Readme/>`_, among them *.rst* (but no HTML, and no binaries like PDF), so we can reuse our reST know-how here).
+
+
+.. _pages/project/release_how_to_build.rst#publish_at_github:
+
+Publish the SDK at Github
+=============================
+
+Currently, we also publish the SDK with Github. This should actually be done
+after the `Tagging`_ (see further), as you want to have the git tag available to
+refer to it.
+
+* Go to Github's `release management
+  <https://github.com/qooxdoo/qooxdoo/releases>`_. You need to be logged in to
+  your Github account, with admin priviledges for this task. You should see the
+  new release in the list with no description and only the .zip and .tar.gz
+  source download links.
+* Hit the ''Draft a new release'' button.
+* In the *Tag version* text field enter the tag name (e.g. *"release_3_0_1"*).
+* Enter the *Release title* (e.g. *"qooxdoo 3.0.1 release"*).
+* In the *Describe this release* text area, reuse the release notes from
+  Sourceforge (just converted to markdown), like:
+
+  ::
+
+    * Released: *2013-09-11*
+    * [Overview](http://manual.qooxdoo.org/3.0.1/pages/introduction/about.html)
+    * [Release notes] (http://qooxdoo.org/project/release_notes/3.0.1)
+    * [Manual] (http://manual.qooxdoo.org/3.0.1/)
+
+* From a file explorer, drop the release SDK onto the *Attach binaries* zone.
+* Hit the *Publish release* button.
+
 
 .. _pages/project/release_how_to_build.rst#put_the_demos_online:
 
@@ -190,7 +237,6 @@ Once the final build has been made, you can put the demos created in the above s
 
 .. code-block:: bash
 
-    $ cd $qooxdoo
     $ make DO_RELEASE=1 -f tool/admin/release/Makefile.release publish
 
 This will create the appropriate *version* subdirectory on the *demo* web server, and copy all demos underneath it, together with an *index.html* in a suitable form.
@@ -199,17 +245,17 @@ This will create the appropriate *version* subdirectory on the *demo* web server
 .. _pages/project/release_how_to_build.rst#publish_the_qx-oo_package_with_npm:
 
 Publish qx-oo at NPM
-==================================
+====================
 
 As soon as you have built and tested the npm package, run ``npm publish`` to upload the version. Here are the steps to achieve all that:
 
-* Make sure `node <http://nodejs.org>`_ and `npm <npmjs.org>`_ is installed (tested to work with 0.6.4/1.1.13).
+* Make sure `Node.js <http://nodejs.org>`_ and `npm <npmjs.org>`_ is installed (tested to work with 0.6.4/1.1.13).
 * Change to ``component/standalone/server``.
 * Make sure the ``qx-oo-%{version}.js`` has been built (in /script).
 * Run ``generate.py npm-package-copy``.
 * Run ``generate.py npm-package-publish`` (needs the qooxdoo user account).
 * Check if it worked in the `online registry <http://search.npmjs.org/>`_.
-* More details can be found in the `npm documentation <https://github.com/isaacs/npm/blob/master/doc/developers.md>`_.
+* More details can be found in the `npm documentation <https://npmjs.org/doc/misc/npm-developers.html>`_.
 
 
 .. _pages/project/release_how_to_build.rst#release_it_at_maven_central:
@@ -247,14 +293,6 @@ The gist of it is:
   * If you want to change two versions at the same time, it might be necessary
     that you create a branch for one, so you can create a pull request for each
     (Unclear if this is actually necessary).
-
-
-.. _pages/project/release_how_to_build.rst#file_an_issue_for_jsFiddle:
-
-File an issue for jsFiddle
-==========================
-
-`jsFiddle  <http://jsfiddle.net/>`_ offers the current qooxdoo versions in its library selection dropdown. To get that updated, you have to file a issue at the `jsfiddle-issues repository <https://github.com/jsfiddle/jsfiddle-issues/issues/>`_ on github. Take a look at this `issue <https://github.com/jsfiddle/jsfiddle-issues/issues/421>`_ for details.
 
 
 .. _pages/project/release_how_to_build.rst#post_processing:
@@ -309,11 +347,11 @@ Update Online Site
 (*demo.qooxdoo.org*)
 
 * **/demo**
-  
+
   * Adjust the appropriate ``<major>.<minor>.x`` and ``current`` symbolic links to link to the new version.
   * For a release of the current devel version, make a deep copy of the new version with the next devel target (e.g. with ``cp -R --preserve 1.6 1.7``), and link the ``devel`` symbolic link to it (so the next devel update doesn't overwrite the released version).
 * **/manual**
-  
+
   * Adjust the appropriate ``<major>.<minor>.x`` and ``current`` symbolic links to link to the new version.
   * For a release of the current devel version, make a deep copy of the new version with the next devel target (e.g. with ``cp -R --preserve 1.6 1.7``), and link the ``devel`` symbolic link to it (so the next devel update doesn't overwrite the released version).
 
@@ -326,26 +364,16 @@ Update Wiki
 * Adjust the `Documentation overview <http://qooxdoo.org/docs>`_.
 * Adjust the `Demo overview <http://qooxdoo.org/demos>`_.
 * Adjust the `Download page <http://qooxdoo.org/downloads>`_.
-* Adjust the `Start page <http://qooxdoo.org/>`_. (all 4 sections: download links, gzipped lib sizes) 
+* Adjust the `qx.Website Download page <http://qooxdoo.org/downloads/qx.website>`_.
+* Adjust the `Start page <http://qooxdoo.org/>`_. (all 4 sections: download links, gzipped lib sizes)
 
-.. _pages/project/release_how_to_build.rst#update_contrib:
-
-Update Contrib
---------------
-
-(*workspace on internal server*)
-
-* Adjust the symlinks in qooxdoo.contrib/trunk/qooxdoo.
-* Update the *qxPatchReleases* map in ``tool/admin/bin/repository.py`` (near the top of the file).
-* Simulator contrib: Add a tag corresponding to the qx patch release.
 
 .. _pages/project/release_how_to_build.rst#nightly_testing:
 
 Nightly Testing
---------------- 
+---------------
 
-* Contribution skeleton test: Create a symlink to the qx git repo as expected by the demo's config.json ("../../../../qooxdoo/${QXVERSION}")
-* Branch application tests: Create a remote tracking branch for the maintenance branch and update the test config accordingly
+* Branch application tests: Update the maintenance branch name in the ``qooxdoo-git-update-patch`` job's Source Code Management and Execute Shell sections
 
 .. _pages/project/release_how_to_build.rst#announcements:
 

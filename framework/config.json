@@ -20,6 +20,8 @@
     //"build-all",
     "dependencies",
     "clean",
+    "clean-cache",
+    "compile-framework-scss",
     "distclean",
     "fix",
     "images",
@@ -34,6 +36,7 @@
     "test-performance",
     "test-performance-source",
     "test-mobile",
+    "test-mobile-compile-scss",
     "test-mobile-source",
     "translation",
     "validate-config",
@@ -236,13 +239,34 @@
       }
     },
 
+    "test-mobile-compile-scss" :
+    {
+      "desc"   : "Compile the theme scss once",
+      "extend" : ["cache"],
+      "let" :
+      {
+        "QX_MOBILE_THEME_PATH" : "${QOOXDOO_PATH}/framework/source/resource/qx/mobile/scss",
+        "QX_SHARED_THEME_PATH" : "${QOOXDOO_PATH}/framework/source/resource/qx/scss",
+        "MOBILE_RESOURCE_PATH" : "${QOOXDOO_PATH}/component/testrunner/source/resource/testrunner/view/mobile"
+      },
+      "shell" :
+      {
+        "command" : "sass -C -t compressed -I ${QX_MOBILE_THEME_PATH} -I ${QX_SHARED_THEME_PATH} --update ${MOBILE_RESOURCE_PATH}/scss:${MOBILE_RESOURCE_PATH}/css",
+        "command-not-found" : "It seems that Sass (http://sass-lang.com/) is not installed and/or executable, which is needed for the SCSS-compilation."
+      }
+    },
+
     "test-mobile" :
     {
       "let" :
       {
         "TEST_INCLUDE"    : "qx.test.mobile.*",
         "BUILD_PATH"      : "${ROOT}/test-mobile"
-      }
+      },
+
+      "run" : [
+        "test-mobile-compile-scss"
+      ]
     },
 
     "test-mobile-source" :
@@ -314,18 +338,14 @@
 
     "watch-scss" :
     {
-      "desc"  : "Demo job for watching compile-to-CSS files",
-      "extend" : ["cache"],
-      "watch-files" :
-      {
-        "paths" : ["source/resource/qx/mobile/scss"],
-        "command" :
-        {
-          // this is sort of missing the point, as most scss implementations
-          // have their built-in watch mode
-          "line" : "scss --no-cache --update source/resource/qx/mobile/scss:source/resource/qx/mobile/css",
-          "per-file" : false
-        }
+      "desc": "Watch and compile the theme scss",
+      "extend": ["cache"],
+      "let": {
+        "QX_MOBILE_THEME_PATH": "source/resource/qx/mobile",
+        "QX_SHARED_THEME_PATH": "source/resource/qx/scss"
+      },
+      "shell": {
+        "command": "sass -C -t compressed -I ${QX_MOBILE_THEME_PATH}/scss -I ${QX_SHARED_THEME_PATH} --watch ${QX_MOBILE_THEME_PATH}/scss:${QX_MOBILE_THEME_PATH}/css"
       }
     },
 

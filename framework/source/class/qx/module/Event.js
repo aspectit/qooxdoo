@@ -22,6 +22,9 @@
  * Support for native and custom events.
  *
  * @require(qx.module.Polyfill)
+ * @require(qx.module.Environment)
+ * @use(qx.module.event.PointerHandler)
+ * @group (Core)
  */
 qx.Bootstrap.define("qx.module.Event", {
   statics :
@@ -51,9 +54,11 @@ qx.Bootstrap.define("qx.module.Event", {
      * @param listener {Function} Listener callback
      * @param context {Object?} Context the callback function will be executed in.
      * Default: The element on which the listener was registered
+     * @param useCapture {Boolean?} Attach the listener to the capturing
+     * phase if true
      * @return {qxWeb} The collection for chaining
      */
-    on : function(type, listener, context) {
+    on : function(type, listener, context, useCapture) {
       for (var i=0; i < this.length; i++) {
         var el = this[i];
         var ctx = context || qxWeb(el);
@@ -70,7 +75,7 @@ qx.Bootstrap.define("qx.module.Event", {
           typeHooks[j](el, type, listener, context);
         }
 
-        var bound = function(event) {
+        var bound = function(el, event) {
           // apply normalizations
           var registry = qx.module.Event.__normalizations;
           // generic
@@ -85,26 +90,29 @@ qx.Bootstrap.define("qx.module.Event", {
           }
           // call original listener with normalized event
           listener.apply(this, [event]);
-        }.bind(ctx);
+        }.bind(ctx, el);
         bound.original = listener;
 
         // add native listener
         if (qx.bom.Event.supportsEvent(el, type)) {
-          qx.bom.Event.addNativeListener(el, type, bound);
+          qx.bom.Event.addNativeListener(el, type, bound, useCapture);
         }
         // create an emitter if necessary
-        if (!el.__emitter) {
-          el.__emitter = new qx.event.Emitter();
+        if (!el.$$emitter) {
+          el.$$emitter = new qx.event.Emitter();
         }
 
-        var id = el.__emitter.on(type, bound, ctx);
+        el.$$lastlistenerId = el.$$emitter.on(type, bound, ctx);
+        // save the useCapture for removing
+        el.$$emitter.getEntryById(el.$$lastlistenerId).useCapture = !!useCapture;
+
         if (!el.__listener) {
           el.__listener = {};
         }
         if (!el.__listener[type]) {
           el.__listener[type] = {};
         }
-        el.__listener[type][id] = bound;
+        el.__listener[type][el.$$lastlistenerId] = bound;
 
         if (!context) {
           // store a reference to the dynamically created context so we know
@@ -112,7 +120,7 @@ qx.Bootstrap.define("qx.module.Event", {
           if (!el.__ctx) {
             el.__ctx = {};
           }
-          el.__ctx[id] = ctx;
+          el.__ctx[el.$$lastlistenerId] = ctx;
         }
       }
       return this;
@@ -127,9 +135,11 @@ qx.Bootstrap.define("qx.module.Event", {
      * @param type {String} Type of the event
      * @param listener {Function} Listener callback
      * @param context {Object?} Listener callback context
+     * @param useCapture {Boolean?} Attach the listener to the capturing
+     * phase if true
      * @return {qxWeb} The collection for chaining
      */
-    off : function(type, listener, context) {
+    off : function(type, listener, context, useCapture) {
       var removeAll = (listener === null && context === null);
 
       for (var j=0; j < this.length; j++) {
@@ -161,12 +171,12 @@ qx.Bootstrap.define("qx.module.Event", {
                 storedContext = el.__ctx[id];
               }
               // remove the listener from the emitter
-              el.__emitter.off(types[i], storedListener, storedContext || context);
+              el.$$emitter.off(types[i], storedListener, storedContext || context);
 
               // check if it's a bound listener which means it was a native event
               if (removeAll || storedListener.original == listener) {
                 // remove the native listener
-                qx.bom.Event.removeNativeListener(el, types[i], storedListener);
+                qx.bom.Event.removeNativeListener(el, types[i], storedListener, useCapture);
               }
 
               delete el.__listener[types[i]][id];
@@ -208,6 +218,16 @@ qx.Bootstrap.define("qx.module.Event", {
     },
 
     /**
+     * Removes the listener with the given id.
+     * @param id {Number} The id of the listener to remove
+     * @return {qxWeb} The collection for chaining.
+     */
+    offById : function(id) {
+      var entry = this[0].$$emitter.getEntryById(id);
+      return this.off(entry.name, entry.listener.original, entry.ctx, entry.useCapture);
+    },
+
+    /**
      * Fire an event of the given type.
      *
      * @attach {qxWeb}
@@ -219,8 +239,8 @@ qx.Bootstrap.define("qx.module.Event", {
     emit : function(type, data) {
       for (var j=0; j < this.length; j++) {
         var el = this[j];
-        if (el.__emitter) {
-          el.__emitter.emit(type, data);
+        if (el.$$emitter) {
+          el.$$emitter.emit(type, data);
         }
       }
       return this;
@@ -250,20 +270,50 @@ qx.Bootstrap.define("qx.module.Event", {
 
     /**
      * Checks if one or more listeners for the given event type are attached to
-     * the first element in the collection
+     * the first element in the collection.
+     *
+     * *Important:* Make sure you are handing in the *identical* context object to get
+     * the correct result. Especially when using a collection instance this is a common pitfall.
+     * Check out the corresponding code sample below to get it right.
      *
      * @attach {qxWeb}
      * @param type {String} Event type, e.g. <code>mousedown</code>
+     * @param listener {Function?} Event listener to check for.
+     * @param context {Object?} Context object listener to check for.
      * @return {Boolean} <code>true</code> if one or more listeners are attached
      */
-    hasListener : function(type) {
-      if (!this[0] || !this[0].__emitter ||
-        !this[0].__emitter.getListeners()[type])
+    hasListener : function(type, listener, context) {
+      if (!this[0] || !this[0].$$emitter ||
+        !this[0].$$emitter.getListeners()[type])
       {
         return false;
       }
 
-      return this[0].__emitter.getListeners()[type].length > 0;
+      if (listener) {
+        var attachedListeners = this[0].$$emitter.getListeners()[type];
+        for (var i = 0; i < attachedListeners.length; i++) {
+          var hasListener = false;
+          if (attachedListeners[i].listener == listener) {
+            hasListener = true;
+          }
+          if (attachedListeners[i].listener.original &&
+              attachedListeners[i].listener.original == listener) {
+            hasListener =  true;
+          }
+
+          if (hasListener) {
+            if (context !== undefined) {
+              if (attachedListeners[i].ctx === context) {
+                return true;
+              }
+            } else {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+      return this[0].$$emitter.getListeners()[type].length > 0;
     },
 
 
@@ -297,15 +347,15 @@ qx.Bootstrap.define("qx.module.Event", {
       }
       // make sure no emitter object has been copied
       targetCopy.forEach(function(el) {
-        el.__emitter = null;
+        el.$$emitter = null;
       });
 
       for (var i=0; i < source.length; i++) {
         var el = source[i];
-        if (!el.__emitter) {
+        if (!el.$$emitter) {
           continue;
         }
-        var storage = el.__emitter.getListeners();
+        var storage = el.$$emitter.getListeners();
         for (var name in storage) {
           for (var j = storage[name].length - 1; j >= 0; j--) {
             var listener = storage[name][j].listener;
@@ -380,26 +430,117 @@ qx.Bootstrap.define("qx.module.Event", {
 
 
     /**
-     * Bind one or two callbacks to the collection. 
+     * Bind one or two callbacks to the collection.
      * If only the first callback is defined the collection
-     * does react on 'mouseover' only.
+     * does react on 'pointerover' only.
      *
      * @attach {qxWeb}
      *
-     * @param callbackIn {Function} callback when hovering over 
-     * @param callbackOut {Function?} callback when hovering out 
+     * @param callbackIn {Function} callback when hovering over
+     * @param callbackOut {Function?} callback when hovering out
      * @return {qxWeb} The collection for chaining
      */
     hover : function(callbackIn, callbackOut) {
-      var collection;
-      for (var j=0; j < this.length; j++) {
-        collection = qxWeb(this[j]);
-        collection.on("mouseover", callbackIn, collection);
 
-        if (qx.lang.Type.isFunction(callbackOut)) {
-          collection.on("mouseout", callbackOut, collection);
-        }
+      this.on("pointerover", callbackIn, this);
+
+      if (qx.lang.Type.isFunction(callbackOut)) {
+        this.on("pointerout", callbackOut, this);
       }
+
+      return this;
+    },
+
+
+    /**
+     * Adds a listener for the given type and checks if the target fulfills the selector check.
+     * If the check is successful the callback is executed with the target and event as arguments.
+     *
+     * @attach{qxWeb}
+     *
+     * @param eventType {String} name of the event to watch out for (attached to the document object)
+     * @param target {String|Element|Element[]|qxWeb} Selector expression, DOM element,
+     * Array of DOM elements or collection
+     * @param callback {Function} function to call if the selector matches.
+     * The callback will get the target as qxWeb collection and the event as arguments
+     * @param context {Object?} optional context object to call the callback
+     * @return {qxWeb} The collection for chaining
+     */
+    onMatchTarget : function(eventType, target, callback, context) {
+
+      context = context !== undefined ? context : this;
+
+      var listener = function(e) {
+        var eventTarget = qxWeb(e.getTarget());
+
+        if (eventTarget.is(target)) {
+          callback.call(context, eventTarget, qxWeb.object.clone(e));
+        }
+      };
+
+      // make sure to store the infos for 'offMatchTarget' at each element of the collection
+      // to be able to remove the listener separately
+      this.forEach(function(el) {
+        var matchTarget = {
+          type : eventType,
+          listener : listener,
+          callback : callback,
+          context : context
+        };
+
+        if (!el.$$matchTargetInfo) {
+          el.$$matchTargetInfo = [];
+        }
+        el.$$matchTargetInfo.push(matchTarget);
+      });
+
+      this.on(eventType, listener);
+
+      return this;
+    },
+
+
+    /**
+     * Removes a listener for the given type and selector check.
+     *
+     * @attach{qxWeb}
+     *
+     * @param eventType {String} name of the event to remove for
+     * @param target {String|Element|Element[]|qxWeb} Selector expression, DOM element,
+     * Array of DOM elements or collection
+     * @param callback {Function} function to remove
+     * @param context {Object?} optional context object to remove
+     * @return {qxWeb} The collection for chaining
+     */
+    offMatchTarget : function(eventType, target, callback, context) {
+
+      context = context !== undefined ? context : this;
+
+      this.forEach(function(el) {
+
+        if (el.$$matchTargetInfo && qxWeb.type.get(el.$$matchTargetInfo) == "Array") {
+
+          var infos = el.$$matchTargetInfo;
+
+          for (var i=infos.length - 1; i>=0; i--) {
+
+            var entry = infos[i];
+            if (entry.type == eventType &&
+                entry.callback == callback &&
+                entry.context == context) {
+
+              this.off(eventType, entry.listener);
+              infos.splice(i, 1);
+            }
+
+          }
+
+          if (infos.length === 0) {
+            el.$$matchTargetInfo = null;
+          }
+        }
+      }, this);
+
       return this;
     },
 
@@ -562,11 +703,14 @@ qx.Bootstrap.define("qx.module.Event", {
       "on" : statics.on,
       "off" : statics.off,
       "allOff" : statics.allOff,
+      "offById" : statics.offById,
       "once" : statics.once,
       "emit" : statics.emit,
       "hasListener" : statics.hasListener,
       "copyEventsTo" : statics.copyEventsTo,
-      "hover" : statics.hover
+      "hover" : statics.hover,
+      "onMatchTarget" : statics.onMatchTarget,
+      "offMatchTarget" : statics.offMatchTarget
     });
 
     qxWeb.$attachStatic({

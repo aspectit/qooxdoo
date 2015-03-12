@@ -22,6 +22,9 @@
  *
  * @require(qx.lang.normalize.String)
  * @ignore(qx.bom.client.EcmaScript.*)
+ * @ignore(qx.bom.client)
+ * @ignore(qx.bom)
+ * @ignore(qx.Class.*)
  */
 qx.Bootstrap.define("qx.dev.StackTrace",
 {
@@ -103,7 +106,7 @@ qx.Bootstrap.define("qx.dev.StackTrace",
             }
 
             var className = null;
-            if (qx.Class.getByName(errorClassName)) {
+            if (qx.Class && qx.Class.getByName(errorClassName)) {
               className = errorClassName;
             } else {
               className = callerClassName;
@@ -378,7 +381,7 @@ qx.Bootstrap.define("qx.dev.StackTrace",
   {
     // This is necessary to avoid an infinite loop when logging the absence
     // of the "ecmascript.error.stacktrace" environment key.
-    statics.hasEnvironmentCheck = qx.bom.client.EcmaScript &&
-      qx.bom.client.EcmaScript.getStackTrace;
+    statics.hasEnvironmentCheck = qx.bom && qx.bom.client &&
+      qx.bom.client.EcmaScript && qx.bom.client.EcmaScript.getStackTrace;
   }
 });

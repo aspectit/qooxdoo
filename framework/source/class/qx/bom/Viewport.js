@@ -112,6 +112,12 @@ qx.Bootstrap.define("qx.bom.Viewport",
     {
       var win = win || window;
       var doc = win.document;
+
+      // [BUG #7785] Document element's clientHeight is calculated wrong on iPad iOS7
+      if(qx.core.Environment.get("os.name") == "ios" && window.innerHeight != doc.documentElement.clientHeight) {
+        return window.innerHeight;
+      }
+
       return qx.bom.Document.isStandardMode(win) ? doc.documentElement.clientHeight : doc.body.clientHeight;
     },
 
@@ -261,7 +267,8 @@ qx.Bootstrap.define("qx.bom.Viewport",
      *     is currently in landscape mode.
      */
     isLandscape : function(win) {
-      return this.getWidth(win) >= this.getHeight(win);
+      var orientation = this.getOrientation(win);
+      return orientation === -90 || orientation === 90;
     },
 
 
@@ -274,7 +281,8 @@ qx.Bootstrap.define("qx.bom.Viewport",
      */
     isPortrait : function(win)
     {
-      return this.getWidth(win) < this.getHeight(win);
+      var orientation = this.getOrientation(win);
+      return orientation === 0 || orientation === 180;
     }
   }
 });

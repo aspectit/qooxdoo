@@ -185,7 +185,7 @@
     },
 
     "libraries" : {
-      
+
       "library" :
       [
         {
@@ -285,7 +285,9 @@
         "qx.globalErrorHandling" : true,
         "testrunner.testParts" : false,
         "qx.allowUrlSettings" : true,
-        "qx.application" : "${TEST_LOADER}"
+        "qx.application" : "${TEST_LOADER}",
+        "qx.testNameSpace" : "${TEST_NAMESPACE}",
+        "qx.standaloneAutorun" : false
       },
 
       "cache" :
@@ -529,13 +531,7 @@
         "TESTRUNNER_VIEW" : "testrunner.view.mobile.Mobile",
         "TESTRUNNER_MAIN_CLASS" : "testrunner.MobileApplication",
         "PLATFORM": "ios",
-        "TESTRUNNER_CSS" : "testrunner/view/mobile/css/styles.css",
         "TEST_LOADER" : "testrunner.TestLoaderMobile"
-      },
-
-      "environment" :
-      {
-        "qx.mobile.emulatetouch" : true
       },
 
       "asset-let" : {
@@ -564,10 +560,7 @@
 
       "add-css" : [
         {
-          "uri" : "../${QOOXDOO_PATH}/framework/source/resource/qx/mobile/css/indigo.css"
-        },
-        {
-          "uri" : "./resource/${TESTRUNNER_CSS}"
+          "uri" : "./resource/testrunner/view/mobile/css/indigo.css"
         }
       ]
     },
@@ -578,10 +571,7 @@
 
       "add-css" : [
         {
-          "uri" : "./resource/qx/mobile/css/indigo.css"
-        },
-        {
-          "uri" : "./resource/${TESTRUNNER_CSS}"
+          "uri" : "./resource/testrunner/view/mobile/css/indigo.css"
         }
       ]
     },

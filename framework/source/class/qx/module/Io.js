@@ -21,11 +21,13 @@
  * This module provides basic IO functionality. It contains three ways to load
  * data:
  *
- * * XMLHttpRequest: {@link #xhr}
- * * Script tag: {@link #script}
- * * Script tag using JSONP: {@link #jsonp}
+ * * XMLHttpRequest
+ * * Script tag
+ * * Script tag using JSONP
  *
  * @require(qx.bom.request.Xhr#open)
+ *
+ * @group (IO)
  */
 qx.Bootstrap.define("qx.module.Io", {
   statics :

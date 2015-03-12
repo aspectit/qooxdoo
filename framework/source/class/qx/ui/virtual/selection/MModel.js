@@ -81,7 +81,7 @@ qx.Mixin.define("qx.ui.virtual.selection.MModel",
 
     /**
      * Enable drag selection (multi selection of items through
-     * dragging the mouse in pressed states).
+     * dragging the pointer in pressed states).
      *
      * Only possible for the selection modes <code>multi</code> and <code>additive</code>
      */
@@ -94,7 +94,7 @@ qx.Mixin.define("qx.ui.virtual.selection.MModel",
 
 
     /**
-     * Enable quick selection mode, where no click is needed to change the selection.
+     * Enable quick selection mode, where no tap is needed to change the selection.
      *
      * Only possible for the modes <code>single</code> and <code>one</code>.
      */
@@ -165,9 +165,32 @@ qx.Mixin.define("qx.ui.virtual.selection.MModel",
       this._manager = new qx.ui.virtual.selection.Row(
         this.getPane(), selectionDelegate
       );
-      this._manager.attachMouseEvents(this.getPane());
+      this._manager.attachPointerEvents(this.getPane());
       this._manager.attachKeyEvents(this);
       this._manager.addListener("changeSelection", this._onManagerChangeSelection, this);
+    },
+
+
+    /**
+     * Determines, if automatically scrolling of selected item is active.
+     * Set <code>false</code> to suspend auto scrolling.
+     *
+     * @param value {Boolean} Set <code>false</code> to suspend auto scrolling.
+     */
+    setAutoScrollIntoView : function(value)
+    {
+      this._manager._autoScrollIntoView = value;
+    },
+
+
+    /**
+     * Returns true, if automatically scrolling of selected item is active.
+     *
+     * @return {Boolean} Returns <code>false</code> if auto scrolling is suspended.
+     */
+    getAutoScrollIntoView : function()
+    {
+      return this._manager._autoScrollIntoView;
     },
 
 

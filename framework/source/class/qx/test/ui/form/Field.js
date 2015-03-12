@@ -46,6 +46,8 @@ qx.Class.define("qx.test.ui.form.Field",
 
     tearDown : function() {
       this.getSandbox().restore();
+      qx.bom.webfonts.Manager.getInstance().dispose();
+      delete qx.bom.webfonts.Manager.$$instance;
     },
 
     testSelectTextAllBeforeFlush : function()
@@ -197,9 +199,9 @@ qx.Class.define("qx.test.ui.form.Field",
           f.dispose();
           this.assertCalledTwice(statusChangeSpy);
         }, this);
-      }, this, 2000);
+      }, this, 2500);
 
-      this.wait(3000);
+      this.wait(5000);
     }
   }
 });

@@ -232,7 +232,14 @@ qx.Bootstrap.define("qx.Part",
 
       var parts = [];
       for (var i=0; i<partNames.length; i++) {
-        parts.push(this.__parts[partNames[i]]);
+        var part = this.__parts[partNames[i]];
+        if (part === undefined) {
+          var registeredPartNames = qx.Bootstrap.keys(this.getParts());
+          throw new Error('Part "' + partNames[i] + '" not found in parts (' +
+            registeredPartNames.join(', ') + ')');
+        } else {
+          parts.push(part);
+        }
       }
 
       var partsLoaded = 0;
@@ -244,10 +251,10 @@ qx.Bootstrap.define("qx.Part",
           var states = [];
           for (var i = 0; i < parts.length; i++) {
             states.push(parts[i].getReadyState());
-          };
+          }
           callback.call(self, states);
         }
-      }
+      };
 
       for (var i=0; i<parts.length; i++) {
         parts[i].load(onLoad, this);

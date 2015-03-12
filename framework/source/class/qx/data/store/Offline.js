@@ -14,6 +14,7 @@
 
    Authors:
      * Martin Wittemann (martinwittemann)
+     * Tobias Oberrauch (toberrauch)
 
 ************************************************************************ */
 /**
@@ -32,8 +33,10 @@ qx.Class.define("qx.data.store.Offline",
    * @param key {String} A unique key which is used to store the data.
    * @param storage {String?} Either "local" or "session" to determinate which
    *   storage should be used. Default: "local"
+   * @param delegate {Object} An object containing one of the methods described
+   *   in {@link qx.data.marshal.IMarshalerDelegate}.
    */
-  construct : function(key, storage)
+  construct : function(key, storage, delegate)
   {
     this.base(arguments);
 
@@ -52,7 +55,12 @@ qx.Class.define("qx.data.store.Offline",
       this._storage = qx.bom.Storage.getLocal();
     }
 
-    this._marshaler = new qx.data.marshal.Json();
+    this._storeModel = qx.util.Function.debounce(
+      this.__storeModel.bind(this),
+      qx.data.store.Offline.STORE_MODEL_DELAY
+    );
+
+    this._marshaler = new qx.data.marshal.Json(delegate);
     this._key = key;
 
     this._initializeModel();
@@ -72,11 +80,26 @@ qx.Class.define("qx.data.store.Offline",
     }
   },
 
+  statics: {
+    /**
+     * Defines the delay between the requested and actuale execution of the setItem method
+     */
+    STORE_MODEL_DELAY: 400
+  },
 
   members :
   {
     _storage : null,
+
     __modelListenerId : null,
+
+    /**
+     * The actual method that will called after a delay of STORE_MODEL_DELAY
+     */
+    __storeModel: function() {
+      var value = qx.util.Serializer.toNativeObject(this.getModel());
+      this._storage.setItem(this._key, value);
+    },
 
 
     // property apply
@@ -90,9 +113,9 @@ qx.Class.define("qx.data.store.Offline",
 
       if (value) {
         this.__modelListenerId = value.addListener(
-          "changeBubble", this.__storeModel, this
+          "changeBubble", this._storeModel, this
         );
-        this.__storeModel();
+        this._storeModel();
       } else {
         this._storage.removeItem(this._key);
       }
@@ -100,12 +123,11 @@ qx.Class.define("qx.data.store.Offline",
 
 
     /**
-     * Internal helper for writing the set model to the browser storage.
+     * Helper for writing the set model to the browser storage.
+     *
+     * @signature function()
      */
-    __storeModel : function() {
-      var value = qx.util.Serializer.toNativeObject(this.getModel());
-      this._storage.setItem(this._key, value);
-    },
+    _storeModel : null,
 
 
     /**
@@ -128,7 +150,11 @@ qx.Class.define("qx.data.store.Offline",
         this.getModel().dispose();
       }
 
-      this.setModel(this._marshaler.toModel(data, true));
+      var model = this._marshaler.toModel(data, true);
+      if (model === undefined) {
+        model = null;
+      }
+      this.setModel(model);
     },
 
 

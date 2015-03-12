@@ -26,8 +26,14 @@ extensions = [
  'sphinx.ext.todo',
  'sphinx.ext.coverage',
  'sphinx.ext.ifconfig',
- #'sphinxcontrib.spelling',
 ]
+
+# spelling support
+try:
+    import sphinxcontrib.spelling
+    extensions.append('sphinxcontrib.spelling')
+except ImportError:
+    pass
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -43,22 +49,22 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'qooxdoo'
-copyright = u'2011-2013, ' + project + ' developers'
+copyright = u'2011-2013, 1&1 Internet AG'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '3.1'
+version = '4.1'
 # The full version, including alpha/beta/rc tags.
-release = '3.1'
+release = '4.1'
 # The current git branch (used for github links)
 git_branch = "master"
 
 # qooxdoo Source Text Macros
 # use e.g. as "%{version}" anywhere in .rst files
-vMajor = "3"
+vMajor = "4"
 vMinor = "1"
 vPatch = ""
 qxmacros = {
@@ -229,6 +235,7 @@ latex_documents = [
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
 #latex_logo = None
+latex_logo = '_static/logo_qx_2.png'
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -238,7 +245,28 @@ latex_documents = [
 #latex_preamble = ''
 latex_elements = {
     #'preamble' : r'\setcounter{tocdepth}{3}'  # this is *with* headers in index.rst
-    'preamble' : r'\setcounter{tocdepth}{2}'  # this is *without* headers in index.rst
+    'preamble' : (r'\setcounter{tocdepth}{2}'  # this is *without* headers in index.rst
+# this is for a copyright annotation (from http://tex.stackexchange.com/a/12574)
++ r'''
+\def\secondpage{
+%\clearpage
+\null\vfill
+\pagestyle{empty}
+\begin{minipage}[b]{0.9\textwidth}
+\footnotesize\raggedright
+\setlength{\parskip}{0.5\baselineskip}
+Copyright \copyright 2011--\the\year\, 1\&1 Internet AG
+\end{minipage}
+\vspace*{2\baselineskip}
+\cleardoublepage
+\rfoot{\thepage}}
+
+\makeatletter
+\g@addto@macro{\maketitle}{\secondpage}
+\makeatother
+'''
+                )
+
 }
 
 # Documents to append as an appendix to all manuals.
@@ -247,6 +275,15 @@ latex_elements = {
 # If false, no module index is generated.
 #latex_use_modindex = True
 
+# -- Options for linkcheck  ---------------------------------------------------
+
+linkcheck_ignore = [
+  # ignore anchor links within qooxdoo apps
+  r'http://demo.qooxdoo.org/(current|devel|\d\.\d)/(apiviewer|website-api|demobrowser)/?(index.html)?#.*',
+  r'http://api.qooxdoo.org/?(current|devel|\d\.\d)?/?#.*',
+  # ignore very long playground links
+  r'http://demo.qooxdoo.org/4.0/playground/#'
+]
 
 # -- Custom qooxdoo processing ------------------------------------------------
 

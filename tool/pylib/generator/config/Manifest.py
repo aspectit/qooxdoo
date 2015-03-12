@@ -108,7 +108,7 @@ class Manifest(object):
             "semver": r"^trunk$|master$|^\d+\.\d+(\.\d+)?(-[0-9]+-?)?([-a-zA-Z+][-a-zA-Z0-9.:-]*)?$",
             "url": r"^https?://([a-z0-9\.-]+)\.([a-z\.]{2,6})[/\w\.-]*\/?$",
             "url_and_placeholder": r"^https?://([a-z0-9\.-]+)\.([a-z\.]{2,6})[/\w.%{}-]*(#[/\w.%{}-]*)?\/?$",
-            "url_archive": r"^(https?|ftp)://.*(tar(\.gz|\.bz2)?|tgz|zip)$",
+            "url_archive_or_sf": r"^(https?://svn.code.sf.net/p/qooxdoo-contrib/code/trunk/qooxdoo-contrib/.*|(https?|ftp)://.*(tar(\.gz|\.bz2)?|tgz|zip))$",
             "name_and_github_uid": r"^.*\([\w.-]+\)$",
             "checksum": "^[a-f0-9]{40}$"  # has to be SHA-1
         }
@@ -136,7 +136,7 @@ class Manifest(object):
                         "category": {
                              "type": "array",
                              "items": { "enum": ["theme", "widget", "drawing",
-                                                 "tool", "backend"] }
+                                                 "tool", "backend", "utility"] }
                         },
                         "keywords": {
                             "type": "array",
@@ -172,7 +172,7 @@ class Manifest(object):
                         },
                         "download": {
                             "type": "string",
-                            "pattern": patterns["url_archive"]
+                            "pattern": patterns["url_archive_or_sf"]
                         },
                         "checksum": {
                             "type": "string",
@@ -220,7 +220,7 @@ class Manifest(object):
                         },
                         "type": {
                             "type": "string",
-                            "enum": ["library", "application", "add-in"]
+                            "enum": ["library", "application", "add-in", "contribution", "theme", "backend", "plugin", "tool"]
                         }
                     }
                 }

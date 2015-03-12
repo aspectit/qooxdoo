@@ -250,22 +250,22 @@ qx.Class.define("demobrowser.DemoBrowser",
 
     __makeCommands : function()
     {
-      this._cmdObjectSummary = new qx.ui.core.Command("Ctrl+O");
+      this._cmdObjectSummary = new qx.ui.command.Command("Ctrl+O");
       this._cmdObjectSummary.addListener("execute", this.__getObjectSummary, this);
 
-      this._cmdRunSample = new qx.ui.core.Command("F5");
+      this._cmdRunSample = new qx.ui.command.Command("F5");
       this._cmdRunSample.addListener("execute", this.runSample, this);
 
-      this._cmdPrevSample = new qx.ui.core.Command("Ctrl+Left");
+      this._cmdPrevSample = new qx.ui.command.Command("Ctrl+Left");
       this._cmdPrevSample.addListener("execute", this.playPrev, this);
 
-      this._cmdNextSample = new qx.ui.core.Command("Ctrl+Right");
+      this._cmdNextSample = new qx.ui.command.Command("Ctrl+Right");
       this._cmdNextSample.addListener("execute", this.playNext, this);
 
-      this._cmdSampleInOwnWindow = new qx.ui.core.Command("Ctrl+N");
+      this._cmdSampleInOwnWindow = new qx.ui.command.Command("Ctrl+N");
       this._cmdSampleInOwnWindow.addListener("execute", this.__openWindow, this);
 
-      this._cmdDisposeSample = new qx.ui.core.Command("Ctrl+D");
+      this._cmdDisposeSample = new qx.ui.command.Command("Ctrl+D");
       this._cmdDisposeSample.addListener("execute", this.__disposeSample, this);
     },
 
@@ -390,25 +390,6 @@ qx.Class.define("demobrowser.DemoBrowser",
     __onManualOpen : function() {
       var vers = (qx.core.Environment.get("qx.version").split("-")[0]);
       window.open("http://manual.qooxdoo.org/" + vers);
-    },
-
-
-    /**
-     * Handler for to hide/show all test demos.
-     *
-     * @param event {qx.event.type.Data} The event.
-     */
-    _onHideShowTests : function(event)
-    {
-      var search = window.location.search;
-      var anchor = window.location.hash;
-
-      var url = "index.html";
-      if (search == "") {
-        url += "?qxenv:demobrowser.withTests:true";
-      }
-      url += anchor;
-      location.replace(url);
     },
 
 
@@ -580,16 +561,6 @@ qx.Class.define("demobrowser.DemoBrowser",
       this.__disposeBtn = disposeBtn;
       disposeBtn.setCommand(this._cmdDisposeSample);
       menu.add(disposeBtn);
-
-      if (qx.core.Environment.get("qx.contrib") == false)
-      {
-        menu.addSeparator();
-
-        var hideTests = new qx.ui.menu.CheckBox(this.tr("Hide/Show Tests Demos"));
-        hideTests.setValue(!!qx.core.Environment.get("demobrowser.withTests"));
-        hideTests.addListener("changeValue", this._onHideShowTests, this);
-        menu.add(hideTests);
-      }
 
       var debugButton = new qx.ui.toolbar.MenuButton(this.tr("Debug"), "icon/22/apps/office-spreadsheet.png", menu);
       this.__debugButton = debugButton;
@@ -848,6 +819,10 @@ qx.Class.define("demobrowser.DemoBrowser",
       this.widgets["outputviews.sourcepage.html.page"] = f3;
 
       f3.getContentElement().setAttribute("id", "qx_srcview");
+      if (qx.core.Environment.get("device.type") !== "desktop") {
+        f3.getContentElement().setStyle("WebkitOverflowScrolling", "touch");
+        f3.getContentElement().setStyle("touchAction", "auto");
+      }
 
       return f3;
     },
@@ -861,6 +836,10 @@ qx.Class.define("demobrowser.DemoBrowser",
       this.widgets["outputviews.sourcepage.js.page"] = f4;
 
       f4.getContentElement().setAttribute("id", "qx_srcview");
+      if (qx.core.Environment.get("device.type") !== "desktop") {
+        f4.getContentElement().setStyle("WebkitOverflowScrolling", "touch");
+        f4.getContentElement().setStyle("touchAction", "auto");
+      }
 
       return f4;
     },
@@ -884,7 +863,7 @@ qx.Class.define("demobrowser.DemoBrowser",
       this.tree = this.widgets["treeview.flat"] = tree1;
 
       tree1.addListener("changeSelection", this.treeGetSelection, this);
-      tree1.addListener("dblclick", function(e){
+      tree1.addListener("dbltap", function(e){
         qx.event.Timer.once(this.runSample, this, 50);
       }, this);
 

@@ -114,7 +114,7 @@ qx.Class.define("qx.io.request.AbstractRequest",
      * Fired on timeout, error or remote error.
      *
      * This event is fired for convenience. Usually, it is recommended
-     * to handle error related events in a more granular approach.
+     * to handle error related events in a more fine-grained approach.
      */
     "fail": "qx.event.type.Event",
 
@@ -134,7 +134,7 @@ qx.Class.define("qx.io.request.AbstractRequest",
     *
     * The response is parsed (and therefore changed) only
     * after the request completes successfully. This means
-    * that when a new request is made the initial emtpy value
+    * that when a new request is made the initial empty value
     * is ignored, instead only the final value is bound.
     *
     */
@@ -194,7 +194,8 @@ qx.Class.define("qx.io.request.AbstractRequest",
       check: function(value) {
         return qx.lang.Type.isString(value) ||
                qx.Class.isSubClassOf(value.constructor, qx.core.Object) ||
-               qx.lang.Type.isObject(value);
+               qx.lang.Type.isObject(value) ||
+               qx.lang.Type.isArray(value);
       },
       nullable: true
     },
@@ -876,7 +877,10 @@ qx.Class.define("qx.io.request.AbstractRequest",
       transport.onreadystatechange = transport.onload = transport.onloadend =
       transport.onabort = transport.ontimeout = transport.onerror = noop;
 
-      transport.dispose();
+      // [BUG #8315] dispose asynchronously to work with Sinon.js fake server
+      window.setTimeout(function() {
+        transport.dispose();
+      }, 0);
     }
   }
 });

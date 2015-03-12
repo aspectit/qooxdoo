@@ -36,6 +36,10 @@ qx.Class.define("apiviewer.ui.AbstractViewer",
     this.setOverflowX("auto");
     this.setOverflowY("auto");
 
+    this.getContentElement().setStyle("-webkit-overflow-scrolling", "touch");
+    this.getContentElement().setStyle("touch-action", "pan-y");
+    this.getContentElement().setStyle("-ms-touch-action", "pan-y");
+
     this.setAppearance("detailviewer");
 
     this._infoPanelHash = {};
@@ -323,7 +327,7 @@ qx.Class.define("apiviewer.ui.AbstractViewer",
 
 
     /**
-     * Event handler. Called when the user clicked a button for showing/hiding the
+     * Event handler. Called when the user tapped a button for showing/hiding the
      * body of an info panel.
      *
      * @param panelHashCode {Integer} hash code of the panel object.

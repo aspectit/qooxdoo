@@ -39,10 +39,9 @@ qx.Interface.define("qx.data.marshal.IMarshalerDelegate",
      * @param properties {String} A sorted order of propertynames
      *   separated by ".
      * @param parentProperty {String|null} If there is a named parent property, the
-     *   name is given here. This might be null in case of arrays and the root data.
+     *   name is given here. This might be null in case of the root data.
      * @param depth {Number} The depth level of the data.
-     * @return {String} The new which should be used for that property in
-     *   the model.
+     * @return {Boolean} <code>true</code> if the set should be ignored
      */
     ignore : function(properties, parentProperty, depth) {},
 
@@ -54,7 +53,7 @@ qx.Interface.define("qx.data.marshal.IMarshalerDelegate",
      * @param property {String} The name of the property from the data source.
      * @param properties {String} A sorted order of propertynames
      *   separated by ".
-     * @return {String} The new which should be used for that property in
+     * @return {String} The new property name which should be used for that property in
      *   the model.
      */
     getPropertyMapping : function(property, properties) {},
@@ -74,11 +73,14 @@ qx.Interface.define("qx.data.marshal.IMarshalerDelegate",
      * @param properties {String} A sorted order of propertynames
      *   separated by ".
      * @param object {Map} The object for which an class is needed.
+     * @param parentProperty {String|null} If there is a named parent property, the
+     *   name is given here. This might be null in case of the root data.
+     * @param depth {Number} The depth level of the data.
      * @return {Class|null} Returns the class containing the properties
      *   corresponding to the given hash of the properties. If <code>null</code>
      *   will be returned, the marshaler will create a class.
      */
-    getModelClass : function(properties, object) {},
+    getModelClass : function(properties, object, parentProperty, depth) {},
 
 
     /**
@@ -86,11 +88,14 @@ qx.Interface.define("qx.data.marshal.IMarshalerDelegate",
      *
      * @param properties {String} A sorted order of propertynames
      *   separated by ".
+     * @param parentProperty {String|null} If there is a named parent property, the
+     *   name is given here. This might be null in case of the root data.
+     * @param depth {Number} The depth level of the data.
      * @return {Class|null} Returns the class which should be used as superclass
      *   corresponding to the given hash of the properties. If <code>null</code>
      *   will be returned, {@link qx.core.Object} will be used as superclass.
      */
-    getModelSuperClass : function(properties) {},
+    getModelSuperClass : function(properties, parentProperty, depth) {},
 
 
     /**
@@ -99,12 +104,15 @@ qx.Interface.define("qx.data.marshal.IMarshalerDelegate",
      *
      * @param properties {String} A sorted order of propertynames
      *   separated by ".
+     * @param parentProperty {String|null} If there is a named parent property, the
+     *   name is given here. This might be null in case of the root data.
+     * @param depth {Number} The depth level of the data.
      * @return {Array|Mixin|null} Returns an array of mixins or a single mixin which
      *   will be included into the given class identified by the properties
      *   given in the parameter. If <code>null</code> will be returned, no mixin
      *   will be included.
      */
-    getModelMixins : function(properties) {},
+    getModelMixins : function(properties, parentProperty, depth) {},
 
 
     /**
@@ -119,6 +127,20 @@ qx.Interface.define("qx.data.marshal.IMarshalerDelegate",
      *   be included into the property definition as validator.
      *   {@link qx.core.Property} for more details.
      */
-    getValidationRule : function(properties, propertyName) {}
+    getValidationRule : function(properties, propertyName) {},
+
+
+    /**
+     * Returns the array class which should be used by the marshaler. The passed
+     * parameters can be used to determine the array class. The return array class
+     * must implement the {@link qx.data.IListData} interface.
+     *
+     * @param parentProperty {String|null} If there is a named parent property, the
+     *   name is given here. This might be null in case of the root data.
+     * @param depth {Number} The depth level of the data.
+     * @return {Class|null} Returns the class which should be used as array class.
+     *   If <code>null</code> will be returned, {@link qx.data.Array} will be used as array class.
+     */
+    getArrayClass : function(parentProperty, depth) {}
   }
 });

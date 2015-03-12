@@ -109,6 +109,9 @@
  * @asset(qx/decoration/Modern/table/boolean-true.png)
  * @asset(qx/decoration/Modern/table/boolean-false.png)
  *
+ * @asset(qx/static/blank.gif)
+ * @asset(qx/static/blank.png)
+ *
  * @asset(qx/decoration/Modern/colorselector/*)
  */
 qx.Theme.define("qx.theme.modern.Appearance",
@@ -419,7 +422,7 @@ qx.Theme.define("qx.theme.modern.Appearance",
       style : function(states)
       {
         return {
-          icon: "qx/static/blank.gif",
+          icon: "qx/static/blank.png",
           gap : 8,
           paddingLeft: 2
         };
@@ -967,7 +970,8 @@ qx.Theme.define("qx.theme.modern.Appearance",
         return {
           padding   : states.dragover ? [4, 4, 2, 4] : 4,
           textColor : states.selected ? "text-selected" : undefined,
-          decorator : states.selected ? "selected" : undefined
+          decorator : states.selected ? "selected" : undefined,
+          opacity : states.drag ? 0.5 : undefined
         };
       }
     },
@@ -1452,7 +1456,8 @@ qx.Theme.define("qx.theme.modern.Appearance",
         return {
           padding    : [ 2, 6 ],
           textColor  : states.selected ? "text-selected" : undefined,
-          decorator  : decorator
+          decorator  : decorator,
+          opacity : states.drag ? 0.5 : undefined
         };
       }
     },
@@ -3022,25 +3027,6 @@ qx.Theme.define("qx.theme.modern.Appearance",
     "cell-date" : "cell",
     "cell-html" : "cell",
 
-
-
-    /*
-    ---------------------------------------------------------------------------
-      HTMLAREA
-    ---------------------------------------------------------------------------
-    */
-
-    "htmlarea" :
-    {
-      "include" : "widget",
-
-      style : function(states)
-      {
-        return {
-          backgroundColor : "htmlarea-background"
-        };
-      }
-    },
 
 
     /*

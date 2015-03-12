@@ -54,7 +54,8 @@ qx.Class.define("qx.ui.mobile.basic.Atom",
   {
     this.base(arguments);
     this.__createChildren(label, icon);
-    this.__updateGap(this.getIconPosition(),4);
+
+    this.addCssClass("gap");
   },
 
   /*
@@ -92,18 +93,6 @@ qx.Class.define("qx.ui.mobile.basic.Atom",
 
 
     /**
-     * The space between the icon and the label
-     */
-    gap :
-    {
-      check : "Integer",
-      nullable : false,
-      apply : "_applyGap",
-      init : 4
-    },
-
-
-    /**
      * Configure the visibility of the sub elements/widgets.
      * Possible values: both, text, icon
      */
@@ -130,115 +119,52 @@ qx.Class.define("qx.ui.mobile.basic.Atom",
 
   members :
   {
+    __layout : null,
     __label : null,
     __icon : null,
     __childrenContainer : null,
 
 
-        // property apply
+    // property apply
     _applyIconPosition : function(value, old) {
-        var targetLayout;
-        var verticalLayout = ["top", "bottom"].indexOf(value) != -1;
+      var verticalLayout = ["top", "bottom"].indexOf(value) != -1;
+      var hasNoLabel = !this.__label;
 
-        if(verticalLayout) {
-           targetLayout = new qx.ui.mobile.layout.VBox();
-        } else {
-           targetLayout = new qx.ui.mobile.layout.HBox();
-        }
+      this.__createLayout(verticalLayout, hasNoLabel);
+      var isReverse = ["right", "bottom"].indexOf(value) != -1;
+      this.__childrenContainer.setLayout(this.__layout);
+      this.__layout.setReversed(isReverse);
 
-        var isReverse = ["right", "bottom"].indexOf(value) != -1;
-        targetLayout.setReversed(isReverse);
-
-        this.__childrenContainer.setLayout(targetLayout);
-
-        this.__updateGap(old, null);
-        this.__updateGap(value,this.getGap());
-
-        this._domUpdated();
+      this._domUpdated();
     },
 
 
     // property apply
     _applyShow : function(value, old)
     {
-        if(this.__label) {
-            if(value === 'both' || value === 'label') {
-                this.__label.show();
-            } else if(value === 'icon') {
-                this.__label.exclude();
-            }
+      if(this.__label) {
+        if(value === 'both' || value === 'label') {
+          this.__label.show();
+        } else if(value === 'icon') {
+          this.__label.exclude();
         }
-        if(this.__icon) {
-            if(value === 'both' || value === 'icon') {
-                this.__icon.show();
-            } else if(value === 'label') {
-                this.__icon.exclude();
-            }
-        }
-    },
-
-    // property apply
-    _applyGap : function(value, old)
-    {
-      this.__updateGap(this.getIconPosition(),value);
-    },
-
-
-    /**
-     * Updates the gap between icon and label text.
-     * @param iconPosition {String} position of the icon: "left", "bottom", "right", "top".
-     * @param value {Integer} size of the gap.
-     */
-    __updateGap : function (iconPosition, value) {
-
-      if(this.__icon)
-      {
-        // Then set new margin gap.
-        var newMarginPosition = this.__getOpposedPosition(iconPosition);
-        var newPropKey = 'margin'+qx.lang.String.firstUp(newMarginPosition);
-
-        if(value) {
-          this.__icon._setStyle(newPropKey, value + 'px');
-        } else {
-          this.__icon._setStyle(newPropKey, null);
-        }
-
       }
-    },
-
-    /**
-     * Returns the opposed position for a given position.
-     * @param position {String} "left", "right", "bottom", "right" position.
-     * @return {String} opposed position.
-     */
-    __getOpposedPosition : function(position)
-    {
-      var opposedPosition = 'left';
-      switch(position)
-      {
-        case 'top':
-          opposedPosition = 'bottom';
-          break;
-        case 'bottom':
-          opposedPosition = 'top';
-          break;
-        case 'left':
-          opposedPosition = 'right';
-          break;
+      if(this.__icon) {
+        if(value === 'both' || value === 'icon') {
+          this.__icon.show();
+        } else if(value === 'label') {
+          this.__icon.exclude();
+        }
       }
-      return opposedPosition;
     },
 
 
     // property apply
     _applyLabel : function(value, old)
     {
-      if(this.__label)
-      {
+      if (this.__label) {
         this.__label.setValue(value);
-      }
-      else
-      {
+      } else {
         this.__label = this._createLabelWidget(value);
       }
     },
@@ -247,13 +173,53 @@ qx.Class.define("qx.ui.mobile.basic.Atom",
     // property apply
     _applyIcon : function(value, old)
     {
-      if(this.__icon)
-      {
+      if (this.__icon) {
         this.__icon.setSource(value);
+      } else {
+        this.__icon = this._createIconWidget(value);
       }
+    },
+
+
+    /**
+     * Takes care of lazily creating the layout and disposing an already
+     * present layout if neccessary.
+     *
+     * @param verticalLayout {Boolean} Whether icon and label should be vertically aligned.
+     * @param hasNoLabel {Boolean} Whether the atom currently contains a label.
+     */
+    __createLayout : function(verticalLayout, hasNoLabel)
+    {
+      if (verticalLayout || hasNoLabel)
+      {
+        if (this.__layout)
+        {
+          if (this.__layout.classname !== "qx.ui.mobile.layout.VBox")
+          {
+            this.__layout.dispose();
+            this.__layout = new qx.ui.mobile.layout.VBox();
+          }
+        }
+        // layout == null
+        else {
+          this.__layout = new qx.ui.mobile.layout.VBox();
+        }
+      }
+      // horizontal layout and has label
       else
       {
-        this.__icon = this._createIconWidget(value);
+        if (this.__layout)
+        {
+          if (this.__layout.classname !== "qx.ui.mobile.layout.HBox")
+          {
+            this.__layout.dispose();
+            this.__layout = new qx.ui.mobile.layout.HBox();
+          }
+        }
+        // layout == null
+        else {
+          this.__layout = new qx.ui.mobile.layout.HBox();
+        }
       }
     },
 
@@ -287,8 +253,9 @@ qx.Class.define("qx.ui.mobile.basic.Atom",
     _createIconWidget : function(iconUrl)
     {
       var iconWidget = new qx.ui.mobile.basic.Image(iconUrl);
+      qx.bom.element.Style.set(iconWidget.getContentElement(),"display","block");
       iconWidget.setAnonymous(true);
-
+      iconWidget.addCssClass("gap");
       return iconWidget;
     },
 
@@ -304,7 +271,7 @@ qx.Class.define("qx.ui.mobile.basic.Atom",
       var labelWidget = new qx.ui.mobile.basic.Label(label);
       labelWidget.setAnonymous(true);
       labelWidget.setWrap(false);
-
+      labelWidget.addCssClass("gap");
       return labelWidget;
     },
 
@@ -317,7 +284,6 @@ qx.Class.define("qx.ui.mobile.basic.Atom",
      *
      */
     __createChildren : function(label, icon) {
-
       this.__label = this._createLabelWidget(label);
       if(label)
       {
@@ -325,35 +291,33 @@ qx.Class.define("qx.ui.mobile.basic.Atom",
       }
 
       this.__icon = this._createIconWidget(icon);
-      if(icon)
-      {
+      if (icon) {
         this.setIcon(icon);
       } else {
         this.__icon.exclude();
       }
 
-      var layout;
       var verticalLayout = [ "top", "bottom" ].indexOf(this.getIconPosition()) != -1;
       // If Atom has no Label, only Icon is shown, and should vertically centered.
       var hasNoLabel = !this.__label;
 
-      if(verticalLayout || hasNoLabel){
-        layout = new qx.ui.mobile.layout.VBox();
-      } else {
-        layout = new qx.ui.mobile.layout.HBox();
+      this.__createLayout(verticalLayout, hasNoLabel);
+
+      if(this.__childrenContainer) {
+        this.__childrenContainer.dispose();
       }
 
-      this.__childrenContainer = new qx.ui.mobile.container.Composite(layout);
-      this.__childrenContainer.addCssClass("box-centered");
+      this.__childrenContainer = new qx.ui.mobile.container.Composite(this.__layout);
+      this.__childrenContainer.addCssClass("qx-flex-center");
       this.__childrenContainer.setAnonymous(true);
 
       if(this.__icon) {
-        this.__childrenContainer.add(this.__icon, {flex : 0});
+        this.__childrenContainer.add(this.__icon);
       }
 
       if(this.__label) {
-        this.__label.addCssClass("box-centered");
-        this.__childrenContainer.add(this.__label, {flex : 0});
+        this.__label.addCssClass("qx-flex-center");
+        this.__childrenContainer.add(this.__label);
       }
 
       // Show/Hide Label/Icon
@@ -376,7 +340,6 @@ qx.Class.define("qx.ui.mobile.basic.Atom",
   */
 
   destruct : function() {
-      this._disposeObjects("__label", "__icon", "__childrenContainer");
+    this._disposeObjects("__layout", "__label", "__icon", "__childrenContainer");
   }
-
 });

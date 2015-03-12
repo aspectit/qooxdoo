@@ -24,10 +24,29 @@
  * @require(qx.dom.Hierarchy#getSiblings)
  * @require(qx.dom.Hierarchy#getNextSiblings)
  * @require(qx.dom.Hierarchy#getPreviousSiblings)
+ * @require(qx.dom.Hierarchy#contains)
+ *
+ * @group (Core)
  */
 qx.Bootstrap.define("qx.module.Traversing", {
   statics :
   {
+
+    /**
+     * String attributes used to determine if two DOM nodes are equal
+     * as defined in <a href="http://www.w3.org/TR/DOM-Level-3-Core/core.html#Node3-isEqualNode">
+     * DOM Level 3</a>
+     */
+    EQUALITY_ATTRIBUTES : [
+      "nodeType",
+      "nodeName",
+      "localName",
+      "namespaceURI",
+      "prefix",
+      "nodeValue"
+    ],
+
+
     /**
      * Adds an element to the collection
      *
@@ -42,7 +61,8 @@ qx.Bootstrap.define("qx.module.Traversing", {
       }
       if (qx.module.Traversing.isElement(el) ||
           qx.module.Traversing.isDocument(el) ||
-          qx.module.Traversing.isWindow(el))
+          qx.module.Traversing.isWindow(el) ||
+          qx.module.Traversing.isDocumentFragment(el))
       {
         this.push(el);
       }
@@ -69,7 +89,7 @@ qx.Bootstrap.define("qx.module.Traversing", {
         }
         children = children.concat(found);
       };
-      return qxWeb.$init(children);
+      return qxWeb.$init(children, qxWeb);
     },
 
 
@@ -78,7 +98,11 @@ qx.Bootstrap.define("qx.module.Traversing", {
      * collection.
      *
      * @attach {qxWeb}
-     * @param fn {Function} Callback function
+     * @param fn {Function} Callback function which is called with two parameters
+     * <ul>
+     *  <li>current item - DOM node</li>
+     *  <li>current index - Number</li>
+     * </ul>
      * @param ctx {Object} Context object
      * @return {qxWeb} The collection for chaining
      */
@@ -109,7 +133,34 @@ qx.Bootstrap.define("qx.module.Traversing", {
         }
         parents = parents.concat(found);
       };
-      return qxWeb.$init(parents);
+      return qxWeb.$init(parents, qxWeb);
+    },
+
+
+    /**
+    * Checks if any element of the current collection is child of any element of a given
+    * parent collection.
+    *
+    * @attach{qxWeb}
+    * @param parent {qxWeb | String} Collection or selector of the parent collection to check.
+    * @return {Boolean} Returns true if at least one element of the current collection is child of the parent collection
+    *
+    */
+    isChildOf : function(parent){
+      if(this.length == 0){
+        return false;
+      }
+      var ancestors = null, parentCollection = qxWeb(parent), isChildOf = false;
+      for(var i = 0, l = this.length; i < l && !isChildOf; i++){
+        ancestors = qxWeb(this[i]).getAncestors();
+        for(var j = 0, len = parentCollection.length; j < len; j++){
+          if(ancestors.indexOf(parentCollection[j]) != -1){
+            isChildOf = true;
+            break;
+          }
+        };
+      }
+      return isChildOf;
     },
 
 
@@ -172,7 +223,7 @@ qx.Bootstrap.define("qx.module.Traversing", {
           parent = qx.dom.Element.getParentElement(parent);
         }
       }
-      return qxWeb.$init(ancestors);
+      return qxWeb.$init(ancestors, qxWeb);
     },
 
 
@@ -189,7 +240,7 @@ qx.Bootstrap.define("qx.module.Traversing", {
     getClosest : function(selector) {
       var closest = [];
 
-      var findClosest = function findClosest(current) {
+      var findClosest = function(current) {
         var found = qx.bom.Selector.matches(selector, current);
         if (found.length) {
           closest.push(found[0]);
@@ -205,7 +256,7 @@ qx.Bootstrap.define("qx.module.Traversing", {
         findClosest(qxWeb(this[i]));
       };
 
-      return qxWeb.$init(closest);
+      return qxWeb.$init(closest, qxWeb);
     },
 
 
@@ -223,7 +274,7 @@ qx.Bootstrap.define("qx.module.Traversing", {
       for (var i=0; i < this.length; i++) {
         found = found.concat(qx.bom.Selector.query(selector, this[i]));
       };
-      return qxWeb.$init(found);
+      return qxWeb.$init(found, qxWeb);
     },
 
 
@@ -239,7 +290,7 @@ qx.Bootstrap.define("qx.module.Traversing", {
       this._forEachElement(function(item) {
         found = found.concat(qx.lang.Array.fromCollection(item.childNodes));
       });
-      return qxWeb.$init(found);
+      return qxWeb.$init(found, qxWeb);
     },
 
 
@@ -311,7 +362,40 @@ qx.Bootstrap.define("qx.module.Traversing", {
         }
       });
 
-      return qxWeb.$init(found);
+      return qxWeb.$init(found, this.constructor);
+    },
+
+
+    /**
+     * Returns a new collection containing only those nodes that
+     * contain the given element. Also accepts a qxWeb
+     * collection or an Array of elements. In those cases, the first element
+     * in the list is used.
+     *
+     * @attach {qxWeb}
+     * @param element {Element|Window|Element[]|qxWeb} element to check for.
+     * @return {qxWeb} Collection with matching items
+     */
+    contains : function(element) {
+      // qxWeb does not inherit from Array in IE
+      if (element instanceof Array || element instanceof qxWeb) {
+        element = element[0];
+      }
+
+      if (!element) {
+        return qxWeb();
+      }
+
+      if (qx.dom.Node.isWindow(element)) {
+        element = element.document;
+      }
+
+      return this.filter(function(el) {
+        if (qx.dom.Node.isWindow(el)) {
+          el = el.document;
+        }
+        return qx.dom.Hierarchy.contains(el, element);
+      });
     },
 
 
@@ -328,7 +412,7 @@ qx.Bootstrap.define("qx.module.Traversing", {
     getNext : function(selector) {
       var found = this.map(qx.dom.Hierarchy.getNextElementSibling, qx.dom.Hierarchy);
       if (selector) {
-        found = qxWeb.$init(qx.bom.Selector.matches(selector, found));
+        found = qxWeb.$init(qx.bom.Selector.matches(selector, found), qxWeb);
       }
       return found;
     },
@@ -346,7 +430,7 @@ qx.Bootstrap.define("qx.module.Traversing", {
      */
     getNextAll : function(selector) {
       var ret = qx.module.Traversing.__hierarchyHelper(this, "getNextSiblings", selector);
-      return qxWeb.$init(ret);
+      return qxWeb.$init(ret, qxWeb);
     },
 
 
@@ -371,7 +455,7 @@ qx.Bootstrap.define("qx.module.Traversing", {
         }
       });
 
-      return qxWeb.$init(found);
+      return qxWeb.$init(found, qxWeb);
     },
 
 
@@ -388,7 +472,7 @@ qx.Bootstrap.define("qx.module.Traversing", {
     getPrev : function(selector) {
       var found = this.map(qx.dom.Hierarchy.getPreviousElementSibling, qx.dom.Hierarchy);
       if (selector) {
-        found = qxWeb.$init(qx.bom.Selector.matches(selector, found));
+        found = qxWeb.$init(qx.bom.Selector.matches(selector, found), qxWeb);
       }
       return found;
     },
@@ -406,7 +490,7 @@ qx.Bootstrap.define("qx.module.Traversing", {
      */
     getPrevAll : function(selector) {
       var ret = qx.module.Traversing.__hierarchyHelper(this, "getPreviousSiblings", selector);
-      return qxWeb.$init(ret);
+      return qxWeb.$init(ret, qxWeb);
     },
 
 
@@ -431,7 +515,7 @@ qx.Bootstrap.define("qx.module.Traversing", {
         }
       });
 
-      return qxWeb.$init(found);
+      return qxWeb.$init(found, qxWeb);
     },
 
 
@@ -447,7 +531,7 @@ qx.Bootstrap.define("qx.module.Traversing", {
      */
     getSiblings : function(selector) {
       var ret = qx.module.Traversing.__hierarchyHelper(this, "getSiblings", selector);
-      return qxWeb.$init(ret);
+      return qxWeb.$init(ret, qxWeb);
     },
 
 
@@ -489,6 +573,7 @@ qx.Bootstrap.define("qx.module.Traversing", {
      * Whether the first element in the collection is inserted into
      * the document for which it was created.
      *
+     * @attach {qxWeb}
      * @return {Boolean} <code>true</code> when the element is inserted
      *    into the document.
      */
@@ -501,14 +586,32 @@ qx.Bootstrap.define("qx.module.Traversing", {
 
 
     /**
+     * Helper which returns the element from the given argument. If it's a collection,
+     * it returns it's first child. If it's a string, it tries to use the string
+     * as selector and returns the first child of the new collection.
+     * @param arg {Node|String|qxWeb} The element.
+     * @return {Node|var} If a node can be extracted, the node element will be return.
+     *   If not, at given argument will be returned.
+     */
+    __getElementFromArgument : function(arg) {
+      if (arg instanceof qxWeb) {
+        return arg[0];
+      } else if (qx.Bootstrap.isString(arg)) {
+        return qxWeb(arg)[0];
+      }
+      return arg;
+    },
+
+
+    /**
      * Checks if the given object is a DOM element
      *
      * @attachStatic{qxWeb}
-     * @param element {Object} Object to check
+     * @param selector {Object|String|qxWeb} Object to check
      * @return {Boolean} <code>true</code> if the object is a DOM element
      */
-    isElement : function(element) {
-      return qx.dom.Node.isElement(element);
+    isElement : function(selector) {
+      return qx.dom.Node.isElement(qx.module.Traversing.__getElementFromArgument(selector));
     },
 
 
@@ -516,11 +619,11 @@ qx.Bootstrap.define("qx.module.Traversing", {
      * Checks if the given object is a DOM node
      *
      * @attachStatic{qxWeb}
-     * @param node {Object} Object to check
+     * @param selector {Node|String|qxWeb} Object to check
      * @return {Boolean} <code>true</code> if the object is a DOM node
      */
-    isNode : function(node) {
-      return qx.dom.Node.isNode(node);
+    isNode : function(selector) {
+      return qx.dom.Node.isNode(qx.module.Traversing.__getElementFromArgument(selector));
     },
 
 
@@ -528,12 +631,12 @@ qx.Bootstrap.define("qx.module.Traversing", {
      * Whether the node has the given node name
      *
      * @attachStatic{qxWeb}
-     * @param node {Node} the node to check
+     * @param selector {Node|String|qxWeb} the node to check
      * @param  nodeName {String} the node name to check for
      * @return {Boolean} <code>true</code> if the node has the given name
      */
-    isNodeName : function(node, nodeName) {
-      return qx.dom.Node.isNodeName(node, nodeName);
+    isNodeName : function(selector, nodeName) {
+      return qx.dom.Node.isNodeName(qx.module.Traversing.__getElementFromArgument(selector), nodeName);
     },
 
 
@@ -550,14 +653,26 @@ qx.Bootstrap.define("qx.module.Traversing", {
 
 
     /**
+     * Checks if the given object is a DOM document fragment object
+     *
+     * @attachStatic{qxWeb}
+     * @param node {Object} Object to check
+     * @return {Boolean} <code>true</code> if the object is a DOM document fragment
+     */
+    isDocumentFragment : function(node) {
+      return qx.dom.Node.isDocumentFragment(node);
+    },
+
+
+    /**
      * Returns the DOM2 <code>defaultView</code> (window) for the given node.
      *
      * @attachStatic{qxWeb}
-     * @param node {Node|Document|Window} Node to inspect
+     * @param selector {Node|Document|Window|String|qxWeb} Node to inspect
      * @return {Window} the <code>defaultView</code> for the given node
      */
-    getWindow : function(node) {
-      return qx.dom.Node.getWindow(node);
+    getWindow : function(selector) {
+      return qx.dom.Node.getWindow(qx.module.Traversing.__getElementFromArgument(selector));
     },
 
     /**
@@ -576,10 +691,13 @@ qx.Bootstrap.define("qx.module.Traversing", {
      * Check whether the given object is a browser window object.
      *
      * @attachStatic{qxWeb}
-     * @param obj {Object} the object to be tested
+     * @param obj {Object|qxWeb} the object to be tested
      * @return {Boolean} <code>true</code> if the object is a window object
      */
     isWindow : function(obj) {
+      if (obj instanceof qxWeb) {
+        obj = obj[0];
+      }
       return qx.dom.Node.isWindow(obj);
     },
 
@@ -588,22 +706,22 @@ qx.Bootstrap.define("qx.module.Traversing", {
      * Returns the owner document of the given node
      *
      * @attachStatic{qxWeb}
-     * @param node {Node} Node to get the document for
+     * @param selector {Node|String|qxWeb} Node to get the document for
      * @return {Document|null} The document of the given DOM node
      */
-    getDocument : function(node) {
-      return qx.dom.Node.getDocument(node);
+    getDocument : function(selector) {
+      return qx.dom.Node.getDocument(qx.module.Traversing.__getElementFromArgument(selector));
     },
 
     /**
      * Get the DOM node's name as a lowercase string
      *
      * @attachStatic{qxWeb}
-     * @param node {Node} DOM Node
+     * @param selector {Node|String|qxWeb} DOM Node
      * @return {String} node name
      */
-    getNodeName : function(node) {
-      return qx.dom.Node.getName(node);
+    getNodeName : function(selector) {
+      return qx.dom.Node.getName(qx.module.Traversing.__getElementFromArgument(selector));
     },
 
     /**
@@ -611,24 +729,140 @@ qx.Bootstrap.define("qx.module.Traversing", {
      * NODE_ELEMENT, NODE_ATTRIBUTE, NODE_TEXT, NODE_CDATA
      *
      * @attachStatic{qxWeb}
-     * @param node {Node} the node from where the search should start. If the
+     * @param selector {Node|String|qxWeb} the node from where the search should start. If the
      * node has subnodes the text contents are recursively retreived and joined
      * @return {String} the joined text content of the given node or null if not
      * appropriate.
      */
-    getNodeText : function(node) {
-      return qx.dom.Node.getText(node);
+    getNodeText : function(selector) {
+      return qx.dom.Node.getText(qx.module.Traversing.__getElementFromArgument(selector));
     },
 
     /**
      * Checks if the given node is a block node
      *
      * @attachStatic{qxWeb}
-     * @param node {Node} the node to check
+     * @param selector {Node|String|qxWeb} the node to check
      * @return {Boolean} <code>true</code> if the node is a block node
      */
-    isBlockNode : function(node) {
-      return qx.dom.Node.isBlockNode(node);
+    isBlockNode : function(selector) {
+      return qx.dom.Node.isBlockNode(qx.module.Traversing.__getElementFromArgument(selector));
+    },
+
+
+    /**
+     * Determines if two DOM nodes are equal as defined in the
+     * <a href="http://www.w3.org/TR/DOM-Level-3-Core/core.html#Node3-isEqualNode">DOM Level 3 isEqualNode spec</a>.
+     * Also works in legacy browsers without native <em>isEqualNode</em> support.
+     *
+     * @attachStatic{qxWeb}
+     * @param node1 {String|Element|Element[]|qxWeb} first object to compare
+     * @param node2 {String|Element|Element[]|qxWeb} second object to compare
+     * @return {Boolean} <code>true</code> if the nodes are equal
+     */
+    equalNodes : function(node1, node2) {
+      node1 = qx.module.Traversing.__getNodeFromArgument(node1);
+      node2 = qx.module.Traversing.__getNodeFromArgument(node2);
+
+      if (!node1 || !node2) {
+        return false;
+      }
+
+      if (qx.core.Environment.get("html.node.isequalnode")) {
+        return node1.isEqualNode(node2);
+      } else {
+        if (node1 === node2) {
+          return true;
+        }
+
+        // quick attributes length check
+        var hasAttributes = node1.attributes && node2.attributes;
+        if (hasAttributes &&
+            node1.attributes.length !== node2.attributes.length) {
+          return false;
+        }
+
+        var hasChildNodes = node1.childNodes && node2.childNodes;
+        // quick childNodes length check
+        if (hasChildNodes &&
+            node1.childNodes.length !== node2.childNodes.length) {
+          return false;
+        }
+
+        // string attribute check
+        var domAttributes = qx.module.Traversing.EQUALITY_ATTRIBUTES;
+        for (var i=0, l=domAttributes.length; i<l; i++) {
+          var domAttrib = domAttributes[i];
+          if (node1[domAttrib] !== node2[domAttrib]) {
+            return false;
+          }
+        }
+
+        // attribute values
+        if (hasAttributes) {
+          var node1Attributes = qx.module.Traversing.__getAttributes(node1);
+          var node2Attributes = qx.module.Traversing.__getAttributes(node2);
+          for (var attr in node1Attributes) {
+            if (node1Attributes[attr] !== node2Attributes[attr]) {
+              return false;
+            }
+          }
+        }
+
+        // child nodes
+        if (hasChildNodes) {
+          for (var j=0, m=node1.childNodes.length; j<m; j++) {
+            var child1 = node1.childNodes[j];
+            var child2 = node2.childNodes[j];
+            if (!qx.module.Traversing.equalNodes(child1, child2)) {
+              return false;
+            }
+          }
+        }
+
+        return true;
+      }
+    },
+
+
+    /**
+     * Helper that attempts to convert the given argument into a DOM node
+     * @param arg {var} object to convert
+     * @return {Node|null} DOM node or null if the conversion failed
+     */
+    __getNodeFromArgument : function(arg) {
+      if (typeof arg == "string") {
+        arg = qxWeb(arg);
+      }
+
+      if (arg instanceof Array || arg instanceof qxWeb) {
+        arg = arg[0];
+      }
+
+      return qxWeb.isNode(arg) ? arg : null;
+    },
+
+
+    /**
+     * Returns a map containing the given DOM node's attribute names
+     * and values
+     *
+     * @param node {Node} DOM node
+     * @return {Map} Map of attribute names/values
+     */
+    __getAttributes : function(node) {
+      var attributes = {};
+
+      for (var attr in node.attributes) {
+        if (attr == "length") {
+          continue;
+        }
+        var name = node.attributes[attr].name;
+        var value = node.attributes[attr].value;
+        attributes[name] = value;
+      }
+
+      return attributes;
     },
 
 
@@ -694,7 +928,9 @@ qx.Bootstrap.define("qx.module.Traversing", {
       "getSiblings" : statics.getSiblings,
       "not" : statics.not,
       "getOffsetParent" : statics.getOffsetParent,
-      "isRendered" : statics.isRendered
+      "isRendered" : statics.isRendered,
+      "isChildOf" : statics.isChildOf,
+      "contains" : statics.contains
     });
 
     qxWeb.$attachStatic({
@@ -702,13 +938,15 @@ qx.Bootstrap.define("qx.module.Traversing", {
       "isNode" : statics.isNode,
       "isNodeName" : statics.isNodeName,
       "isDocument" : statics.isDocument,
+      "isDocumentFragment" : statics.isDocumentFragment,
       "getDocument" : statics.getDocument,
       "getWindow" : statics.getWindow,
       "isWindow" : statics.isWindow,
       "isBlockNode" : statics.isBlockNode,
       "getNodeName" : statics.getNodeName,
       "getNodeText" : statics.getNodeText,
-      "isTextNode" : statics.isTextNode
+      "isTextNode" : statics.isTextNode,
+      "equalNodes" : statics.equalNodes
     });
   }
 });

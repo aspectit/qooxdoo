@@ -35,7 +35,8 @@
  * http://msdn.microsoft.com/en-us/library/ms532997(v=vs.85).aspx
  *
  * For IE9, we create a gradient in a canvas element and render this gradient
- * as background image.
+ * as background image. Due to restrictions in the <code>background-image</code>
+ * css property, we can not allow negative start values in that case.
  */
 qx.Mixin.define("qx.ui.decoration.MLinearBackgroundGradient",
 {
@@ -169,6 +170,22 @@ qx.Mixin.define("qx.ui.decoration.MLinearBackgroundGradient",
           var colors = this.__getColors();
           var height = isVertical ? 200 : 1;
           var width = isVertical ? 1 : 200;
+          var range = Math.max(100, this.getEndColorPosition() - this.getStartColorPosition());
+
+          // use the px difference as dimension
+          if (unit === "px") {
+            if (isVertical) {
+              height = Math.max(height, this.getEndColorPosition() - this.getStartColorPosition());
+            } else {
+              width = Math.max(width, this.getEndColorPosition() - this.getStartColorPosition());
+            }
+          } else {
+            if (isVertical) {
+              height = Math.max(height, (this.getEndColorPosition() - this.getStartColorPosition()) * 2);
+            } else {
+              width = Math.max(width, (this.getEndColorPosition() - this.getStartColorPosition()) * 2);
+            }
+          }
 
           this.__canvas.width = width;
           this.__canvas.height = height;
@@ -180,15 +197,31 @@ qx.Mixin.define("qx.ui.decoration.MLinearBackgroundGradient",
             var lingrad = ctx.createLinearGradient(0, 0, width, 0);
           }
 
-          lingrad.addColorStop(this.getStartColorPosition() / 100, colors.start);
-          lingrad.addColorStop(this.getEndColorPosition() / 100, colors.end);
+          // don't allow negative start values
+          if (unit === "%") {
+            lingrad.addColorStop(Math.max(0, this.getStartColorPosition()) / range, colors.start);
+            lingrad.addColorStop(this.getEndColorPosition() / range, colors.end);
+          } else {
+            var comp = isVertical ? height : width;
+            lingrad.addColorStop(Math.max(0, this.getStartColorPosition()) / comp, colors.start);
+            lingrad.addColorStop(this.getEndColorPosition() / comp, colors.end);
+          }
 
           ctx.fillStyle = lingrad;
           ctx.fillRect(0, 0, width, height);
 
           var value = "url(" + this.__canvas.toDataURL() + ")";
           styles["background-image"] = value;
-          styles["background-size"] = "100% 100%";
+          if (unit === "%") {
+            if (isVertical) {
+              styles["background-size"] = "100% " + range + "%";
+            } else {
+              styles["background-size"] = range + "% 100%";
+            }
+          } else {
+            styles["background-size"] = isVertical ? height + "px 100%" : "100% " + width + "px";
+          }
+
 
       // old IE filter fallback
       } else if (qx.core.Environment.get("css.gradient.filter") &&
@@ -224,7 +257,8 @@ qx.Mixin.define("qx.ui.decoration.MLinearBackgroundGradient",
           styles["filter"] = value;
         }
 
-        // Elements with transparent backgrounds will not receive receive mouse
+        // Elements with transparent backgrounds will not receive receive pointer
+
         // events if a Gradient filter is set.
         if (!styles["background-color"] ||
             styles["background-color"] == "transparent")
@@ -277,51 +311,6 @@ qx.Mixin.define("qx.ui.decoration.MLinearBackgroundGradient",
         var endColor = this.getEndColor();
       }
       return {start: startColor, end: endColor};
-    },
-
-
-    /**
-     * Helper for IE which applies the filter used for the gradient to a separate
-     * DIV element which will be put into the decorator. This is necessary in case
-     * the decorator has rounded corners.
-     * @return {String} The HTML for the inner gradient DIV.
-     */
-    _getContent : function() {
-      // IE filter syntax
-      // http://msdn.microsoft.com/en-us/library/ms532997(v=vs.85).aspx
-      // It needs to be wrapped in a separate div bug #6318
-      if (qx.core.Environment.get("css.gradient.filter") &&
-        !qx.core.Environment.get("css.gradient.linear")) {
-
-        var colors = this.__getColors();
-        var type = this.getOrientation() == "horizontal" ? 1 : 0;
-
-        // convert all hex3 to hex6
-        var startColor = qx.util.ColorUtil.hex3StringToHex6String(colors.start);
-        var endColor = qx.util.ColorUtil.hex3StringToHex6String(colors.end);
-
-        // get rid of the starting '#'
-        startColor = startColor.substring(1, startColor.length);
-        endColor = endColor.substring(1, endColor.length);
-
-        // filter gradients block the box shadow implementation ->
-        // we need to set them explicitly [BUG #6761]
-        var shadow = "";
-        if (this.classname.indexOf("MBoxShadow") != -1) {
-          var styles = {};
-          this._styleBoxShadow(styles);
-          shadow = "<div style='width: 100%; height: 100%; position: absolute;" +
-            qx.bom.element.Style.compile(styles) +
-            "'></div>";
-        }
-
-        return "<div style=\"position: absolute; width: 100%; height: 100%; " +
-          "filter:progid:DXImageTransform.Microsoft.Gradient" +
-          "(GradientType=" + type + ", " +
-          "StartColorStr='#FF" + startColor + "', " +
-          "EndColorStr='#FF" + endColor + "';)\">" + shadow + "</div>";
-      }
-      return "";
     },
 
 

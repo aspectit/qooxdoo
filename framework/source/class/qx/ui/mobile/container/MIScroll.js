@@ -82,7 +82,41 @@ qx.Mixin.define("qx.ui.mobile.container.MIScroll",
     },
 
 
-   /**
+
+    /**
+    * Returns the current scroll position
+    * @return {Array} an array with the <code>[scrollLeft,scrollTop]</code>.
+    */
+    _getPosition : function() {
+      return [this._currentX, this._currentY];
+    },
+
+
+    /**
+    * Returns the scrolling height of the inner container.
+    * @return {Number} the scrolling height.
+    */
+    _getScrollHeight : function() {
+      if(!this.getContainerElement()) {
+        return 0;
+      }
+      return this._getScrollContentElement().scrollHeight - this.getContainerElement().offsetHeight;
+    },
+
+
+    /**
+    * Returns the scrolling width of the inner container.
+    * @return {Number} the scrolling width.
+    */
+    _getScrollWidth : function() {
+      if(!this.getContainerElement()) {
+        return 0;
+      }
+      return this._getScrollContentElement().scrollWidth - this.getContainerElement().offsetWidth;
+    },
+
+
+    /**
     * Scrolls the wrapper contents to the x/y coordinates in a given period.
     *
     * @param x {Integer} X coordinate to scroll to.
@@ -92,27 +126,26 @@ qx.Mixin.define("qx.ui.mobile.container.MIScroll",
     */
     _scrollTo : function(x, y, time)
     {
-      if (this.__scroll) {
-        this.__scroll.scrollTo(x, y, time);
-      }
-    },
+      if (this._isScrollable()) {
+        // Normalize scrollable values
+        var lowerLimitY = qx.bom.element.Dimension.getHeight(this._getScrollContentElement()) - this.getContainerElement().offsetHeight;
+        if (y > lowerLimitY) {
+          y = lowerLimitY;
+        }
 
+        var lowerLimitX = qx.bom.element.Dimension.getWidth(this._getScrollContentElement()) - this.getContainerElement().offsetWidth;
+        if (x > lowerLimitX) {
+          x = lowerLimitX;
+        }
 
-    /**
-    * Scrolls the wrapper contents to the widgets coordinates in a given
-    * period.
-    *
-    * @param elementId {String} the elementId, the scroll container should scroll to.
-    * @param time {Integer?0} Time slice in which scrolling should be done (in seconds).
-    *
-    */
-    _scrollToElement : function(elementId, time)
-    {
-      if(typeof time === "undefined") {
-        time = 0;
-      }
-      if (this.__scroll) {
-        this.__scroll.scrollToElement("#"+elementId, time);
+        if(this.__scroll) {
+          this.__scroll.scrollTo(-x, -y, time);
+        } else {
+          // Case when iScroll is not loaded yet, but user tries
+          // to set a different scroll position. Position is applied on "__onScrollLoaded".
+          this._setCurrentY(x);
+          this._setCurrentY(y);
+        }
       }
     },
 
@@ -142,7 +175,9 @@ qx.Mixin.define("qx.ui.mobile.container.MIScroll",
         loader.open("GET", path);
         loader.send();
       } else {
-        this._setScroll(this.__createScrollInstance());
+        this.addListenerOnce("appear", function() {
+          this._setScroll(this.__createScrollInstance());
+        }, this);
       }
     },
 
@@ -181,10 +216,15 @@ qx.Mixin.define("qx.ui.mobile.container.MIScroll",
         hScrollbar : false,
         scrollbarClass: "scrollbar",
         useTransform: true,
+        useTransition : true,
         onScrollEnd : function() {
           // Alert interested parties that we scrolled to end of page.
           if (qx.core.Environment.get("qx.mobile.nativescroll") == false)
           {
+
+            container._setCurrentX(-this.x);
+            container._setCurrentY(-this.y);
+            container.fireEvent("scrollEnd");
             if(this.y == this.maxScrollY) {
               container.fireEvent("pageEnd");
             }
@@ -194,6 +234,9 @@ qx.Mixin.define("qx.ui.mobile.container.MIScroll",
           // Alert interested parties that we scrolled to end of page.
           if (qx.core.Environment.get("qx.mobile.nativescroll") == false)
           {
+
+            container._setCurrentX(-this.x);
+            container._setCurrentY(-this.y);
             if(this.y == this.maxScrollY) {
               container.fireEvent("pageEnd");
             }
@@ -223,15 +266,8 @@ qx.Mixin.define("qx.ui.mobile.container.MIScroll",
 
             e.preventDefault();
           }
-
-          // we also want to alert interested parties that we are starting scrolling
-          if (qx.core.Environment.get("qx.mobile.nativescroll") == false)
-          {
-            var iScrollStartEvent = new qx.event.message.Message('iscrollstart');
-            qx.event.message.Bus.getInstance().dispatch(iScrollStartEvent);
-          }
         }
-      }
+      };
     },
 
 
@@ -242,6 +278,7 @@ qx.Mixin.define("qx.ui.mobile.container.MIScroll",
     {
       qx.event.Registration.addListener(window, "orientationchange", this._refresh, this);
       qx.event.Registration.addListener(window, "resize", this._refresh, this);
+      this.addListener("touchmove", qx.bom.Event.stopPropagation);
       this.addListener("domupdated", this._refresh, this);
     },
 
@@ -253,6 +290,7 @@ qx.Mixin.define("qx.ui.mobile.container.MIScroll",
     {
       qx.event.Registration.removeListener(window, "orientationchange", this._refresh, this);
       qx.event.Registration.removeListener(window, "resize", this._refresh, this);
+      this.removeListener("touchmove", qx.bom.Event.stopPropagation);
       this.removeListener("domupdated", this._refresh, this);
     },
 
@@ -266,7 +304,10 @@ qx.Mixin.define("qx.ui.mobile.container.MIScroll",
     {
       if (request.status < 400)
       {
-        this._setScroll(this.__createScrollInstance());
+        if(!this.isDisposed()) {
+          this._setScroll(this.__createScrollInstance());
+          this._scrollTo(this._currentX, this._currentY);
+        }
       } else {
         if (qx.core.Environment.get("qx.debug"))
         {
@@ -337,6 +378,6 @@ qx.Mixin.define("qx.ui.mobile.container.MIScroll",
     if (this.__scroll) {
       this.__scroll.destroy();
     }
-    this.__scroll;
+    this.__scroll = null;
   }
 });

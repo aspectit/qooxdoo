@@ -38,6 +38,12 @@ qx.Class.define("qx.bom.webfonts.Manager", {
     this.__validators = {};
     this.__queue = [];
     this.__preferredFormats = this.getPreferredFormats();
+    var browser = qx.core.Environment.get("browser.name");
+    var version = parseInt(qx.core.Environment.get("browser.version"), 10);
+    if ((browser == "chrome" && version < 35) ||
+      (browser == "opera") && version < 22) {
+      this.__needsAbsoluteUri = true;
+    }
   },
 
 
@@ -78,6 +84,7 @@ qx.Class.define("qx.bom.webfonts.Manager", {
     __preferredFormats : null,
     __queue : null,
     __queueInterval : null,
+    __needsAbsoluteUri : false,
 
 
     /*
@@ -109,13 +116,17 @@ qx.Class.define("qx.bom.webfonts.Manager", {
         if (split.length > 1) {
           src = src + "#" + split[1];
         }
+        if (this.__needsAbsoluteUri) {
+          // Workaround for bug #8157
+          src = qx.util.Uri.getAbsolute(src);
+        }
         sources.push(src);
       }
 
       // old IEs need a break in between adding @font-face rules
       if (qx.core.Environment.get("engine.name") == "mshtml" && (
-          parseInt(qx.core.Environment.get("engine.version")) < 9) ||
-          qx.core.Environment.get("browser.documentmode") < 9) {
+          parseInt(qx.core.Environment.get("engine.version")) < 9 ||
+          qx.core.Environment.get("browser.documentmode") < 9)) {
         if (!this.__queueInterval) {
           this.__queueInterval = new qx.event.Timer(100);
           this.__queueInterval.addListener("interval", this.__flushQueue, this);
@@ -466,6 +477,10 @@ qx.Class.define("qx.bom.webfonts.Manager", {
 
   destruct : function()
   {
+    if (this.__queueInterval) {
+      this.__queueInterval.stop();
+      this.__queueInterval.dispose();
+    }
     delete this.__createdStyles;
     this.removeStyleSheet();
     for (var prop in this.__validators) {

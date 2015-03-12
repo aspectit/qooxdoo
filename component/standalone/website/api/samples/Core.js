@@ -78,6 +78,33 @@ addSample("q.define", {javascript :function() {
   myDog.bark();
 }, executable: true});
 
+addSample("q.define", {
+  javascript:function() {
+var Dog = q.define({
+  statics : {
+    complexData : null,
+
+    bark : function() {
+      console.log("wuff");
+    }
+  },
+  defer : function(statics) {
+    // inside the 'defer' block you have access to the statics
+    // e.g. to use the plugin API and add method to q
+    q.$attachStatic({
+      'bark' : statics.bark
+    });
+
+    // or to initialize complex data types
+    statics.complexData = [];
+  }
+});
+
+// works
+q.bark();
+console.log(Dog.complexData.length);
+}, executable: true });
+
 addSample(".concat", {
   html: ['<ul>',
          '  <li class="info">item 1</li>',
@@ -182,10 +209,83 @@ addSample(".splice", {
   }
 });
 
-addSample("q.$attach",function(){
-  q.$attach({"test" : 123}); // q("#id").test == 123
+addSample("q.$attach", {
+  html: ['<div id="root-elem">',
+         '  <div>foo <span>should be red</span>, foo <span>should be red</span></div>',
+         '  <div>bar</div>',
+         '</div>'],
+  css: ['.important {',
+        '  color: red;',
+        '}'],
+  javascript: function() {
+    // simple sample to get an idea
+    q.$attach({"test" : 123}); // q("#id").test == 123
+
+    // more sophisticated sample
+    var addClassToEveryChildNamed = function(classToAdd, childElementName) {
+      // access to DOM collection (e.g. things captured by q("#id"))
+      this._forEachElement(function(item) {
+        q(item).getChildren().forEach(function(innerItem) {
+          if (q.getNodeName(innerItem) === childElementName.toLowerCase()) {
+            q(innerItem).addClass(classToAdd);
+          }
+        });
+      });
+
+      // return this, to allow further method chaining
+      return this;
+    };
+
+    // make function available with another name (same would be also fine)
+    q.$attach({"addClassToEveryChildByName": addClassToEveryChildNamed});
+
+    // try out new method
+    q("#root-elem div").addClassToEveryChildByName("important", "span");
+  },
+  executable: true
 });
 
 addSample("q.$attachStatic",function(){
+  // simple sample to get an idea
   q.$attachStatic({"test" : 123}); // q.test == 123
+
+  // functionality which does work on DOM collections    => use attach()
+  // functionality which doesn't work on DOM collections => use attachStatic()
+  var includeStylesheet = function(uri, doc) {
+    // ...
+  };
+
+  q.$attachStatic({"includeStylesheet": includeStylesheet});
+  q.includeStylesheet("http://example.org/", doc);
+});
+
+
+addSample(".debug", function() {
+// This code only works in the 'qx.debug' mode. In production mode this method
+// simply does nothing and returns the collection.
+
+// Suppose you have the following chain of methods
+q("#mySelector").getParents().getSiblings().setStyle('color', '#f00');
+
+// Comparable to the 'logThis' method.
+// Can be inserted at any point in the chain and blocks the further processing. If you like to use a
+// non-blocking method take a look at the 'logThis' method.
+// -> calls the native debugger of your favorite browser for easy introspection
+q("#mySelector").getParents().debug().getSiblings().setStyle('color', '#f00');
+q("#mySelector").getParents().getSiblings().debug().setStyle('color', '#f00');
+});
+
+
+addSample(".logThis", function() {
+// This code only works in the 'qx.debug' mode. In production mode this method
+// simply does nothing and returns the collection.
+
+// Suppose you have the following chain of methods
+q("#mySelector").getParents().getSiblings().setStyle('color', '#f00');
+
+// Comparable to the 'debug' method.
+// Instead of a hard stop using the debugger (like the 'debug' method) this method is non-blocking
+// -> logs certains infos (length, DOM elements and the collection instance) to your console
+q("#mySelector").getParents().logThis().getSiblings().setStyle('color', '#f00');
+q("#mySelector").getParents().getSiblings().logThis().setStyle('color', '#f00');
 });

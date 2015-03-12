@@ -1155,7 +1155,7 @@ qx.Class.define("qx.util.format.DateFormat",
       {
         value = parseInt(value, 10);
 
-        if(value > 0)
+        if(value >= 0)
         {
           if (value < DateFormat.ASSUME_YEAR_2000_THRESHOLD) {
             value += 2000;
@@ -1171,7 +1171,7 @@ qx.Class.define("qx.util.format.DateFormat",
       {
         value = parseInt(value, 10);
 
-        if(value > 0)
+        if(value >= 0)
         {
           if (value < DateFormat.ASSUME_YEAR_2000_THRESHOLD) {
             value += 2000;
@@ -1634,14 +1634,14 @@ qx.Class.define("qx.util.format.DateFormat",
       rules.push(
       {
         pattern : "w",
-        regex   : "(\\d?)",
+        regex   : "(\\d\\d?)",
         field   : "weekOfYear"
       });
 
       rules.push(
       {
         pattern : "ww",
-        regex   : "(\\d\\d?)",
+        regex   : "(\\d\\d)",
         field   : "weekOfYear"
       });
 

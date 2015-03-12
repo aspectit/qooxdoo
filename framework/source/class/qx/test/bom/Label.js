@@ -70,23 +70,21 @@ qx.Class.define("qx.test.bom.Label",
         this.assertEquals(53, size.width);
         this.assertEquals(14, size.height);
 
-        return;
-
         size = qx.bom.Label.getTextSize(text, this.__fontSizeStyle);
-        this.assertEquals(91, size.width);
-        this.assertEquals(23, size.height);
+        this.assertEquals(94, size.width);
+        this.assertEquals(24, size.height);
 
         size = qx.bom.Label.getTextSize(text, this.__familyStyle);
-        this.assertEquals(91, size.width);
-        this.assertEquals(18, size.height);
+        this.assertEquals(64, size.width);
+        this.assertEquals(13, size.height);
 
         size = qx.bom.Label.getTextSize(text, this.__paddingStyle);
-        this.assertEquals(65, size.width);
-        this.assertEquals(20, size.height);
+        this.assertEquals(53, size.width);
+        this.assertEquals(14, size.height);
 
         size = qx.bom.Label.getTextSize(text, this.__marginStyle);
-        this.assertEquals(65, size.width);
-        this.assertEquals(20, size.height);
+        this.assertEquals(53, size.width);
+        this.assertEquals(14, size.height);
 
         size = qx.bom.Label.getTextSize(text, this.__allTogetherStyle);
         this.assertEquals(125, size.width);
@@ -94,7 +92,7 @@ qx.Class.define("qx.test.bom.Label",
       }
       else
       {
-        this.assertTrue(true);
+        this.skip();
       }
     },
 
@@ -255,6 +253,35 @@ qx.Class.define("qx.test.bom.Label",
       {
         this.assertTrue(true);
       }
+    },
+
+
+    testSanitizer : function()
+    {
+      var element = document.createElement("div");
+      element.useHtml = true;
+
+      // function to sanitize string
+      qx.bom.Label.setSanitizer(function(html) {
+        if (html.indexOf("<script") > -1) {
+          return '';
+        }
+
+        return html;
+      });
+
+      // test clean string
+      var value = "foo<b></b>";
+      qx.bom.Label.setValue(element, value);
+      this.assertEquals(qx.bom.Label.getValue(element), value);
+
+      // test dirty string
+      value = "foo<script></script>";
+      qx.bom.Label.setValue(element, value);
+      this.assertEquals(qx.bom.Label.getValue(element), '');
+
+      // reset function to sanitize string
+      qx.bom.Label.setSanitizer(null);
     }
   }
 });

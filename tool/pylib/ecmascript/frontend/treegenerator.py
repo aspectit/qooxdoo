@@ -93,7 +93,7 @@ STATEMENT_NODE_TYPES = "loop var continue break return switch throw try".split()
 StmntTerminatorTokens = ("eol", ";", "}", "eof")
 
 SYMBOLS = {
-    "infix" : "* / % << >> >>> < <= > >= != == !== === & ^ | && ||".split(),
+    "infix" : ", * / % << >> >>> < <= > >= != == !== === & ^ | && ||".split(),
     "infix_v" : "in instanceof".split(),
     "infix_r" : "= <<= -= += *= /= %= |= ^= &= >>= >>>=".split(),
     "prefix"  : "~ !".split(),  # '/' left out, as never seen by the parser as prefix op (but regexp constant)
@@ -565,7 +565,7 @@ def infix_v(id_, bp):
         r += self.children[1].toJS(opts)
         return r
     symbol(id_).toJS = toJS
-        
+
 
 ##
 # right-associative infix (all assignment ops)
@@ -755,7 +755,7 @@ infix_r("<<=",10); infix_r("-=", 10); infix_r("+=", 10); infix_r("*=", 10)
 infix_r("/=", 10); infix_r("%=", 10); infix_r("|=", 10); infix_r("^=", 10)
 infix_r("&=", 10); infix_r(">>=",10); infix_r(">>>=",10)
 
-#symbol(",", 0) 
+#symbol(",", 0)
 infix(",", 5)  # good for expression lists, but problematic for parsing arrays, maps
 
 symbol(":", 5) #infix(":", 15)    # ?: and {1:2,...} and label:
@@ -809,7 +809,6 @@ def toListG(self):
 #def pfix(self):
 #    pass
 
-
 # ternary op ?:
 @method(symbol("?"))
 def ifix(self, left):
@@ -860,7 +859,7 @@ def ifix(self, left):
         raise SyntaxException("Expected an attribute name (pos %r)." % ((token.get("line"), token.get("column")),))
     accessor = symbol("dotaccessor")(token.get("line"), token.get("column"))
     accessor.childappend(left)
-    accessor.childappend(expression(symbol(".").bind_left)) 
+    accessor.childappend(expression(symbol(".").bind_left))
         # i'm providing the rbp to expression() here explicitly, so "foo.bar(baz)" gets parsed
         # as (call (dotaccessor ...) (param baz)), and not (dotaccessor foo
         # (call bar (param baz))).
@@ -1019,7 +1018,7 @@ def pfix(self):
         elif token.id == ",":  # elision
             arr.childappend(symbol("(empty)")())
         else:
-            #arr.childappend(expression())  # future: 
+            #arr.childappend(expression())  # future:
             arr.childappend(expression(symbol(",").bind_left +1))
         if token.id != ",":
             break
@@ -1099,7 +1098,7 @@ def pfix(self):
             map_item.comments = keyname.comments
             advance(":")
             # value
-            #keyval = expression()  # future: 
+            #keyval = expression()  # future:
             keyval = expression(symbol(",").bind_left +1)
             val = symbol("value")(token.get("line"), token.get("column"))
             val.childappend(keyval)
@@ -1153,7 +1152,7 @@ def toJS(self, opts):
     key_quote = self.get("quote", '')
     if key_quote:
         quote = '"' if key_quote == 'doublequotes' else "'"
-    elif ( key in lang.RESERVED 
+    elif ( key in lang.RESERVED
            or not identifier_regex.match(key)
            # TODO: or not lang.NUMBER_REGEXP.match(key)
          ):
@@ -1363,12 +1362,12 @@ symbol("for"); symbol("in")
 def std(self):
     self.type = "loop" # compat with Node.type
     self.set("loopType", "FOR")
-    
+
     # condition
     advance("(")
     # try to consume the first part of a (pot. longer) condition
     if token.id != ";":
-        chunk = expression()
+        chunk = expression(symbol(",").bind_left+1)
     else:
         chunk = None
 
@@ -1407,14 +1406,14 @@ def std(self):
         #    for assgn in lst:
         #        exprList.childappend(assgn)
         advance(";")
-        # condition part 
+        # condition part
         second = symbol("second")(token.get("line"), token.get("column"))
         condition.childappend(second)
         if token.id != ";":
             exprList = symbol("expressionList")(token.get("line"), token.get("column"))
             second.childappend(exprList)
             while token.id != ';':
-                expr = expression(0)
+                expr = expression(symbol(",").bind_left+1)
                 exprList.childappend(expr)
                 if token.id == ',':
                     advance(',')
@@ -1426,7 +1425,7 @@ def std(self):
             exprList = symbol("expressionList")(token.get("line"), token.get("column"))
             third.childappend(exprList)
             while token.id != ')':
-                expr = expression(0)
+                expr = expression(symbol(",").bind_left+1)
                 exprList.childappend(expr)
                 if token.id == ',':
                     advance(',')
@@ -1539,9 +1538,8 @@ def std(self):
     body.childappend(statementOrBlock())
     self.childappend(body)
     advance("while")
-    advance("(")
-    self.childappend(expression(0))
-    advance(")")
+    group = advance("(")
+    self.childappend(group.pfix())
     return self
 
 @method(symbol("do"))
@@ -1551,9 +1549,7 @@ def toJS(self, opts):
     r.append(self.space())
     r.append(self.children[0].toJS(opts))
     r.append('while')
-    r.append('(')
     r.append(self.children[1].toJS(opts))
-    r.append(')')
     return ''.join(r)
 
 @method(symbol("do"))
@@ -1576,7 +1572,7 @@ def std(self):
     self.childappend(body)
     return self
 
-# the next one - like with other loop types - is *used*, as dispatch is by class, 
+# the next one - like with other loop types - is *used*, as dispatch is by class,
 # not obj.type (cf. "loop".toJS(opts))
 @method(symbol("with"))
 def toJS(self, opts):
@@ -1651,7 +1647,7 @@ def toListG(self):
 symbol("loop")
 
 ##
-# TODO: Is this code used?!
+# TODO: Is this code used?! - Yes!
 @method(symbol("loop"))
 def toJS(self, opts):
     r = u''
@@ -1970,7 +1966,7 @@ def statement():
     # normal SourceElement
     else:
         n = token
-        s = None 
+        s = None
         # function declaration, doesn't need statementEnd
         if token.id == 'function' and tokenStream.peek(1).type == 'identifier':
             advance()
@@ -2029,24 +2025,26 @@ symbol("label").toListG = toListG_self_first
 
 
 def statementEnd():
-    if token.id in (";",):
+    if token.id in (";", "eol", "eof"):
         advance()
+    elif token.id in ("}",):  # parse e.g. if condition and block on same line: 'if() { expr }'
+        pass
     #elif token.id == "eof":
     #    return token  # ok as stmt end, but don't just skip it (bc. comments)
     elif tokenStream.eolBefore:
         pass # that's ok as statement end
-    #if token.id in ("eof", 
+    #if token.id in ("eof",
     #    "eol", # these are not yielded by the TokenStream currently
-    #    ";", 
+    #    ";",
     #    "}"  # it's the last statement in a block
     #    ):
     #    advance()
-    #else:
-    #    ltok = tokenStream.lookbehind()
-    #    if ltok.id == '}':  # it's a statement ending with a block ('if' etc.)
-    #        pass
-    #    else:
-    #        raise SyntaxException("Unterminated statement (pos %r)" % ((token.get("line"), token.get("column")),))
+    else:
+        ltok = tokenStream.lookbehind()
+        if ltok.id == '}':  # it's a statement ending with a block ('if' etc.)
+            pass
+        else:
+            raise SyntaxException("Unterminated statement (pos %r)" % ((token.get("line"), token.get("column")),))
 
 
 @method(symbol("eof"))

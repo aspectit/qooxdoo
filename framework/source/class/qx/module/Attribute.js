@@ -20,6 +20,7 @@
 
 /**
  * Attribute/Property handling for DOM elements.
+ * @group (Core)
  */
 qx.Bootstrap.define("qx.module.Attribute", {
   statics :
@@ -194,6 +195,21 @@ qx.Bootstrap.define("qx.module.Attribute", {
 
 
     /**
+     * Removes multiple properties for each item in the collection.
+     *
+     * @attach {qxWeb}
+     * @param properties {String[]} An array of property names
+     * @return {qxWeb} The collection for chaining
+     */
+    removeProperties : function(properties) {
+      for (var i=0; i<properties.length; i++) {
+        this.removeProperty(properties[i]);
+      }
+      return this;
+    },
+
+
+    /**
      * Returns the values of multiple properties for the first item in the collection
      *
      * @attach {qxWeb}
@@ -210,13 +226,28 @@ qx.Bootstrap.define("qx.module.Attribute", {
 
 
     /**
+     * Deletes a property from each item in the collection
+     *
+     * @attach {qxWeb}
+     * @param name {String} Property name
+     * @return {qxWeb} The collection for chaining
+     */
+    removeProperty : function(name) {
+      if (this[0]) {
+        this[0][name] = undefined;
+      }
+      return this;
+    },
+
+
+    /**
      * Returns the currently configured value for the first item in the collection.
      * Works with simple input fields as well as with select boxes or option
      * elements. Returns an array for select boxes with multi selection. In all
      * other cases, a string is returned.
      *
      * @attach {qxWeb}
-     * @return {String|Array}
+     * @return {String|String[]} String value or Array of string values (for multiselect)
      */
     getValue : function() {
       if (this[0] && this[0].nodeType === 1) {
@@ -265,8 +296,10 @@ qx.Bootstrap.define("qx.module.Attribute", {
 
       "getProperty" : statics.getProperty,
       "setProperty" : statics.setProperty,
+      "removeProperty" : statics.removeProperty,
       "getProperties" : statics.getProperties,
       "setProperties" : statics.setProperties,
+      "removeProperties" : statics.removeProperties,
 
       "getValue" : statics.getValue,
       "setValue" : statics.setValue

@@ -28,6 +28,13 @@ qx.Class.define("qx.theme.manager.Decoration",
   extend : qx.core.Object,
 
 
+  statics :
+  {
+    /** The prefix for all created CSS classes*/
+    CSS_CLASSNAME_PREFIX : "qx-"
+  },
+
+
 
   construct : function() {
     this.base(arguments);
@@ -73,14 +80,15 @@ qx.Class.define("qx.theme.manager.Decoration",
 
     /**
      * Returns the name which will be / is used as css class name.
-     * @param value {Decorator} The decorator string or instance.
+     * @param value {String|qx.ui.decoration.IDecorator} The decorator string or instance.
      * @return {String} The css class name.
      */
     getCssClassName : function(value) {
+      var prefix = qx.theme.manager.Decoration.CSS_CLASSNAME_PREFIX;
       if (qx.lang.Type.isString(value)) {
-        return "qx-" + value;
+        return prefix + value;
       } else {
-        return "qx-" + value.toHashCode();
+        return prefix + value.toHashCode();
       }
     },
 
@@ -88,7 +96,7 @@ qx.Class.define("qx.theme.manager.Decoration",
     /**
      * Adds a css class to the global stylesheet for the given decorator.
      * This includes resolving the decorator if it's a string.
-     * @param value {Decorator} The decorator string or instance.
+     * @param value {String|qx.ui.decoration.IDecorator} The decorator string or instance.
      * @return {String} the css class name.
      */
     addCssClass : function(value) {
@@ -140,6 +148,21 @@ qx.Class.define("qx.theme.manager.Decoration",
       }
 
       return value;
+    },
+
+
+    /**
+     * Removes all previously by {@link #addCssClass} created CSS rule from
+     * the global stylesheet.
+     */
+    removeAllCssClasses : function()
+    {
+      // remove old rules
+      for (var i=0; i < this.__rules.length; i++) {
+        var selector = this.__rules[i];
+        qx.ui.style.Stylesheet.getInstance().removeRule(selector);
+      };
+      this.__rules = [];
     },
 
 
@@ -196,7 +219,7 @@ qx.Class.define("qx.theme.manager.Decoration",
         // styles key
         if (currentEntry.style) {
           for (var key in currentEntry.style) {
-            if (entry.style[key] == undefined) {
+            if (entry.style[key] === undefined) {
               entry.style[key] = qx.lang.Object.clone(currentEntry.style[key], true);
             }
           }
@@ -253,7 +276,7 @@ qx.Class.define("qx.theme.manager.Decoration",
     /**
      * Whether the given decorator is cached
      *
-     * @param decorator {qx.ui.decoration.IDecorator} The decorator to check
+     * @param decorator {String|qx.ui.decoration.IDecorator} The decorator to check
      * @return {Boolean} <code>true</code> if the decorator is cached
      * @internal
      */
@@ -270,11 +293,7 @@ qx.Class.define("qx.theme.manager.Decoration",
       var aliasManager = qx.util.AliasManager.getInstance();
 
       // remove old rules
-      for (var i=0; i < this.__rules.length; i++) {
-        var selector = this.__rules[i];
-        qx.ui.style.Stylesheet.getInstance().removeRule(selector);
-      };
-      this.__rules = [];
+      this.removeAllCssClasses();
 
       if (old)
       {
@@ -292,6 +311,47 @@ qx.Class.define("qx.theme.manager.Decoration",
 
       this._disposeMap("__dynamic");
       this.__dynamic = {};
+    },
+
+
+    /**
+     * Clears internal caches and removes all previously created CSS classes.
+     */
+    clear : function()
+    {
+      // remove aliases
+      var aliasManager = qx.util.AliasManager.getInstance();
+
+      var theme = this.getTheme();
+      if (!aliasManager.isDisposed() && theme && theme.alias) {
+        for (var alias in theme.aliases) {
+          aliasManager.remove(alias, theme.aliases[alias]);
+        }
+      }
+
+      // remove old rules
+      this.removeAllCssClasses();
+
+      this._disposeMap("__dynamic");
+      this.__dynamic = {};
+    },
+
+
+    /**
+     * Refreshes all decorator by clearing internal caches and re applying
+     * aliases.
+     */
+    refresh : function()
+    {
+      this.clear();
+
+      var aliasManager = qx.util.AliasManager.getInstance();
+      var theme = this.getTheme();
+      if (theme && theme.alias) {
+        for (var alias in theme.aliases) {
+          aliasManager.add(alias, theme.aliases[alias]);
+        }
+      }
     }
   },
 
@@ -304,6 +364,6 @@ qx.Class.define("qx.theme.manager.Decoration",
   */
 
   destruct : function() {
-    this._disposeMap("__dynamic");
+    this.clear();
   }
 });

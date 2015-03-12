@@ -35,6 +35,8 @@
  * <a href='http://manual.qooxdoo.org/${qxversion}/pages/website.html' target='_blank'>user manual</a>.
  *
  * @ignore(q)
+ *
+ * @group (Core)
  */
 qx.Bootstrap.define("qxWeb", {
   extend : qx.type.BaseArray,
@@ -52,13 +54,15 @@ qx.Bootstrap.define("qxWeb", {
      *   be initialized as {@link q}. All items in the array which are not
      *   either a window object, a DOM element node or a DOM document node will
      *   be ignored.
+     * @param clazz {Class} The class of the new collection.
      * @return {q} A new initialized collection.
      */
-    $init : function(arg) {
+    $init : function(arg, clazz) {
       var clean = [];
       for (var i = 0; i < arg.length; i++) {
         // check for node or window object
-        var isNode = !!(arg[i] && (arg[i].nodeType === 1 || arg[i].nodeType === 9));
+        var isNode = !!(arg[i] && (arg[i].nodeType === 1 ||
+          arg[i].nodeType === 9 || arg[i].nodeType === 11));
         if (isNode) {
           clean.push(arg[i]);
           continue;
@@ -69,7 +73,11 @@ qx.Bootstrap.define("qxWeb", {
         }
       }
 
-      var col = qx.lang.Array.cast(clean, qxWeb);
+      if (arg[0] && arg[0].getAttribute && arg[0].getAttribute("data-qx-class")) {
+        clazz = qx.Bootstrap.getByName(arg[0].getAttribute("data-qx-class")) || clazz;
+      }
+
+      var col = qx.lang.Array.cast(clean, clazz);
       for (var i=0; i < qxWeb.__init.length; i++) {
         qxWeb.__init[i].call(col);
       }
@@ -83,15 +91,17 @@ qx.Bootstrap.define("qxWeb", {
      * to {@link q}.
      *
      * @param module {Map} A map containing the methods to attach.
+     * @param override {Boolean?false} Force to override
      */
-    $attach : function(module) {
+    $attach : function(module, override) {
       for (var name in module) {
-        if (qx.core.Environment.get("qx.debug")) {
-          if (qxWeb.prototype[name] != undefined && Array.prototype[name] == undefined) {
+        if (qxWeb.prototype[name] != undefined && Array.prototype[name] == undefined && override !== true) {
+          if (qx.core.Environment.get("qx.debug")) {
             throw new Error("Method '" + name + "' already available.");
           }
+        } else {
+          qxWeb.prototype[name] = module[name];
         }
-        qxWeb.prototype[name] = module[name];
       }
     },
 
@@ -101,11 +111,12 @@ qx.Bootstrap.define("qxWeb", {
      * to {@link q}.
      *
      * @param module {Map} A map containing the methods to attach.
+     * @param override {Boolean?false} Force to override
      */
-    $attachStatic : function(module) {
+    $attachStatic : function(module, override) {
       for (var name in module) {
         if (qx.core.Environment.get("qx.debug")) {
-          if (qxWeb[name] != undefined) {
+          if (qxWeb[name] != undefined && override !== true) {
             throw new Error("Method '" + name + "' already available as static method.");
           }
         }
@@ -133,12 +144,14 @@ qx.Bootstrap.define("qxWeb", {
      *   attached to a namespace.
      * @param config {Map ? null} Class definition structure. The configuration map has the following keys:
      *     <table>
-     *       <tr><th>Name</th><th>Type</th><th>Description</th></tr>
-     *       <tr><th>extend</th><td>Class</td><td>The super class the current class inherits from.</td></tr>
-     *       <tr><th>construct</th><td>Function</td><td>The constructor of the class.</td></tr>
-     *       <tr><th>statics</th><td>Map</td><td>Map of static values / functions of the class.</td></tr>
-     *       <tr><th>members</th><td>Map</td><td>Map of instance members of the class.</td></tr>
-     *       <tr><th>defer</th><td>Function</td><td>Function that is called at the end of
+     *       <thead>
+     *         <tr><th>Name</th><th>Type</th><th>Description</th></tr>
+     *       </thead>
+     *       <tr><td>extend</td><td>Class</td><td>The super class the current class inherits from.</td></tr>
+     *       <tr><td>construct</td><td>Function</td><td>The constructor of the class.</td></tr>
+     *       <tr><td>statics</td><td>Map</td><td>Map of static values / functions of the class.</td></tr>
+     *       <tr><td>members</td><td>Map</td><td>Map of instance members of the class.</td></tr>
+     *       <tr><td>defer</td><td>Function</td><td>Function that is called at the end of
      *          processing the class declaration.</td></tr>
      *     </table>
      * @return {Function} The defined class.
@@ -177,15 +190,22 @@ qx.Bootstrap.define("qxWeb", {
       return this;
     }
 
-    if (qx.Bootstrap.isString(selector)) {
+    if (!selector) {
+      selector = [];
+    }
+    else if (qx.Bootstrap.isString(selector)) {
       if (context instanceof qxWeb) {
         context = context[0];
       }
       selector = qx.bom.Selector.query(selector, context);
-    } else if (!(qx.Bootstrap.isArray(selector))) {
+    }
+    else if ((selector.nodeType === 1 || selector.nodeType === 9 ||
+      selector.nodeType === 11) ||
+      (selector.history && selector.location && selector.document))
+    {
       selector = [selector];
     }
-    return qxWeb.$init(selector);
+    return qxWeb.$init(selector, qxWeb);
   },
 
 
@@ -200,9 +220,20 @@ qx.Bootstrap.define("qxWeb", {
      */
     filter : function(selector) {
       if (qx.lang.Type.isFunction(selector)) {
-        return qxWeb.$init(Array.prototype.filter.call(this, selector));
+        return qxWeb.$init(Array.prototype.filter.call(this, selector), this.constructor);
       }
-      return qxWeb.$init(qx.bom.Selector.matches(selector, this));
+      return qxWeb.$init(qx.bom.Selector.matches(selector, this), this.constructor);
+    },
+
+
+    /**
+     * Recreates a collection which is free of all duplicate elements from the original.
+     *
+     * @return {q} Returns a copy with no duplicates
+     */
+    unique : function() {
+      var unique = qx.lang.Array.unique(this);
+      return qxWeb.$init(unique, this.constructor);
     },
 
 
@@ -217,9 +248,9 @@ qx.Bootstrap.define("qxWeb", {
       // Old IEs return an empty array if the second argument is undefined
       // check 'end' explicit for "undefined" [BUG #7322]
       if (end !== undefined) {
-        return qxWeb.$init(Array.prototype.slice.call(this, begin, end));
+        return qxWeb.$init(Array.prototype.slice.call(this, begin, end), this.constructor);
       }
-      return qxWeb.$init(Array.prototype.slice.call(this, begin));
+      return qxWeb.$init(Array.prototype.slice.call(this, begin), this.constructor);
     },
 
 
@@ -234,7 +265,7 @@ qx.Bootstrap.define("qxWeb", {
      * @return {q} A new collection containing the removed items.
      */
     splice : function(index , howMany, varargs) {
-      return qxWeb.$init(Array.prototype.splice.apply(this, arguments));
+      return qxWeb.$init(Array.prototype.splice.apply(this, arguments), this.constructor);
     },
 
 
@@ -247,7 +278,7 @@ qx.Bootstrap.define("qxWeb", {
      * @return {q} New collection containing the elements that passed the filter
      */
     map : function(callback, thisarg) {
-      return qxWeb.$init(Array.prototype.map.apply(this, arguments));
+      return qxWeb.$init(Array.prototype.map.apply(this, arguments), qxWeb);
     },
 
 
@@ -266,25 +297,121 @@ qx.Bootstrap.define("qxWeb", {
           clone.push(arguments[i]);
         }
       }
-      return qxWeb.$init(clone);
+      return qxWeb.$init(clone, this.constructor);
     },
 
 
     /**
-     * Calls a function for each DOM element node in the collection. This is used
-     * for DOM manipulations which can't be applied to document nodes or window
-     * objects.
+     * Returns the index of the given element within the current
+     * collection or -1 if the element is not in the collection
+     * @param elem {Element|Element[]|qxWeb} Element or collection of elements
+     * @return {Number} The element's index
+     */
+    indexOf : function(elem) {
+      if (!elem) {
+        return -1;
+      }
+
+      if (qx.Bootstrap.isArray(elem)) {
+        elem = elem[0];
+      }
+
+      for (var i=0, l=this.length; i<l; i++) {
+        if (this[i] === elem) {
+          return i;
+        }
+      }
+
+      return -1;
+    },
+
+
+    /**
+     * Calls the browser's native debugger to easily allow debugging within
+     * chained calls.
+     *
+     * Unlike the <a href="#.logThis">logThis</a> method this implementation blocks the further processing.
+     *
+     * @return {q} The collection for chaining
+     * @ignore(debugger)
+     */
+    debug : function() {
+      if (qx.core.Environment.get("qx.debug")) {
+        debugger;
+      }
+      return this;
+    },
+
+
+    /**
+     * Logs information about the current collection, its DOM elements and the
+     * length. Very useful during development to easily check the current state of
+     * your collection and avoid common pitfalls like an empty collection.
+     *
+     * Unlike the <a href="#.debug">debug</a> method this implementation works non-blocking.
+     *
+     * @return {q} The collection for chaining
+     *
+     */
+    logThis : function() {
+      if (qx.core.Environment.get("qx.debug")) {
+
+        // loop over the collection elements to make sure we get the current content
+        // of the collection and not the reference values later (they might change depending on
+        // manipulation of the collection)
+        var elements = [];
+        this.forEach(function(item) {
+          elements.push(item);
+        });
+
+        var length = this.length;
+
+        console.group("*** Collection infos ***");
+        console.info("Length:", length);
+        console.info("Elements:", elements);
+        console.info("Instance:", this);
+        console.groupEnd();
+      }
+
+      return this;
+    },
+
+
+    /**
+     * Calls a function for each DOM element  or document fragment in the
+     * collection. This is used for DOM manipulations which can't be
+     * applied to document nodes or window objects.
      *
      * @param func {Function} Callback function. Will be called with three arguments:
      * The element, the element's index within the collection and the collection itself.
      * @param ctx {Object} The context for the callback function (default: The collection)
+     * @return {q} The collection for chaining
      */
     _forEachElement : function(func, ctx) {
       for (var i=0, l=this.length; i<l; i++) {
-        if (this[i] && this[i].nodeType === 1) {
+        if (this[i] && (this[i].nodeType === 1 || this[i].nodeType === 11)) {
           func.apply(ctx || this, [this[i], i, this]);
         }
       }
+      return this;
+    },
+
+
+    /**
+     * Calls a function for each DOM element node in the collection. Each node is wrapped
+     * in a collection before the function is called.
+     *
+     * @param func {Function} Callback function. Will be called with three arguments:
+     * The element wrappend in a collection, the element's index within the collection and
+     * the collection itself.
+     * @param ctx {Object} The context for the callback function (default: The collection)
+     * @return {q} The collection for chaining
+     */
+    _forEachElementWrapped : function(func, ctx) {
+      this._forEachElement(function(item, idx, arr) {
+        func.apply(this, [qxWeb(item), idx, arr]);
+      }, ctx);
+      return this;
     }
   },
 

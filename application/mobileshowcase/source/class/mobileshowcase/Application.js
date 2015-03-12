@@ -13,7 +13,8 @@
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
-     * Tino Butz (tbtz)
+     * Tino Butz (tbtz)
+     * Christopher Zuendorf (czuendorf)
 
 ************************************************************************ */
 
@@ -26,25 +27,13 @@
 
 /**
  * This is the main application class for the mobile showcase app.
- *
+ * @require(qx.log.appender.Console)
  * @asset(mobileshowcase/*)
  */
 qx.Class.define("mobileshowcase.Application",
 {
   extend : qx.application.Mobile,
 
-  /** Holds the application routing */
-  properties : {
-    routing : {
-      init: null
-    }
-  },
-
-  /*
-  *****************************************************************************
-     MEMBERS
-  *****************************************************************************
-  */
 
   members :
   {
@@ -62,8 +51,6 @@ qx.Class.define("mobileshowcase.Application",
       {
         // support native logging capabilities, e.g. Firebug for Firefox
         qx.log.appender.Native;
-        // support additional cross-browser console. Press F7 to toggle visibility
-        qx.log.appender.Console;
       }
 
       /*
@@ -83,14 +70,12 @@ qx.Class.define("mobileshowcase.Application",
       var form = new mobileshowcase.page.Form();
       var animation = new mobileshowcase.page.Animation();
       var animationLanding = new mobileshowcase.page.AnimationLanding();
-      var atoms = new mobileshowcase.page.Atom();
       var basic = new mobileshowcase.page.Basic();
       var dialogs = new mobileshowcase.page.Dialog();
       var dataBinding = new mobileshowcase.page.DataBinding();
       var maps = new mobileshowcase.page.Maps();
       var canvas = new mobileshowcase.page.Canvas();
-      var themeSwitcher = new mobileshowcase.page.ThemeSwitcher();
-
+      var theming = new mobileshowcase.page.Theming();
 
       // Add the pages to the page manager
       var manager = new qx.ui.mobile.page.Manager();
@@ -106,117 +91,61 @@ qx.Class.define("mobileshowcase.Application",
         form,
         animation,
         animationLanding,
-        atoms,
         dialogs,
         dataBinding,
         maps,
         canvas,
-        themeSwitcher
+        theming
       ]);
 
       // Initialize the navigation
-      var nm = new qx.application.Routing();
-      this.setRouting(nm);
+      var routing = this.getRouting();
 
-      var isTablet = (qx.core.Environment.get("device.type") == "tablet");
-      var isDesktop = (qx.core.Environment.get("device.type") == "desktop");
-
-      if (isTablet||isDesktop) {
-        nm.onGet("/.*", function(data) {
-          overview.show();
-        },this);
-
-        nm.onGet("/", function(data) {
-          basic.show();
-        },this);
+      if (qx.core.Environment.get("device.type") == "tablet" ||
+       qx.core.Environment.get("device.type") == "desktop") {
+        routing.onGet("/.*", this._show, overview);
+        routing.onGet("/", this._show, basic);
       }
 
-      nm.onGet("/", function(data) {
-        overview.show(data.customData);
-      },this);
+      routing.onGet("/", this._show, overview);
+      routing.onGet("/basic", this._show, basic);
+      routing.onGet("/dialog", this._show, dialogs);
+      routing.onGet("/tab", this._show, tab);
+      routing.onGet("/form", this._show, form);
+      routing.onGet("/list", this._show, list);
+      routing.onGet("/toolbar", this._show, toolbar);
+      routing.onGet("/carousel", this._show, carousel);
+      routing.onGet("/drawer", this._show, drawer);
+      routing.onGet("/databinding", this._show, dataBinding);
+      routing.onGet("/event", this._show, events);
+      routing.onGet("/maps", this._show, maps);
+      routing.onGet("/canvas", this._show, canvas);
+      routing.onGet("/theming", this._show, theming);
+      routing.onGet("/animation", this._show, animation);
 
-      nm.onGet("/event", function(data)
-      {
-        events.show();
-      },this);
+      routing.onGet("/animation/{animation}", function(data) {
+        animationLanding.setAnimation(data.params.animation);
+        if (animationLanding.isVisible()) {
+          animation.show({
+            "animation": data.params.animation
+          });
+        } else {
+          animationLanding.show({
+            "animation": data.params.animation
+          });
+        }
+      }, this);
 
-      nm.onGet("/tab", function(data)
-      {
-        tab.show();
-      },this);
+      routing.init();
+    },
 
-      nm.onGet("/toolbar", function(data)
-      {
-        toolbar.show();
-      },this);
 
-      nm.onGet("/list", function(data)
-      {
-        list.show();
-      },this);
-
-      nm.onGet("/form", function(data)
-      {
-        form.show();
-      },this);
-
-      nm.onGet("/atom", function(data)
-      {
-        atoms.show();
-      },this);
-
-      nm.onGet("/animation", function(data) {
-        animation.show(data.customData);
-      },this);
-
-      nm.onGet("/animation/{animation}", function(data) {
-        var animation = data.params.animation;
-        animationLanding.setAnimation(animation);
-        animationLanding.show({animation:animation});
-      },this);
-
-      nm.onGet("/basic", function(data)
-      {
-        basic.show();
-      },this);
-
-      nm.onGet("/dialog", function(data)
-      {
-        dialogs.show();
-      },this);
-
-      nm.onGet("/carousel", function(data)
-      {
-        carousel.show();
-      },this);
-
-      nm.onGet("/drawer", function(data)
-      {
-        drawer.show();
-      },this);
-
-      nm.onGet("/databinding", function(data)
-      {
-        dataBinding.show();
-      },this);
-
-      nm.onGet("/maps", function(data)
-      {
-        maps.show();
-      },this);
-
-      nm.onGet("/canvas", function(data)
-      {
-        canvas.show();
-      },this);
-
-      nm.onGet("/themeswitcher", function(data)
-      {
-        themeSwitcher.show();
-      },this);
-
-      // start the navigation handling
-      nm.init();
+    /**
+     * Default behaviour when a route matches. Displays the corresponding page on screen.
+     * @param data {Map} the animation properties
+     */
+    _show : function(data) {
+      this.show(data.customData);
     }
   }
 });

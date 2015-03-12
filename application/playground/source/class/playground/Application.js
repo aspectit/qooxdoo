@@ -112,9 +112,6 @@ qx.Class.define("playground.Application",
       // Call super class
       this.base(arguments);
 
-      // quickfix for the playground for BUG #7680
-      this.getRoot().getContentElement().setStyle("-webkit-backface-visibility", "hidden");
-
       // register error handler
       qx.event.GlobalError.setErrorHandler(this.__onGlobalError, this);
 
@@ -204,7 +201,7 @@ qx.Class.define("playground.Application",
       this.__playArea.addListener("toggleMaximize", this._onToggleMaximize, this);
       infosplit.add(this.__playArea, 2);
 
-      this.__mainsplit.getChildControl("splitter").addListener("mousedown", function() {
+      this.__mainsplit.getChildControl("splitter").addListener("pointerdown", function() {
         this.__editor.block();
       }, this);
 
@@ -398,6 +395,8 @@ qx.Class.define("playground.Application",
       qx.bom.Cookie.set("playgroundMode", mode, 100);
       this.__mode = mode;
 
+      this.__enableWebsiteMode(mode == "website");
+
       // update the views (changes the play application)
       this.__playArea.setMode(mode);
       this.__header.setMode(mode);
@@ -405,8 +404,6 @@ qx.Class.define("playground.Application",
 
       // erase the code
       this.__editor.setCode("");
-
-      this.__enableWebsiteMode(mode == "website");
 
       return true;
     },
@@ -760,10 +757,8 @@ qx.Class.define("playground.Application",
      */
     __discardChanges : function() {
       var userCode = this.__editor.getCode();
-      if (userCode && this.__isCodeNotEqual(userCode, this.getOriginCode()))
-      {
-        if (!confirm(this.tr("Click OK to discard your changes.")))
-        {
+      if (userCode && this.__isCodeNotEqual(userCode, this.getOriginCode())) {
+        if (!confirm(this.tr("Tap OK to discard your changes."))) {
           return true;
         }
       }

@@ -19,6 +19,7 @@
 #    * Andreas Ecker (ecker)
 #
 ################################################################################
+from __future__ import print_function
 
 import re, os, sys, shutil, logging, optparse
 import qxenviron
@@ -77,15 +78,25 @@ MIGRATION_ORDER = [
     "1.5",
     "1.5.1",
     "1.6",
+    "1.6.1",
     "2.0",
     "2.0.1",
     "2.0.2",
+    "2.0.3",
+    "2.0.4",
     "2.1",
     "2.1.1",
+    "2.1.2",
     "3.0",
+    "3.0.1",
+    "3.5",
+    "3.5.1",
+    "4.0",
+    "4.0.1",
+    "4.1"
 ]
 
-default_old_version = "2.1.1"
+default_old_version = "4.0"
 
 LOGGING_READY = False
 
@@ -213,14 +224,14 @@ def indexFile(filePath, filePathId, classPath, listIndex, classEncoding, classUr
         # Search for valid ID
         if fileContentId == None:
             if not filePathId.endswith("__init__"):
-                print "    - Could not extract ID from file: %s. Fallback to path %s!" % (filePath, filePathId)
+                print("    - Could not extract ID from file: {0}. Fallback to path {1}!".format(filePath, filePathId))
             fileId = filePathId
 
         else:
             fileId = fileContentId
 
         if fileId != filePathId:
-            print "    - ID mismatch: CONTENT=%s != PATH=%s" % (fileContentId, filePathId)
+            print("    - ID mismatch: CONTENT={0} != PATH={1}".format(fileContentId, filePathId))
             if not options.migrateSource:
                 sys.exit(1)
 
@@ -282,7 +293,7 @@ def extractLoadtimeDeps(data, fileId=""):
 
     for item in QXHEAD["require"].findall(data):
         if item == fileId:
-            print "    - Error: Self-referring load dependency: %s" % item
+            print("    - Error: Self-referring load dependency: {0}".format(item))
             sys.exit(1)
         else:
             deps.append(item)
@@ -295,7 +306,7 @@ def extractRuntimeDeps(data, fileId=""):
 
     for item in QXHEAD["use"].findall(data):
         if item == fileId:
-            print "    - Self-referring runtime dependency: %s" % item
+            print("    - Self-referring runtime dependency: {0}".format(item))
         else:
             deps.append(item)
 
@@ -433,7 +444,7 @@ def getPatchDirectory():
 
 def getNeededUpdates(baseVersion):
     """
-    Returns an array of needed uptated to upgrade to the current version
+    Returns an array of needed updates to upgrade to the current version
     """
     return MIGRATION_ORDER[MIGRATION_ORDER.index(getNormalizedVersion(baseVersion))+1:]
 
@@ -483,7 +494,7 @@ def readPatchInfoFiles(baseDir):
     """
     Reads all patch/info files from a directory and compiles the containing
     regular expressions.
-    Retuns a list comiled RE (the output of entryCompiler)
+    Returns a list of compiled RE (the output of entryCompiler)
     """
     patchList = []
     emptyLine = re.compile("^\s*$")
@@ -763,9 +774,9 @@ def patchMakefile(makefilePath, newVersion, oldVersion):
 def migrateSingleFile(fileName, options, neededUpdates):
 
     if not os.path.isfile(fileName):
-        print """
-ERROR: The file '%s' could not be found.
-""" % fileName
+        print("""
+ERROR: The file '{0}' could not be found.
+""").format(fileName)
         sys.exit(1)
 
     #turn off logging
@@ -783,7 +794,7 @@ ERROR: The file '%s' could not be found.
     finally:
         # print migrated file
         for line in open(fileName):
-            print line,
+            print(line)
         #restore file
         shutil.copyfile(fileName + ".migration.bak", fileName)
 
@@ -868,12 +879,12 @@ Please enter your current qooxdoo version [%s] : """ % options.from_version)
             from_version = options.from_version = choice
 
     if not isValidVersion(options.from_version):
-        print "\nERROR: The version '%s' is not a valid version string!\n" % options.from_version
+        print("\nERROR: The version '{0}' is not a valid version string!\n").format(options.from_version)
         sys.exit(1)
 
 
     if MIGRATION_ORDER[-1] == getNormalizedVersion(options.from_version):
-        print "\n Nothing to do. Your application is up to date!\n"
+        print("\n Nothing to do. Your application is up to date!\n")
         sys.exit()
 
     # to migrate a single file extract the class path
@@ -881,10 +892,10 @@ Please enter your current qooxdoo version [%s] : """ % options.from_version)
         options.classPath = [os.path.dirname(os.path.abspath(options.file))]
 
     if options.classPath == []:
-        print """
+        print("""
 ERROR: The class path is empty. Please specify the class pass using the
        --class-path option
-"""
+""")
         sys.exit(0)
 
 
@@ -918,21 +929,21 @@ ERROR: The class path is empty. Please specify the class pass using the
         listIndex += 1
 
 
-    print"""
+    print("""
 MIGRATION SUMMARY:
 
-Current qooxdoo version:   %s
-Upgrade path:              %s
+Current qooxdoo version:   {0}
+Upgrade path:              {1}
 
 Affected Classes:
-    %s""" % (options.from_version, " -> ".join(neededUpdates), "\n    ".join(fileDb.keys()))
+    {2}""".format(options.from_version, " -> ".join(neededUpdates), "\n    ".join(fileDb.keys())))
 
     if hasPatchModule:
-        print """
+        print("""
 WARNING: The JavaScript files will be pretty printed. You can customize the
          pretty printer using the PRETTY_PRINT_OPTIONS variable in your
          Makefile. You can find a complete list of pretty printing options
-         at http://qooxdoo.org/documentation/articles/code_style."""
+         at http://qooxdoo.org/documentation/articles/code_style.""")
 
     choice = raw_input("""
 NOTE:    It is advised to do a 'generate.py distclean' before migrating any files.
@@ -987,11 +998,11 @@ Do you want to start the migration now? [no] : """ % LOGFILE)
     if options.config is not None:
         patchConfig(options.config, neededUpdates)
 
-    print """
+    print("""
 
-The complete output of the migration process has been logged to the file '%s'.
+The complete output of the migration process has been logged to the file '{0}'.
 
-""" % LOGFILE
+""".format(LOGFILE))
 
 
 
@@ -1004,6 +1015,6 @@ if __name__ == '__main__':
         main()
 
     except KeyboardInterrupt:
-        print
-        print "  * Keyboard Interrupt"
+        print()
+        print("  * Keyboard Interrupt")
         sys.exit(1)
