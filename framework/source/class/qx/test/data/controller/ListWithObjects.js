@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -232,13 +231,13 @@ qx.Class.define("qx.test.data.controller.ListWithObjects",
         converter: function(value) {
           return "Dr. " + value;
         }
-      }
+      };
       // create the icon options
       var iconOptions = {
         converter: function(value) {
           return value + ".png";
         }
-      }
+      };
 
       // create the controller
       this.__controller = new qx.data.controller.List(this.__model, this.__list, "name");
@@ -297,7 +296,7 @@ qx.Class.define("qx.test.data.controller.ListWithObjects",
       var delegate = {};
       delegate.filter = function(data) {
         return data.getName() == "name2" ? true : false;
-      }
+      };
       // set the filter
       this.__controller.setDelegate(delegate);
 
@@ -319,7 +318,7 @@ qx.Class.define("qx.test.data.controller.ListWithObjects",
       var flag = false;
       options.onUpdate = function() {
         flag = true;
-      }
+      };
       // create the controller
       this.__controller = new qx.data.controller.List(this.__model, this.__list, "name");
       this.__controller.setLabelOptions(options);
@@ -381,7 +380,7 @@ qx.Class.define("qx.test.data.controller.ListWithObjects",
         }
       });
 
-      var parentA = new qx.demo.Parent()
+      var parentA = new qx.demo.Parent();
       parentA.setName("parentA");
       parentA.getKid().setName("kidA");
 
@@ -428,7 +427,7 @@ qx.Class.define("qx.test.data.controller.ListWithObjects",
       var delegate = {};
       delegate.filter = function(data) {
         return data.getName() == "name0" || data.getName() == "name2" ? false : true;
-      }
+      };
       delegate.bindItem = function(c, item, index) {
         c.bindProperty("", "model", null, item, index);
       };

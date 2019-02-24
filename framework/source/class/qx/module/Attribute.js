@@ -8,8 +8,7 @@
      2011-2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -23,7 +22,8 @@
  * @group (Core)
  */
 qx.Bootstrap.define("qx.module.Attribute", {
-  statics :
+
+  members :
   {
     /**
      * Returns the HTML content of the first item in the collection
@@ -264,8 +264,9 @@ qx.Bootstrap.define("qx.module.Attribute", {
      * is checked (checkbox, radiobutton).
      * Supports array values for selectboxes (multiple selection) and checkboxes
      * or radiobuttons (for convenience).
+     *
      * Please note: To modify the value attribute of a checkbox or radiobutton
-     * use @link{#set} instead.
+     * use {@link #setAttribute} instead and manipulate the <code>checked</code> attribute.
      *
      * @attach {qxWeb}
      * @param value {String|Number|Array} The value to apply
@@ -283,26 +284,6 @@ qx.Bootstrap.define("qx.module.Attribute", {
 
 
   defer : function(statics) {
-    qxWeb.$attach({
-      "getHtml" : statics.getHtml,
-      "setHtml" : statics.setHtml,
-
-      "getAttribute" : statics.getAttribute,
-      "setAttribute" : statics.setAttribute,
-      "removeAttribute" : statics.removeAttribute,
-      "getAttributes" : statics.getAttributes,
-      "setAttributes" : statics.setAttributes,
-      "removeAttributes" : statics.removeAttributes,
-
-      "getProperty" : statics.getProperty,
-      "setProperty" : statics.setProperty,
-      "removeProperty" : statics.removeProperty,
-      "getProperties" : statics.getProperties,
-      "setProperties" : statics.setProperties,
-      "removeProperties" : statics.removeProperties,
-
-      "getValue" : statics.getValue,
-      "setValue" : statics.setValue
-    });
+    qxWeb.$attachAll(this);
   }
 });

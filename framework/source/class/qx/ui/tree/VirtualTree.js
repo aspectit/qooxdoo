@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -17,7 +16,7 @@
 
 ************************************************************************ */
 
-/**
+/*
  * Virtual tree implementation.
  *
  * The virtual tree can be used to render node and leafs. Nodes and leafs are
@@ -27,40 +26,108 @@
  * With the {@link qx.ui.tree.core.IVirtualTreeDelegate} interface it is possible
  * to configure the tree's behavior (item renderer configuration, etc.).
  *
- * Here's an example of how to use the widget:
+ * Here's an example of how to use the widget, including using a model
+ * property to open/close branches. See the two timers at the end. The first
+ * one opens all branches after two seconds; the second cleans up the tree
+ * after five seconds.
+ *
  * <pre class="javascript">
- * //create the model data
- * var nodes = [];
- * for (var i = 0; i < 2500; i++)
- * {
- *   nodes[i] = {name : "Item " + i};
- *
- *   // if its not the root node
- *   if (i !== 0)
- *   {
- *     // add the children in some random order
- *     var node = nodes[parseInt(Math.random() * i)];
- *
- *     if(node.children == null) {
- *       node.children = [];
+ *   var nodes = 
+ *   [
+ *     {
+ *       name : "Root",
+ *       open : false,
+ *       children :
+ *       [
+ *         {
+ *           name : "Branch 1",
+ *           open : false,
+ *           children :
+ *           [
+ *             {
+ *               name : "Leaf 1.1"
+ *             },
+ *             {
+ *               name : "Leaf 1.2"
+ *             },
+ *             {
+ *               name : "Branch 1.3",
+ *               open : false,
+ *               children :
+ *               [
+ *                 {
+ *                   name : "Branch 1.3.1",
+ *                   open : false,
+ *                   children :
+ *                   [
+ *                     {
+ *                       name : "Leaf 1.3.1.1"
+ *                     }
+ *                   ]
+ *                 }
+ *               ]
+ *             }
+ *           ]
+ *         }
+ *       ]
  *     }
- *     node.children.push(nodes[i]);
- *   }
- * }
+ *   ];
  *
- * // converts the raw nodes to qooxdoo objects
- * nodes = qx.data.marshal.Json.createModel(nodes, true);
+ *   // convert the raw nodes to qooxdoo objects
+ *   nodes = qx.data.marshal.Json.createModel(nodes, true);
  *
- * // creates the tree
- * var tree = new qx.ui.tree.VirtualTree(nodes.getItem(0), "name", "children").set({
- *   width : 200,
- *   height : 400
- * });
+ *   // create the tree and synchronize the model property 'open'
+ *   // to nodes being open
+ *   var tree =
+ *     new qx.ui.tree.VirtualTree(
+ *       nodes.getItem(0), "name", "children", "open").set({
+ *         width : 200,
+ *         height : 400
+ *       });
  *
- * //log selection changes
- * tree.getSelection().addListener("change", function(e) {
- *   this.debug("Selection: " + tree.getSelection().getItem(0).getName());
- * }, this);
+ *   //log selection changes
+ *   tree.getSelection().addListener("change", function(e) {
+ *     this.debug("Selection: " + tree.getSelection().getItem(0).getName());
+ *   }, this);
+ *
+ *   tree.set(
+ *     {
+ *       width : 200,
+ *       height : 400,
+ *       showTopLevelOpenCloseIcons : true
+ *     });
+ *
+ *   var doc = this.getRoot();
+ *   doc.add(tree,
+ *   {
+ *     left : 100,
+ *     top  : 50
+ *   });
+ *
+ *   // After two seconds, open up all branches by setting their open
+ *   // property to true.
+ *   qx.event.Timer.once(
+ *     function()
+ *     {
+ *       ;(function allOpen(root)
+ *         {
+ *           if (root.setOpen)     root.setOpen(true);
+ *           if (root.getChildren) root.getChildren().forEach(allOpen);
+ *         })(nodes.getItem(0));
+ *     },
+ *     this,
+ *     2000);
+ *
+ *   // After five seconds, remove and dispose the tree.
+ *   qx.event.Timer.once(
+ *     function()
+ *     {
+ *       doc.remove(tree);
+ *       tree.dispose();
+ *       console.warn("All cleaned up.");
+ *     },
+ *     this,
+ *     5000);
  * </pre>
  */
 qx.Class.define("qx.ui.tree.VirtualTree",
@@ -73,14 +140,19 @@ qx.Class.define("qx.ui.tree.VirtualTree",
   ],
 
   /**
-   * @param model {qx.core.Object?null} The model structure for the tree, for
-   *   more details have a look at the 'model' property.
+   * @param rootModel {qx.core.Object?null} The model structure representing
+   *   the root of the tree, for more details have a look at the 'model'
+   *   property.
    * @param labelPath {String?null} The name of the label property, for more
    *   details have a look at the 'labelPath' property.
    * @param childProperty {String?null} The name of the child property, for
    *   more details have a look at the 'childProperty' property.
+   * @param openProperty {String|null} the name of the model property which
+   *   represents the open state of a branch. If this value is provided, so, 
+   *   too, must be rootModel.
    */
-  construct : function(model, labelPath, childProperty)
+  construct : function(
+    rootModel, labelPath, childProperty, openProperty)
   {
     this.base(arguments, 0, 1, 20, 100);
 
@@ -94,14 +166,19 @@ qx.Class.define("qx.ui.tree.VirtualTree",
       this.setChildProperty(childProperty);
     }
 
-    if(model != null) {
-      this.initModel(model);
+    if(rootModel != null) {
+      this.initModel(rootModel);
     }
 
     this.initItemHeight();
     this.initOpenMode();
 
     this.addListener("keypress", this._onKeyPress, this);
+
+    // If an open property and root model are provided, start up the open-close controller.
+    if (openProperty && rootModel) {
+      this.openViaModelChanges(openProperty);
+    }
   },
 
   events :
@@ -163,7 +240,7 @@ qx.Class.define("qx.ui.tree.VirtualTree",
     },
 
 
-    /**
+     /**
      * Control whether tap or double tap should open or close the tapped
      * item.
      */
@@ -176,7 +253,7 @@ qx.Class.define("qx.ui.tree.VirtualTree",
       themeable: true
     },
 
-
+    
     /**
      * Hides *only* the root node, not the node's children when the property is
      * set to <code>true</code>.
@@ -343,6 +420,11 @@ qx.Class.define("qx.ui.tree.VirtualTree",
     /** @type {Array} internal parent chain form the last selected node */
     __parentChain : null,
 
+    /** 
+     * @type {String|null} the name of the model property which represents the
+     *   open state of a branch.
+     */
+    __openProperty : null,
 
     /*
     ---------------------------------------------------------------------------
@@ -416,7 +498,7 @@ qx.Class.define("qx.ui.tree.VirtualTree",
     // Interface implementation
     closeNode : function(node)
     {
-      if (qx.lang.Array.contains(this.__openNodes, node))
+      if (this.__openNodes.includes(node))
       {
         qx.lang.Array.remove(this.__openNodes, node);
         this.fireDataEvent("close", node);
@@ -441,7 +523,44 @@ qx.Class.define("qx.ui.tree.VirtualTree",
 
     // Interface implementation
     isNodeOpen : function(node) {
-      return qx.lang.Array.contains(this.__openNodes, node);
+      return this.__openNodes.includes(node);
+    },
+
+
+    /**
+     * Open and close branches via changes to a property in the model.
+     * 
+     * @param openProperty {String|null} 
+     *   The name of the open property, which determines the open state of a
+     *   branch in the tree. If null, turn off opening and closing branches
+     *   via changes to the model.
+     */
+    openViaModelChanges : function(openProperty) {
+      // Save the open property
+      this.__openProperty = openProperty;
+
+      // if no name is provided, just remove any prior open-close controller
+      if (! openProperty) {
+        if (this._openCloseController) {
+          this._openCloseController.dispose();
+          this._openCloseController = null;
+        }
+
+        return;
+      }
+
+      // we have a property name, so create controller
+      this._openCloseController =
+        new qx.ui.tree.core.OpenCloseController(this, this.getModel(), openProperty);
+    },
+
+
+    /**
+     * Getter for the open property
+     */
+    getOpenProperty : function()
+    {
+      return this.__openProperty;
     },
 
 
@@ -484,6 +603,12 @@ qx.Class.define("qx.ui.tree.VirtualTree",
     // Interface implementation
     getLookupTable : function() {
       return this.__lookupTable;
+    },
+    
+    
+    // Interface implementation
+    isShowTopLevelOpenCloseIcons : function() {
+      return true;
     },
 
 
@@ -599,12 +724,18 @@ qx.Class.define("qx.ui.tree.VirtualTree",
 
     // property apply
     _applyShowTopLevelOpenCloseIcons : function(value, old) {
+      // force rebuild of the lookup table
+      // fixes https://github.com/qooxdoo/qooxdoo/issues/9128
+      this.getLookupTable().removeAll();
       this.buildLookupTable();
     },
 
 
     // property apply
     _applyShowLeafs : function(value, old) {
+      // force rebuild of the lookup table
+      // fixes https://github.com/qooxdoo/qooxdoo/issues/9128
+      this.getLookupTable().removeAll();
       this.buildLookupTable();
     },
 
@@ -660,6 +791,13 @@ qx.Class.define("qx.ui.tree.VirtualTree",
         this.__openNode(value);
       }
 
+      // If the model changes, an existing OpenCloseController is no longer
+      // valid, so dispose it. The user should call openViaModelChanges again.
+      if (this._openCloseController) {
+        this._openCloseController.dispose();
+        this._openCloseController = null;
+      }
+
       if (old != null) {
         old.removeListener("changeBubble", this._onChangeBubble, this);
       }
@@ -700,7 +838,7 @@ qx.Class.define("qx.ui.tree.VirtualTree",
       }
 
       // only continue when the effected property is the child property
-      if (qx.lang.String.startsWith(propertyName, this.getChildProperty()))
+      if ( propertyName.startsWith(this.getChildProperty()) )
       {
         var item = data.item;
 
@@ -1011,7 +1149,7 @@ qx.Class.define("qx.ui.tree.VirtualTree",
      */
     __openNode : function(node)
     {
-      if (!qx.lang.Array.contains(this.__openNodes, node)) {
+      if (!this.__openNodes.includes(node)) {
         this.__openNodes.push(node);
         this.fireDataEvent("open", node);
       }
@@ -1092,8 +1230,8 @@ qx.Class.define("qx.ui.tree.VirtualTree",
       while(index > 0)
       {
         index--;
-        var levelBevore = this.__nestingLevel[index];
-        if (levelBevore < level) {
+        var levelBefore = this.__nestingLevel[index];
+        if (levelBefore < level) {
           return this.__lookupTable.getItem(index);
         }
       }
@@ -1147,7 +1285,11 @@ qx.Class.define("qx.ui.tree.VirtualTree",
 
   destruct : function()
   {
-    var pane = this.getPane()
+    if (this._openCloseController) {
+      this._openCloseController.dispose();
+    }
+
+    var pane = this.getPane();
     if (pane != null)
     {
       if (pane.hasListener("cellDbltap")) {

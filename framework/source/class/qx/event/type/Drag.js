@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -208,12 +207,27 @@ qx.Class.define("qx.event.type.Drag",
 
     /**
      * Returns the data of the given type. Used in the <code>drop</code> listener.
+     * 
+     * Note that this is a synchronous method and if any of the drag and drop 
+     * events handlers are implemented using Promises, this may fail; @see
+     * `getDataAsync`.
      *
      * @param type {String} Any of the supported types.
      * @return {var} The data for the given type
      */
     getData : function(type) {
       return this.getManager().getData(type);
+    },
+
+
+    /**
+     * Returns the data of the given type. Used in the <code>drop</code> listener.
+     * 
+     * @param type {String} Any of the supported types.
+     * @return {qx.Promise|var} The data for the given type
+     */
+    getDataAsync : function(type) {
+      return this.getManager().getDataAsync(type);
     },
 
 
@@ -243,6 +257,23 @@ qx.Class.define("qx.event.type.Drag",
         return null;
       }
       return this.getManager().getCurrentAction();
+    },
+
+    /**
+     * Returns the currently selected action. Depends on the
+     * supported actions of the source target and the modification
+     * keys pressed by the user.
+     *
+     * Used in the <code>droprequest</code> listener.
+     *
+     * @return {qx.Promise|String} The action. May be one of <code>move</code>,
+     *    <code>copy</code> or <code>alias</code>.
+     */
+    getCurrentActionAsync : function() {
+      if (this.getDefaultPrevented()) {
+        return null;
+      }
+      return this.getManager().getCurrentActionAsync();
     },
 
     /**

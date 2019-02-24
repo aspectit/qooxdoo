@@ -8,8 +8,7 @@
      2004-2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -140,7 +139,7 @@ qx.Bootstrap.define("qx.bom.storage.UserData", {
         var storageKey = this.__reference[key];
       // new case
       } else {
-        var storageKey = "qx" + qx.bom.storage.UserData.__id
+        var storageKey = "qx" + qx.bom.storage.UserData.__id;
         qx.bom.storage.UserData.__id++;
       }
 
@@ -171,7 +170,7 @@ qx.Bootstrap.define("qx.bom.storage.UserData", {
      * @param key {String} The identifier.
      */
     removeItem : function(key) {
-      // check if the item is availabel
+      // check if the item is available
       var storageName = this.__reference[key];
       if (storageName == undefined) {
         return;

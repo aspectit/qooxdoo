@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -114,26 +113,32 @@ qx.Class.define("qx.event.dispatch.Direct",
 
       event.setEventPhase(qx.event.type.Event.AT_TARGET);
 
+      var tracker = {};
+      var self = this;
       var listeners = this._manager.getListeners(target, type, false);
-      if (listeners)
-      {
-        for (var i=0, l=listeners.length; i<l; i++)
-        {
-          var context = listeners[i].context || target;
+      if (listeners) {
+        listeners.forEach(function(listener) {
+          if (self._manager.isBlacklisted(listener.unique)) {
+            return;
+          }
+          var context = listener.context || target;
 
           if (qx.core.Environment.get("qx.debug")) {
             // warn if the context is disposed
-            if (context && context.isDisposed && context.isDisposed()) {
-              this.warn(
+            if (context && context.isDisposed && context.isDisposed() && !context.isDisposing()) {
+              self.warn(
                 "The context object '" + context + "' for the event '" +
                 type + "' of '" + target + "'is already disposed."
               );
             }
           }
-
-          listeners[i].handler.call(context, event);
-        }
+          qx.event.Utils.then(tracker, function() {
+            return listener.handler.call(context, event);
+          });
+        });
       }
+      
+      return tracker.promise;
     }
   },
 

@@ -8,8 +8,7 @@
      2007-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -29,7 +28,7 @@ qx.Class.define("qx.test.bom.element.BoxSizing",
     {
       mshtml : ["border-box", "content-box"],
       opera : ["border-box", "content-box"],
-      gecko : ["border-box", "content-box", "padding-box"],
+      gecko : ["border-box", "content-box"],
       webkit : ["border-box", "content-box"]
     },
 
@@ -68,7 +67,7 @@ qx.Class.define("qx.test.bom.element.BoxSizing",
       var supported = this.__support[qx.core.Environment.get("engine.name")] || [];
       for (var i=0, l=allValues.length; i<l; i++) {
         qx.bom.element.BoxSizing.set(this.__el, allValues[i]);
-        if (qx.lang.Array.contains(supported, allValues[i])) {
+        if (supported.includes(allValues[i])) {
           this.assertEquals(supported[i], qx.bom.element.BoxSizing.get(this.__el),
             "supported boxSizing value was not applied!");
         }

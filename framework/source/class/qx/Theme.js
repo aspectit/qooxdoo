@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -58,7 +57,8 @@ qx.Bootstrap.define("qx.Theme",
      *   fonts : {},
      *   widgets : {},
      *   appearances : {},
-     *   meta : {}
+     *   meta : {},
+     *   boot : function(){}
      * });
      * </pre>
      *
@@ -117,6 +117,11 @@ qx.Bootstrap.define("qx.Theme",
 
       for (var i=0, a=config.patch, l=a.length; i<l; i++) {
         this.patch(theme, a[i]);
+      }
+      
+      // Run boot code
+      if (config.boot) {
+      	config.boot();
       }
     },
 
@@ -322,7 +327,8 @@ qx.Bootstrap.define("qx.Theme",
         "appearances" : "object", // Map
         "meta"        : "object", // Map
         "include"     : "object", // Array
-        "patch"       : "object"  // Array
+        "patch"       : "object", // Array
+        "boot"        : "function" // Function
       },
 
       "default" : null
@@ -438,7 +444,7 @@ qx.Bootstrap.define("qx.Theme",
         // Validate patch
         if (config.patch) {
           for (var i=0,l=config.patch.length; i<l; i++) {
-            if (typeof(config.patch[i])  == "undefined" || config.patch[i].$$type !== "Theme") {
+            if (typeof(config.patch[i]) === "undefined" || config.patch[i].$$type !== "Theme") {
               throw new Error('Invalid patch in theme "' + name + '": ' + config.patch[i]);
             }
           }

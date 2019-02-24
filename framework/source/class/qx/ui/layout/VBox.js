@@ -8,9 +8,8 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
-     See the LICENSE file in the project's left-level directory for details.
+     MIT: https://opensource.org/licenses/MIT
+     See the LICENSE file in the project's top-level directory for details.
 
    Authors:
      * Sebastian Werner (wpbasti)
@@ -97,7 +96,7 @@ qx.Class.define("qx.ui.layout.VBox",
    * @param spacing {Integer?0} The spacing between child widgets {@link #spacing}.
    * @param alignY {String?"top"} Vertical alignment of the whole children
    *     block {@link #alignY}.
-   * @param separator {String|qx.ui.decoration.IDecorator} A separator to render between the items
+   * @param separator {String|qx.ui.decoration.IDecorator?} A separator to be rendered between the items
    */
   construct : function(spacing, alignY, separator)
   {
@@ -261,7 +260,7 @@ qx.Class.define("qx.ui.layout.VBox",
         this.__flexs = flexs;
       }
 
-      this.__enableFlex = enableFlex
+      this.__enableFlex = enableFlex;
       this.__children = children;
 
       // Clear invalidation marker

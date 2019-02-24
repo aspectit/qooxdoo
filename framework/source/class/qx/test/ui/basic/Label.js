@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -74,6 +73,40 @@ qx.Class.define("qx.test.ui.basic.Label",
       container.destroy();
     },
 
+
+    testSelectableSetOnCreate : function() {
+      var l = new qx.ui.basic.Label().set({selectable : true});
+      this.getRoot().add(l);
+      this.flush();
+      this.assertEquals("on", l.getContentElement().getDomElement().getAttribute("qxselectable"));
+      l.destroy();
+    },
+
+    testSelectableUnSetOnCreate : function() {
+      var l = new qx.ui.basic.Label().set({selectable : false});
+      this.getRoot().add(l);
+      this.flush();
+      this.assertEquals("off", l.getContentElement().getDomElement().getAttribute("qxselectable"));
+      l.destroy();
+    },
+
+    testSelectableSet : function() {
+      var l = new qx.ui.basic.Label();
+      l.setSelectable(true);
+      this.getRoot().add(l);
+      this.flush();
+      this.assertEquals("on", l.getContentElement().getDomElement().getAttribute("qxselectable"));
+      l.destroy();
+    },
+
+    testSelectableUnset : function() {
+      var l = new qx.ui.basic.Label();
+      l.setSelectable(false);
+      this.getRoot().add(l);
+      this.flush();
+      this.assertEquals("off", l.getContentElement().getDomElement().getAttribute("qxselectable"));
+      l.destroy();
+    },
 
     testWrapSet : function() {
       var l = new qx.ui.basic.Label();
@@ -152,9 +185,9 @@ qx.Class.define("qx.test.ui.basic.Label",
           f.dispose();
           this.assertCalledTwice(statusChangeSpy);
         }, this);
-      }, this, 2500);
+      }, this, 4000);
 
-      this.wait(5000);
+      this.wait(8000);
     },
 
     testApplyFontColorAndTextColor: function()
@@ -175,12 +208,12 @@ qx.Class.define("qx.test.ui.basic.Label",
       font1.dispose();
     },
 
-    testBudy : function() {
+    testBuddy : function() {
       var label = new qx.ui.basic.Label();
       var textfield1 = new qx.ui.form.TextField();
       var textfield2 = new qx.ui.form.TextField();
 
-      // set first text field as budy
+      // set first text field as buddy
       label.setBuddy(textfield1);
 
       // label and textfield1 must have the same binding
@@ -188,7 +221,7 @@ qx.Class.define("qx.test.ui.basic.Label",
       this.assertEquals(1, textfield1.getBindings().length, "There must be one binding!");
       this.assertTrue(qx.lang.Array.equals(label.getBindings()[0], textfield1.getBindings()[0]), "label and textfield1 must have the same binding");
 
-      // change the budy of label to textfield2
+      // change the buddy of label to textfield2
       label.setBuddy(textfield2);
 
       // textfield1 must not have a binding anymore
@@ -200,6 +233,20 @@ qx.Class.define("qx.test.ui.basic.Label",
       this.assertTrue(qx.lang.Array.equals(label.getBindings()[0], textfield2.getBindings()[0]), "label and textfield1 must have the same binding");
 
       label.dispose();
+    },
+
+    testLocaleInitialization : function() {
+      var label = new qx.ui.basic.Label();
+      var localeManager = qx.locale.Manager.getInstance();
+      localeManager.addTranslation("en", {"TEST" : "EN"});
+      localeManager.addTranslation("de", {"TEST" : "DE"});
+      localeManager.setLocale("en");
+
+      var test = qx.locale.Manager.tr("TEST");
+      localeManager.setLocale("de");
+      label.setValue(test);
+
+      this.assertEquals("DE", label.getContentElement().getValue(), "label must have the current locale set");
     }
   }
 });

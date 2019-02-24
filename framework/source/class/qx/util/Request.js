@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -42,13 +41,13 @@ qx.Bootstrap.define("qx.util.Request",
 
       var protocol = location.protocol;
 
-      // URL is relative in the sence that it points to origin host
+      // URL is relative in the sense that it points to origin host
       if (!(url.indexOf("//") !== -1)) {
         return false;
       }
 
       if (protocol.substr(0, protocol.length-1) == result.protocol &&
-          location.host === result.host &&
+          location.host === result.authority &&
           location.port === result.port) {
         return false;
       }

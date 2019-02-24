@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -129,6 +128,26 @@ qx.Mixin.define("qx.test.io.request.MRequest",
 
       this.assertCalledWith(this.transport.open, "GET", "url?affe=true");
       obj.dispose();
+    },
+
+    "test: append FormData to URL with POST request": function() {
+      if (!window.FormData) {
+        this.skip("FormData API not supported");
+      }
+
+      if (!this.req.setMethod) {
+        this.skip("POST requests not supported by this transport");
+      }
+
+      var formData = new FormData();
+      formData.append("foo", "bar");
+      formData.append("baz", "qux");
+
+      this.req.setMethod("POST");
+      this.req.setRequestData(formData);
+      this.req.send();
+
+      this.assertCalledWith(this.transport.send, formData);
     },
 
     //

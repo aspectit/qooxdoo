@@ -8,8 +8,7 @@
      2004-2010 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -34,7 +33,8 @@ qx.Class.define("qx.test.Browser",
 
       // google chrome, opera 10.5, Safari 7 and ie 9
       if (
-        qx.core.Environment.get("browser.name") == "chrome" ||
+        qx.core.Environment.get("browser.name").indexOf("chrome") != -1 ||
+        qx.core.Environment.get("browser.name") == "edge" ||
         (qx.core.Environment.get("browser.name") == "opera" &&
          qx.core.Environment.get("browser.version") >= 10.5) ||
         (qx.core.Environment.get("browser.name") == "ie" &&

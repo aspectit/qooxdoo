@@ -8,8 +8,7 @@
      2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -194,7 +193,7 @@ qx.Class.define("qx.ui.core.SingleSelectionManager",
         }
       }
 
-      // in case of an user selecable list, remove the enabled items
+      // in case of an user selectable list, remove the enabled items
       if (!all) {
         for (var i = result.length -1; i >= 0; i--) {
           if (!result[i].getEnabled()) {

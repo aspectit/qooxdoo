@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -39,7 +38,7 @@ qx.Mixin.define("qx.ui.core.MChildrenHandling",
     /**
      * Returns the children list
      *
-     * @return {LayoutItem[]} The children array (Arrays are
+     * @return {qx.ui.core.LayoutItem[]} The children array (Arrays are
      *   reference types, please do not modify them in-place)
      */
     getChildren : function() {
@@ -66,7 +65,7 @@ qx.Mixin.define("qx.ui.core.MChildrenHandling",
      * layout information. Other layout manager (e.g. {@link qx.ui.layout.Grid})
      * ignore the children order for the layout process.
      *
-     * @param child {Widget} the widget to query for
+     * @param child {qx.ui.core.Widget} the widget to query for
      * @return {Integer} The index position or <code>-1</code> when
      *   the given widget is no child of this layout.
      */
@@ -82,7 +81,7 @@ qx.Mixin.define("qx.ui.core.MChildrenHandling",
      * used to position the widget. The options are documented in the class
      * documentation of each layout manager {@link qx.ui.layout}.
      *
-     * @param child {LayoutItem} the widget to add.
+     * @param child {qx.ui.core.LayoutItem} the widget to add.
      * @param options {Map?null} Optional layout data for widget.
      */
     add : function(child, options) {
@@ -98,7 +97,7 @@ qx.Mixin.define("qx.ui.core.MChildrenHandling",
      * layout information. Other layout manager (e.g. {@link qx.ui.layout.Grid})
      * ignore the children order for the layout process.
      *
-     * @param child {LayoutItem} Widget to add
+     * @param child {qx.ui.core.LayoutItem} Widget to add
      * @param index {Integer} Index, at which the widget will be inserted
      * @param options {Map?null} Optional layout data for widget.
      */
@@ -115,8 +114,8 @@ qx.Mixin.define("qx.ui.core.MChildrenHandling",
      * layout information. Other layout manager (e.g. {@link qx.ui.layout.Grid})
      * ignore the children order for the layout process.
      *
-     * @param child {LayoutItem} Widget to add
-     * @param before {LayoutItem} Widget before the new widget will be inserted.
+     * @param child {qx.ui.core.LayoutItem} Widget to add
+     * @param before {qx.ui.core.LayoutItem} Widget before the new widget will be inserted.
      * @param options {Map?null} Optional layout data for widget.
      */
     addBefore : function(child, before, options) {
@@ -132,8 +131,8 @@ qx.Mixin.define("qx.ui.core.MChildrenHandling",
      * layout information. Other layout manager (e.g. {@link qx.ui.layout.Grid})
      * ignore the children order for the layout process.
      *
-     * @param child {LayoutItem} Widget to add
-     * @param after {LayoutItem} Widget, after which the new widget will be inserted
+     * @param child {qx.ui.core.LayoutItem} Widget to add
+     * @param after {qx.ui.core.LayoutItem} Widget, after which the new widget will be inserted
      * @param options {Map?null} Optional layout data for widget.
      */
     addAfter : function(child, after, options) {
@@ -144,7 +143,7 @@ qx.Mixin.define("qx.ui.core.MChildrenHandling",
     /**
      * Remove the given child widget.
      *
-     * @param child {LayoutItem} the widget to remove
+     * @param child {qx.ui.core.LayoutItem} the widget to remove
      */
     remove : function(child) {
       this._remove(child);
@@ -160,7 +159,7 @@ qx.Mixin.define("qx.ui.core.MChildrenHandling",
      * ignore the children order for the layout process.
      *
      * @param index {Integer} Index of the widget to remove.
-     * @return {LayoutItem} The child removed.
+     * @return {qx.ui.core.LayoutItem} The child removed.
      */
     removeAt : function(index) {
       return this._removeAt(index);
@@ -210,4 +209,4 @@ qx.Mixin.define("qx.ui.core.MChildrenHandling",
       members.removeAll = members._removeAll;
     }
   }
-})
+});

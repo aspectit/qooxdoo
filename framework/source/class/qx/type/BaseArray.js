@@ -8,8 +8,7 @@
      2007-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -18,7 +17,7 @@
 
    ======================================================================
 
-   This class uses ideas and code snipplets presented at
+   This class uses ideas and code snippets presented at
    http://webreflection.blogspot.com/2008/05/habemus-array-unlocked-length-in-ie8.html
    http://webreflection.blogspot.com/2008/05/stack-and-arrayobject-how-to-create.html
 
@@ -178,7 +177,7 @@ qx.Bootstrap.define("qx.type.BaseArray",
      *   at least one new element.
      * @param varargs {var?null} The elements to add to the array. If you don't specify any elements,
      *   splice simply removes elements from the array.
-     * @return {BaseArray} New array with the removed elements.
+     * @return {qx.type.BaseArray} New array with the removed elements.
      */
     splice : null,
 
@@ -225,7 +224,7 @@ qx.Bootstrap.define("qx.type.BaseArray",
      *   <code>slice(1,4)</code> extracts the second element through the fourth element (elements indexed 1, 2, and 3).
      *   As a negative index, end indicates an offset from the end of the sequence. slice(2,-1) extracts the third element through the second-to-last element in the sequence.
      *   If end is omitted, slice extracts to the end of the sequence.
-     * @return {BaseArray} An new array which contains a copy of the given region.
+     * @return {qx.type.BaseArray} An new array which contains a copy of the given region.
      */
     slice : null,
 
@@ -328,7 +327,7 @@ qx.Bootstrap.define("qx.type.BaseArray",
      * @signature function(callback, obj)
      * @param callback {Function} Function to test each element of the array.
      * @param obj {Object} Object to use as <code>this</code> when executing <code>callback</code>.
-     * @return {BaseArray} The newly created array with all matching elements
+     * @return {qx.type.BaseArray} The newly created array with all matching elements
      */
     filter : null,
 
@@ -358,7 +357,7 @@ qx.Bootstrap.define("qx.type.BaseArray",
      * @signature function(callback, obj)
      * @param callback {Function} Function produce an element of the new Array from an element of the current one.
      * @param obj {Object} Object to use as <code>this</code> when executing <code>callback</code>.
-     * @return {BaseArray} A new array which contains the return values of every item executed through the given function
+     * @return {qx.type.BaseArray} A new array which contains the return values of every item executed through the given function
      */
     map : null,
 

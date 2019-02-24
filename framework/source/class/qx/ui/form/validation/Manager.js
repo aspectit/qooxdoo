@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -234,13 +233,13 @@ qx.Class.define("qx.ui.form.validation.Manager",
         // ignore all form items without a validator
         if (validator == null) {
           // check for the required property
-          var validatorResult = this.__validateRequired(formItem);
+          var validatorResult = this._validateRequired(formItem);
           valid = valid && validatorResult;
           this.__syncValid = validatorResult && this.__syncValid;
           continue;
         }
 
-        var validatorResult = this.__validateItem(
+        var validatorResult = this._validateItem(
           this.__formItems[i], formItem.getValue()
         );
         // keep that order to ensure that null is returned on async cases
@@ -258,7 +257,7 @@ qx.Class.define("qx.ui.form.validation.Manager",
       }
       valid = formValid && valid;
 
-      this.__setValid(valid);
+      this._setValid(valid);
 
       if (qx.lang.Object.isEmpty(this.__asyncResults)) {
         this.fireEvent("complete");
@@ -275,15 +274,19 @@ qx.Class.define("qx.ui.form.validation.Manager",
      * @param formItem {qx.ui.core.Widget} The form item to check.
      * @return {var} Validation result
      */
-    __validateRequired : function(formItem) {
+    _validateRequired : function(formItem) {
       if (formItem.getRequired()) {
+        var validatorResult;
         // if its a widget supporting the selection
         if (this.__supportsSingleSelection(formItem)) {
-          var validatorResult = !!formItem.getSelection()[0];
-        // otherwise, a value should be supplied
+          validatorResult = !!formItem.getSelection()[0];
+
+        } else if (this.__supportsDataBindingSelection(formItem)) {
+          validatorResult = (formItem.getSelection().getLength() > 0);
+
         } else {
           var value = formItem.getValue();
-          var validatorResult = !!value || value === 0;
+          validatorResult = !!value || value === 0;
         }
         formItem.setValid(validatorResult);
         var individualMessage = formItem.getRequiredInvalidMessage();
@@ -306,7 +309,7 @@ qx.Class.define("qx.ui.form.validation.Manager",
      * @return {Boolean|null} Validation result or <code>null</code> for async
      * validation
      */
-    __validateItem : function(dataEntry, value) {
+    _validateItem : function(dataEntry, value) {
       var formItem = dataEntry.item;
       var context = dataEntry.context;
       var validator = dataEntry.validator;
@@ -446,12 +449,26 @@ qx.Class.define("qx.ui.form.validation.Manager",
 
 
     /**
-     * Internal setter for the valid member. It generates the event if
-     * necessary and stores the new value
+     * Returns true, if the given item implements the
+     * {@link qx.data.controller.ISelection} interface.
      *
-     * @param value {Boolean|null} The new valid value of the manager.
+     * @param formItem {qx.core.Object} The item to check.
+     * @return {Boolean} true, if the given item implements the
+     *   necessary interface.
      */
-    __setValid: function(value) {
+    __supportsDataBindingSelection : function(formItem) {
+      var clazz = formItem.constructor;
+      return qx.Class.hasInterface(clazz, qx.data.controller.ISelection);
+    },
+
+
+    /**
+     * Sets the valid state of the manager. It generates the event if
+     * necessary and stores the new value.
+     *
+     * @param value {Boolean|null} The new valid state of the manager.
+     */
+    _setValid: function(value) {
       this._showToolTip(value);
       var oldValue = this.__valid;
       this.__valid = value;
@@ -583,6 +600,7 @@ qx.Class.define("qx.ui.form.validation.Manager",
       }
       // set the manager to its initial valid value
       this.__valid = null;
+      this._showToolTip(true);
     },
 
 
@@ -641,7 +659,7 @@ qx.Class.define("qx.ui.form.validation.Manager",
         }
       }
       // set the actual valid state of the manager
-      this.__setValid(valid);
+      this._setValid(valid);
       // reset the results
       this.__asyncResults = {};
       // fire the complete event (no entry in the results with null)
@@ -657,6 +675,7 @@ qx.Class.define("qx.ui.form.validation.Manager",
   */
   destruct : function()
   {
+    this._showToolTip(true);
     this.__formItems = null;
   }
 });

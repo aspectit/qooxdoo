@@ -65,6 +65,8 @@
           "=collect-environment-info": { "$ref": "#/definitions/collect-environment-info" },
           "combine-images":            { "$ref": "#/definitions/combine-images" },
           "=combine-images":           { "$ref": "#/definitions/combine-images" },
+          "font-map":                  { "$ref": "#/definitions/font-map" },
+          "=font-map":                 { "$ref": "#/definitions/font-map" },
           "compile":                   { "$ref": "#/definitions/compile" },
           "=compile":                  { "$ref": "#/definitions/compile" },
           "compile-options":           { "$ref": "#/definitions/compile-options" },
@@ -119,8 +121,6 @@
           "=run":                      { "$ref": "#/definitions/run" },
           "shell":                     { "$ref": "#/definitions/shell" },
           "=shell":                    { "$ref": "#/definitions/shell" },
-          "simulate":                  { "$ref": "#/definitions/simulate" },
-          "=simulate":                 { "$ref": "#/definitions/simulate" },
           "slice-images":              { "$ref": "#/definitions/slice-images" },
           "=slice-images":             { "$ref": "#/definitions/slice-images" },
           "translate":                 { "$ref": "#/definitions/translate" },
@@ -255,6 +255,30 @@
               "prefix": {
                 "type": "array",
                 "items": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "font-map": {
+      "description": "Triggers creation of a font map that resolves the glyphname to its unicode id.",
+      "type": "object",
+      "properties": {
+        "fonts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "prefix": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "size": {
+                "type": "number"
+              },
+              "alias": {
+                "type": "string"
               }
             }
           }
@@ -650,19 +674,6 @@
         "command-not-found": { "type": "string" }
       }
     },
-    "simulate": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "java-classpath": {
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "qxselenium-path": { "type": "string" },
-        "rhino-class": { "type": "string" },
-        "simulator-script": { "type": "string" }
-      }
-    },
     "slice-images": {
       "description": "Triggers cutting images into regions.",
       "type": "object",
@@ -687,7 +698,9 @@
           "items": { "type": "string" }
         },
         "profiles-with-metadata": { "type": "boolean" },
-        "poentry-with-occurrences": { "type": "boolean" }
+        "poentry-with-occurrences": { "type": "boolean" },
+        "occurrences-with-linenumber": { "type": "boolean" },
+        "eol-style": { "enum": ["LF", "CR", "CRLF"] }
       }
     },
     "use": {

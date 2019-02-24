@@ -8,8 +8,7 @@
      2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -25,7 +24,7 @@ qx.Class.define("qx.test.mobile.form.Slider",
   {
     testValue : function()
     {
-      var slider = new qx.ui.mobile.form.Slider().set({"step": 4});
+      var slider = new qx.ui.mobile.form.Slider().set({"step": 4.5});
       this.getRoot().add(slider);
 
       this.assertEquals(0,slider.getValue());
@@ -35,7 +34,7 @@ qx.Class.define("qx.test.mobile.form.Slider",
       this.assertEventFired(slider, "changeValue", function() {
         slider.nextValue();
       }, function(evt) {
-        this.assertEquals(4, evt.getData());
+        this.assertEquals(4.5, evt.getData());
       }.bind(this));
 
       this.assertEventFired(slider, "changeValue", function() {
@@ -47,7 +46,7 @@ qx.Class.define("qx.test.mobile.form.Slider",
       this.assertEventFired(slider, "changeValue", function() {
         slider.previousValue();
       }, function(evt) {
-        this.assertEquals(7, evt.getData());
+        this.assertEquals(6.5, evt.getData());
       }.bind(this));
 
       slider.destroy();

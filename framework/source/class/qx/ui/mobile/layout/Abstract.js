@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -71,8 +70,8 @@ qx.Class.define("qx.ui.mobile.layout.Abstract",
 
 
     /**
-     * Returns the supported child layout properites. Needed to validate
-     * the incoming layout properites. Override this function in your implementation.
+     * Returns the supported child layout properties. Needed to validate
+     * the incoming layout properties. Override this function in your implementation.
      *
      * @return {Map} The supported child layout properties, e.g. <code>{"property":1}</code>
      */
@@ -144,7 +143,7 @@ qx.Class.define("qx.ui.mobile.layout.Abstract",
         if (this.__cachedProperties) {
           for (var property in this.__cachedProperties)
           {
-            this.reset(property)
+            this.reset(property);
             this.set(property, this.__cachedProperties[property]);
           }
         }

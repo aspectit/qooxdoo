@@ -8,8 +8,7 @@
      2006 STZ-IDA, Germany, http://www.stz-ida.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -25,11 +24,13 @@ qx.Class.define("qx.ui.table.pane.FocusIndicator",
   extend : qx.ui.container.Composite,
 
   /**
-   * @param scroller {Scroller} The scroller, which contains this focus indicator
+   * @param scroller {qx.ui.table.pane.Scroller} The scroller, which contains this focus indicator
    */
   construct : function(scroller)
   {
-    this.base(arguments);
+    // use the grow layout to make sure that the editing control
+    // always fills the focus indicator box.
+    this.base(arguments, new qx.ui.layout.Grow());
     this.__scroller = scroller;
 
     this.setKeepActive(true);
@@ -86,8 +87,8 @@ qx.Class.define("qx.ui.table.pane.FocusIndicator",
     moveToCell : function(col, row)
     {
       // check if the focus indicator is shown and if the new column is
-      // editable. if not, just exclude the incdicator because the pointer events
-      // should go to the cell itself linke with HTML links [BUG #4250]
+      // editable. if not, just exclude the indicator because the pointer events
+      // should go to the cell itself linked with HTML links [BUG #4250]
       if (
         !this.__scroller.getShowCellFocusIndicator() &&
         !this.__scroller.getTable().getTableModel().isColumnEditable(col)

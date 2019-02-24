@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -36,7 +35,7 @@ qx.Bootstrap.define("qx.bom.client.CssAnimation",
      *  <li><code>name</code> The name of the css animation style</li>
      *  <li><code>play-state</code> The name of the play-state style</li>
      *  <li><code>start-event</code> The name of the start event</li>
-     *  <li><code>iternation-event</code> The name of the iternation event</li>
+     *  <li><code>iteration-event</code> The name of the iteration event</li>
      *  <li><code>end-event</code> The name of the end event</li>
      *  <li><code>fill-mode</code> The fill-mode style</li>
      *  <li><code>keyframes</code> The name of the keyframes selector.</li>
@@ -103,6 +102,10 @@ qx.Bootstrap.define("qx.bom.client.CssAnimation",
      * @return {String} The name of the event.
      */
     getAnimationStart : function() {
+      // special handling for mixed prefixed / unprefixed implementations
+      if (qx.bom.Event.supportsEvent(window, "webkitanimationstart")) {
+        return "webkitAnimationStart";
+      }
       var mapping = {
         "msAnimation" : "MSAnimationStart",
         "WebkitAnimation" : "webkitAnimationStart",
@@ -121,13 +124,17 @@ qx.Bootstrap.define("qx.bom.client.CssAnimation",
      * @return {String} The name of the event.
      */
     getAnimationIteration : function() {
+      // special handling for mixed prefixed / unprefixed implementations
+      if (qx.bom.Event.supportsEvent(window, "webkitanimationiteration")) {
+        return "webkitAnimationIteration";
+      }
       var mapping = {
         "msAnimation" : "MSAnimationIteration",
         "WebkitAnimation" : "webkitAnimationIteration",
         "MozAnimation" : "animationiteration",
         "OAnimation" : "oAnimationIteration",
         "animation" : "animationiteration"
-      }
+      };
 
       return mapping[this.getName()];
     },
@@ -139,13 +146,17 @@ qx.Bootstrap.define("qx.bom.client.CssAnimation",
      * @return {String} The name of the event.
      */
     getAnimationEnd : function() {
+      // special handling for mixed prefixed / unprefixed implementations
+      if (qx.bom.Event.supportsEvent(window, "webkitanimationend")) {
+        return "webkitAnimationEnd";
+      }
       var mapping = {
         "msAnimation" : "MSAnimationEnd",
         "WebkitAnimation" : "webkitAnimationEnd",
         "MozAnimation" : "animationend",
         "OAnimation" : "oAnimationEnd",
         "animation" : "animationend"
-      }
+      };
 
       return mapping[this.getName()];
     },

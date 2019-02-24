@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -47,6 +46,7 @@ qx.Class.define("qx.test.bom.Blocker",
       this.__blocker.unblock();
       this.__blocker.dispose();
       this.__blocker = null;
+      qx.dom.Element.remove(this.__blockedElement);
     },
 
     testBlockWholeDocument : function()

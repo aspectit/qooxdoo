@@ -8,8 +8,7 @@ Copyright:
   2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
 License:
-  LGPL: http://www.gnu.org/licenses/lgpl.html
-  EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
   See the LICENSE file in the project's top-level directory for details.
 
 Authors:
@@ -52,14 +51,14 @@ qx.Class.define("qx.test.io.part.Package",
     {
       var urls = [
         this.getUrl("qx/test/part/file1.js")
-      ]
+      ];
       var pkg = this.createPackage(urls, "1", false);
       this.assertEquals("initialized", pkg.getReadyState());
 
       pkg.load(function() { this.resume(function() {
         this.assertEquals("complete", pkg.getReadyState());
         this.assertEquals("file1", qx.test.PART_FILES[0]);
-      }, this)}, this);
+      }, this);}, this);
 
       this.assertEquals("loading", pkg.getReadyState());
 
@@ -81,7 +80,7 @@ qx.Class.define("qx.test.io.part.Package",
           ["file1", "file2", "file3"],
           qx.test.PART_FILES
         );
-      }, this)}, this);
+      }, this);}, this);
 
       this.wait();
     },
@@ -107,7 +106,7 @@ qx.Class.define("qx.test.io.part.Package",
           ["file1", "file2", "file3"],
           qx.test.PART_FILES
         );
-      }, this)}, this);
+      }, this);}, this);
 
       this.wait();
     },
@@ -136,7 +135,7 @@ qx.Class.define("qx.test.io.part.Package",
       var pkg = this.createPackage(urls, "1", false);
       pkg.load(function() { this.resume(function() {
         this.assertEquals("error", pkg.getReadyState());
-      }, this)}, this);
+      }, this);}, this);
 
       this.wait();
     },
@@ -162,7 +161,7 @@ qx.Class.define("qx.test.io.part.Package",
           ["file1-closure"],
           qx.test.PART_FILES
         );
-      }, this)}, this);
+      }, this);}, this);
 
       this.wait();
     },
@@ -192,7 +191,7 @@ qx.Class.define("qx.test.io.part.Package",
           ["file1-closure"],
           qx.test.PART_FILES
         );
-      }, this)}, this);
+      }, this);}, this);
 
       this.wait();
     },
@@ -215,7 +214,7 @@ qx.Class.define("qx.test.io.part.Package",
         {
           this.assertEquals("error", pkg.getReadyState());
           this.assertJsonEquals([], qx.test.PART_FILES);
-        }, this)
+        }, this);
       }, this);
 
       qx.Part.TIMEOUT = oldTimeout;

@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -28,7 +27,7 @@ qx.Class.define("qx.test.ui.selection.TreeMultiSelection",
       var length = 10;
       this._selection = [];
       this._notInSelection = [];
-      this._mode = "multi"
+      this._mode = "multi";
 
       this._widget = new qx.ui.tree.Tree().set(
       {

@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -44,6 +43,7 @@ qx.Class.define("qx.ui.form.TextArea",
     this.initWrap();
 
     this.addListener("roll", this._onRoll, this);
+    this.addListener("resize", this._onResize, this);
   },
 
 
@@ -149,6 +149,21 @@ qx.Class.define("qx.ui.form.TextArea",
 
       if (newScrollY != scrollY) {
         e.stop();
+      }
+    },
+	
+	
+    /**
+     * When the element resizes we throw away the clone and trigger autosize again, otherwise the clone would have
+     * another width and the autosize calculation would be faulty.
+     * 
+     * @param e {qx.event.type.Data} resize event.
+     */
+    _onResize : function(e) {
+      if (this.__areaClone) {
+        this.__areaClone.dispose();
+        this.__areaClone = null;
+        this.__autoSize();
       }
     },
 

@@ -8,8 +8,7 @@
      2007 Derrell Lipman
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -608,7 +607,7 @@ qx.Class.define("qx.ui.treevirtual.SimpleTreeDataCellRenderer",
      *   If bUseTreeLines is enabled, then further filtering of the left-most
      *   tree line may be specified here.  If <i>true</i> then the left-most
      *   tree line, between top-level siblings, will not be displayed.
-     *   If <i>false</i>, then the left-most tree line wiill be displayed
+     *   If <i>false</i>, then the left-most tree line will be displayed
      *   just like all of the other tree lines.
      *
      * @return {Map} map of image properties.

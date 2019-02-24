@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -85,22 +84,29 @@ qx.Bootstrap.define("qx.bom.client.Locale",
       var locale = (navigator.userLanguage || navigator.language || "");
 
       // Android Bug: Android does not return the system language from the
-      // navigator language. Try to parse the language from the userAgent.
+      // navigator language before version 4.4.x. Try to parse the language
+      // from the userAgent.
       // See http://code.google.com/p/android/issues/detail?id=4641
-      if (qx.bom.client.OperatingSystem.getName() == "android")
-      {
-        var match = /(\w{2})-(\w{2})/i.exec(navigator.userAgent);
-        if (match) {
-          locale = match[0];
+      if (qx.bom.client.OperatingSystem.getName() == "android") {
+        var version = /^(\d+)\.(\d+)(\..+)?/i.exec(qx.bom.client.OperatingSystem.getVersion());
+        if (qx.lang.Type.isArray(version) && version.length >= 3) {
+          if (parseInt(version[1]) < 4 || (parseInt(version[1]) === 4 && parseInt(version[2]) < 4)) {
+            var match = /(\w{2})-(\w{2})/i.exec(navigator.userAgent);
+            if (match) {
+              locale = match[0];
+            }
+          }
         }
       }
 
       return locale.toLowerCase();
     }
+
   },
 
   defer : function(statics) {
     qx.core.Environment.add("locale", statics.getLocale);
     qx.core.Environment.add("locale.variant", statics.getVariant);
+    qx.core.Environment.add("locale.default", "C");
   }
 });

@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -150,6 +149,21 @@ qx.Class.define("qx.test.data.store.Json",
     },
 
 
+    testParseErrorForResource : function() {
+      this.__store.addListener("parseError", function(ev) {
+        this.resume(function() {
+          this.assertString(ev.getData().response, "Parse error object does not contain response!");
+          this.assertObject(ev.getData().error, "Parse error object does not contain parser exception!");
+        }, this);
+      }, this);
+
+      var resource = "qx/test/failing.json";
+      this.__store.setUrl(resource);
+
+      this.wait();
+    },
+
+
     testLoadAlias : function() {
       this.__store.addListener("loaded", function() {
         this.resume(function() {
@@ -250,7 +264,7 @@ qx.Class.define("qx.test.data.store.Json",
 
       var delegate = {
         getModelClass : function(properties) {
-          if (properties == 'a"b') {
+          if (properties == 'a|b' || properties == 'a|b♥') {
             return qx.Class.getByName("qx.test.AB");
           }
           return null;
@@ -596,7 +610,7 @@ qx.Class.define("qx.test.data.store.Json",
       {
         this.__store.setUrl("/foo");
         server.respond();
-      }, this, 500)
+      }, this, 500);
 
       this.wait(1000);
     }

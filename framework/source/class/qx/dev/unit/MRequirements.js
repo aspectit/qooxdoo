@@ -8,8 +8,7 @@
      2004-2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -235,25 +234,13 @@ qx.Mixin.define("qx.dev.unit.MRequirements", {
 
 
     /**
-     * Checks if the application is controlled by Selenium
+     * Checks if the application is NOT running on OS X
      *
-     * @return {Boolean} <code>false</code> if the application is controlled by Selenium
+     * @return {Boolean} <code>true</code> if the operating system is NOT OX X
      */
-    hasNoSelenium : function()
+    hasNoOsx : function()
     {
-      if (window.selenium) {
-        return false;
-      }
-
-      var win = window.top || window;
-      var opener = win.opener || win;
-      try {
-        // Firefox denies permission here
-        return typeof opener.selenium == "undefined";
-      }
-      catch(ex) {
-        return win.name.indexOf("selenium") < 0;
-      }
+      return (qx.core.Environment.get("os.name") === "osx"?false:true);
     },
 
 
@@ -266,6 +253,40 @@ qx.Mixin.define("qx.dev.unit.MRequirements", {
     {
       var isWin7 = (qx.core.Environment.get("os.name") === "win" && qx.core.Environment.get("os.version") === "7");
       return (isWin7 ? false : true);
+    },
+
+
+    /**
+     * Checks if the application is running on Windows 10
+     *
+     * @return {Boolean} <code>false</code> if operating system is Windows 10
+     */
+    hasNoWin10 : function()
+    {
+      var isWin10 = (qx.core.Environment.get("os.name") === "win" && qx.core.Environment.get("os.version") === "10");
+      return (isWin10 ? false : true);
+    },
+
+
+    /**
+     * Checks if the application is not running in a Google Chrome browser on Linux
+     *
+     * @return {Boolean} <code>true</code> if the browser is not Google Chrome on Linux
+     */
+    hasNoChromeOnLinux : function()
+    {
+      return (qx.core.Environment.get("browser.name") === "chrome" && qx.core.Environment.get("os.name") === "linux"?false:true);
+    },
+
+
+    /**
+    * Checks if the application is running on a client supporting async functions
+    *
+    * @return {Boolean} <code>true</code> if the client supports async functions
+    */
+    hasAsyncFunctions : function()
+    {
+      return qx.core.Environment.get("ecmascript.function.async");
     }
   }
 

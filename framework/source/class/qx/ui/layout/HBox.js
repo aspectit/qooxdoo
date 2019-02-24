@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -97,7 +96,7 @@ qx.Class.define("qx.ui.layout.HBox",
    * @param spacing {Integer?0} The spacing between child widgets {@link #spacing}.
    * @param alignX {String?"left"} Horizontal alignment of the whole children
    *     block {@link #alignX}.
-   * @param separator {String|qx.ui.decoration.IDecorator} A separator to render between the items
+   * @param separator {String|qx.ui.decoration.IDecorator?} A separator to render between the items
    */
   construct : function(spacing, alignX, separator)
   {
@@ -260,7 +259,7 @@ qx.Class.define("qx.ui.layout.HBox",
         this.__flexs = flexs;
       }
 
-      this.__enableFlex = enableFlex
+      this.__enableFlex = enableFlex;
       this.__children = children;
 
       // Clear invalidation marker

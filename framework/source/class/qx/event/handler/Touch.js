@@ -8,8 +8,7 @@
      2004-2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -33,7 +32,7 @@
 qx.Class.define("qx.event.handler.Touch",
 {
   extend : qx.event.handler.TouchCore,
-  implement : qx.event.IEventHandler,
+  implement : [ qx.event.IEventHandler, qx.core.IDisposable ],
 
   /*
   *****************************************************************************
@@ -203,9 +202,9 @@ qx.Class.define("qx.event.handler.Touch",
 
 
     /**
-     * Call overriden method.
+     * Call overridden method.
      *
-     * @param method {String} Name of the overriden method.
+     * @param method {String} Name of the overridden method.
      * @param args {Array} Arguments.
      */
     __callBase: function(method, args) {
@@ -225,7 +224,7 @@ qx.Class.define("qx.event.handler.Touch",
 
     // Prevent scrolling on the document to avoid scrolling at all
     if (qx.core.Environment.get("event.touch")) {
-      // get the handler to asure that the instance is created
+      // get the handler to assure that the instance is created
       qx.event.Registration.getManager(document).getHandler(statics);
     }
   }

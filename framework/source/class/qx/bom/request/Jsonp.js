@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -305,9 +304,9 @@ qx.Bootstrap.define("qx.bom.request.Jsonp",
     },
 
     /**
-     * Call overriden method.
+     * Call overridden method.
      *
-     * @param method {String} Name of the overriden method.
+     * @param method {String} Name of the overridden method.
      * @param args {Array} Arguments.
      */
     __callBase: function(method, args) {

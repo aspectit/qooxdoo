@@ -8,8 +8,7 @@
      2004-2013 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -3365,6 +3364,8 @@ if (typeof sinon == "undefined") {
 
         // Prevent multiple executions which will completely remove these props
         this.methods = [];
+      
+        qx.util.DeferredCallManager.getInstance().refreshTimeout();
     }
 
     function stubGlobal(method, clock) {
@@ -4098,7 +4099,7 @@ if (typeof module !== 'undefined' && module.exports) {
 /**
  * The Sinon "server" mimics a web server that receives requests from
  * sinon.FakeXMLHttpRequest and provides an API to respond to those requests,
- * both synchronously and asynchronously. To respond synchronuously, canned
+ * both synchronously and asynchronously. To respond synchronously, canned
  * answers have to be provided upfront.
  *
  * @author Christian Johansen (christian@cjohansen.no)
@@ -4312,7 +4313,7 @@ if (typeof module !== 'undefined' && module.exports) {
  * Add-on for sinon.fakeServer that automatically handles a fake timer along with
  * the FakeXMLHttpRequest. The direct inspiration for this add-on is jQuery
  * 1.3.x, which does not use xhr object's onreadystatehandler at all - instead,
- * it polls the object for completion with setInterval. Dispite the direct
+ * it polls the object for completion with setInterval. Despite the direct
  * motivation, there is nothing jQuery-specific in this file, so it can be used
  * in any environment where the ajax implementation depends on setInterval or
  * setTimeout.
@@ -4929,4 +4930,4 @@ return sinon;}.call(typeof window != 'undefined' && window || {}));
   };
 
 
-}).call(this);
+}).call(window);

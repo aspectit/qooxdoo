@@ -8,8 +8,7 @@
      2006 STZ-IDA, Germany, http://www.stz-ida.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -87,8 +86,13 @@ qx.Class.define("qx.ui.table.pane.Scroller",
     this._paneClipper.addListener("pointermove", this._onPointermovePane, this);
     this._paneClipper.addListener("pointerdown", this._onPointerdownPane, this);
     this._paneClipper.addListener("tap", this._onTapPane, this);
+    this._paneClipper.addListener("contextmenu", this._onTapPane, this);
     this._paneClipper.addListener("contextmenu", this._onContextMenu, this);
-    this._paneClipper.addListener("dbltap", this._onDbltapPane, this);
+    if (qx.core.Environment.get("device.type") === "desktop") {
+      this._paneClipper.addListener("dblclick", this._onDbltapPane, this);
+    } else {
+      this._paneClipper.addListener("dbltap", this._onDbltapPane, this);
+    }
     this._paneClipper.addListener("resize", this._onResizePane, this);
 
     // if we have overlayed scroll bars, we should use a separate container
@@ -178,7 +182,7 @@ qx.Class.define("qx.ui.table.pane.Scroller",
 
   events :
   {
-    /** Dispatched if the pane is scolled horizontally */
+    /** Dispatched if the pane is scrolled horizontally */
     "changeScrollY" : "qx.event.type.Data",
 
     /** Dispatched if the pane is scrolled vertically */
@@ -210,13 +214,18 @@ qx.Class.define("qx.ui.table.pane.Scroller",
   properties :
   {
 
-    /** Whether to show the horizontal scroll bar */
+    /**
+     * Whether to show the horizontal scroll bar. This is a tri-state
+     * value. `true` means show the scroll bar; `false` means exclude it; null
+     * means hide it so it retains its space but doesn't show a scroll bar.
+     */
     horizontalScrollBarVisible :
     {
       check : "Boolean",
       init : false,
       apply : "_applyHorizontalScrollBarVisible",
-      event : "changeHorizontalScrollBarVisible"
+      event : "changeHorizontalScrollBarVisible",
+      nullable : true
     },
 
     /** Whether to show the vertical scroll bar */
@@ -385,6 +394,8 @@ qx.Class.define("qx.ui.table.pane.Scroller",
     __top : null,
 
     __timer : null,
+		
+		__focusIndicatorPointerDownListener: null,
 
 
     /**
@@ -488,7 +499,14 @@ qx.Class.define("qx.ui.table.pane.Scroller",
 
     // property modifier
     _applyHorizontalScrollBarVisible : function(value, old) {
-      this.__horScrollBar.setVisibility(value ? "visible" : "excluded");
+      if (value === null)
+      {
+        this.__horScrollBar.setVisibility("hidden");
+      }
+      else
+      {
+        this.__horScrollBar.setVisibility(value ? "visible" : "excluded");
+      }
     },
 
 
@@ -539,7 +557,7 @@ qx.Class.define("qx.ui.table.pane.Scroller",
      *
      * @param scrollY {Integer} The new scroll position.
      * @param renderSync {Boolean?false} Whether the table update should be
-     *     performed synchonously.
+     *     performed synchronously.
      */
     setScrollY : function(scrollY, renderSync)
     {
@@ -1280,12 +1298,6 @@ qx.Class.define("qx.ui.table.pane.Scroller",
 
       this.getApplicationRoot().setGlobalCursor(null);
       this.setCursor(null);
-
-      // handle edit cell if available
-      if (this.isEditing()) {
-        var height = this._cellEditor.getBounds().height;
-        this._cellEditor.setUserBounds(0, 0, this.__lastResizeWidth, height);
-      }
     },
 
 
@@ -1821,7 +1833,7 @@ qx.Class.define("qx.ui.table.pane.Scroller",
         var value = tableModel.getValue(col, row);
 
         // scroll cell into view
-        this.scrollCellVisible(xPos, row);
+        this.scrollCellVisible(col, row);
 
         this.__cellEditorFactory = table.getTableColumnModel().getCellEditorFactory(col);
 
@@ -1877,12 +1889,8 @@ qx.Class.define("qx.ui.table.pane.Scroller",
         }
         else
         {
-          // The cell editor is a traditional in-place editor.
-          var size = this.__focusIndicator.getInnerSize();
-          this._cellEditor.setUserBounds(0, 0, size.width, size.height);
-
           // prevent tap event from bubbling up to the table
-          this.__focusIndicator.addListener("pointerdown", function(e)
+          this.__focusIndicatorPointerDownListener = this.__focusIndicator.addListener("pointerdown", function(e)
           {
             this.__lastPointerDownCell = {
               row : this.__focusedRow,
@@ -1962,6 +1970,11 @@ qx.Class.define("qx.ui.table.pane.Scroller",
         {
           this.__focusIndicator.removeState("editing");
           this.__focusIndicator.setKeepActive(true);
+
+					if (this.__focusIndicatorPointerDownListener !== null) {
+						this.__focusIndicator.removeListenerById(this.__focusIndicatorPointerDownListener);
+						this.__focusIndicatorPointerDownListener = null;
+					}
         }
         this._cellEditor.destroy();
         this._cellEditor = null;

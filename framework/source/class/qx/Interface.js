@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -305,9 +304,9 @@ qx.Bootstrap.define("qx.Interface",
         return false;
       }
 
-      var isBoolean = match[0] == "is" || match[0] == "toggle";
+      var isBoolean = match[0] === "is" || match[0] === "toggle";
       if (isBoolean) {
-        return qx.util.OOUtil.getPropertyDefinition(clazz, propertyName).check == "Boolean";
+        return qx.util.OOUtil.getPropertyDefinition(clazz, propertyName).check === "Boolean";
       }
 
       return true;
@@ -642,7 +641,7 @@ qx.Bootstrap.define("qx.Interface",
                   break;
 
                 default:
-                  throw new Error('Invalid key "' + key + '" in interface "' + name + '"! Static constants must be all of a primitive type.')
+                  throw new Error('Invalid key "' + key + '" in interface "' + name + '"! Static constants must be all of a primitive type.');
               }
             }
           }

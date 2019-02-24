@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -17,7 +16,7 @@
 
 ************************************************************************ */
 /**
- * Contains detection for QuickTime, Windows Media, DivX, Silverlight adn gears.
+ * Contains detection for QuickTime, Windows Media, DivX, Silverlight and gears.
  * If no version could be detected the version is set to an empty string as
  * default.
  *
@@ -31,7 +30,7 @@ qx.Bootstrap.define("qx.bom.client.Plugin",
   statics :
   {
     /**
-     * Checkes for the availability of google gears plugin.
+     * Checks for the availability of google gears plugin.
      *
      * @internal
      * @return {Boolean} <code>true</code> if gears is available
@@ -55,8 +54,10 @@ qx.Bootstrap.define("qx.bom.client.Plugin",
       try {
         // in IE11 Preview, ActiveXObject is undefined but instances can
         // still be created
-        return (typeof (new window.ActiveXObject("Microsoft.XMLHTTP")) === "object" ||
-          typeof (new window.ActiveXObject("MSXML2.DOMDocument.6.0")) === "object");
+        return window.ActiveXObject !== undefined && 
+          (typeof (new window.ActiveXObject("Microsoft.XMLHTTP")) === "object" ||
+           typeof (new window.ActiveXObject("MSXML2.DOMDocument.6.0")) === "object"
+          );
       } catch(ex) {
         return false;
       }
@@ -161,7 +162,7 @@ qx.Bootstrap.define("qx.bom.client.Plugin",
      */
     getWindowsMediaVersion : function() {
       var entry = qx.bom.client.Plugin.__db["wmv"];
-      return qx.bom.client.Plugin.__getVersion(entry.control, entry.plugin);
+      return qx.bom.client.Plugin.__getVersion(entry.control, entry.plugin, true);
     },
 
 
@@ -233,7 +234,7 @@ qx.Bootstrap.define("qx.bom.client.Plugin",
      */
     getWindowsMedia : function() {
       var entry = qx.bom.client.Plugin.__db["wmv"];
-      return qx.bom.client.Plugin.__isAvailable(entry.control, entry.plugin);
+      return qx.bom.client.Plugin.__isAvailable(entry.control, entry.plugin, true);
     },
 
 
@@ -291,11 +292,13 @@ qx.Bootstrap.define("qx.bom.client.Plugin",
      *   the test ActiveX Object.
      * @param pluginNames {Array} The names with which the plugins are listed in
      *   the navigator.plugins list.
+     * @param forceActiveX {Boolean?false} Force detection using ActiveX
+     *   for IE11 plugins that aren't listed in navigator.plugins
      * @return {String} The version of the plugin as string.
      */
-    __getVersion : function(activeXName, pluginNames) {
+    __getVersion : function(activeXName, pluginNames, forceActiveX) {
       var available = qx.bom.client.Plugin.__isAvailable(
-        activeXName, pluginNames
+        activeXName, pluginNames, forceActiveX
       );
       // don't check if the plugin is not available
       if (!available) {
@@ -303,7 +306,9 @@ qx.Bootstrap.define("qx.bom.client.Plugin",
       }
 
       // IE checks
-      if (qx.bom.client.Engine.getName() == "mshtml") {
+      if (qx.bom.client.Engine.getName() == "mshtml" &&
+        (qx.bom.client.Browser.getDocumentMode() < 11 || forceActiveX))
+      {
         try {
           var obj = new ActiveXObject(activeXName);
           var version;
@@ -371,11 +376,15 @@ qx.Bootstrap.define("qx.bom.client.Plugin",
      *   the test ActiveX Object.
      * @param pluginNames {Array} The names with which the plugins are listed in
      *   the navigator.plugins list.
+     * @param forceActiveX {Boolean?false} Force detection using ActiveX
+     *   for IE11 plugins that aren't listed in navigator.plugins
      * @return {Boolean} <code>true</code>, if the plugin available
      */
-    __isAvailable : function(activeXName, pluginNames) {
+    __isAvailable : function(activeXName, pluginNames, forceActiveX) {
       // IE checks
-      if (qx.bom.client.Engine.getName() == "mshtml") {
+      if (qx.bom.client.Engine.getName() == "mshtml" &&
+        (qx.bom.client.Browser.getDocumentMode() < 11 || forceActiveX))
+      {
 
         if (!this.getActiveX()) {
           return false;

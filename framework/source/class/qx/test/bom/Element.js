@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -120,8 +119,8 @@ qx.Class.define("qx.test.bom.Element",
       var clone = qx.bom.Element.clone(this._el);
 
       this.assertElement(clone, "Cloning of the element failed!");
-      this.assertEquals(clone.id, "el",  "Cloning of the element failed! Attribute 'id' was not cloned.")
-      this.assertEquals(clone.nodeName.toLowerCase(), "div",  "Cloning of the element failed! Different node name.")
+      this.assertEquals(clone.id, "el",  "Cloning of the element failed! Attribute 'id' was not cloned.");
+      this.assertEquals(clone.nodeName.toLowerCase(), "div",  "Cloning of the element failed! Different node name.");
     }
   }
 

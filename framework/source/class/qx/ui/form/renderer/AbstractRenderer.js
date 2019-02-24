@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -52,6 +51,33 @@ qx.Class.define("qx.ui.form.renderer.AbstractRenderer",
     form.addListener("change", this._onFormChange, this);
   },
 
+  properties :
+  {
+    /**
+     * A string that is appended to the label if it is not empty.
+     * Defaults to " :"
+     */
+    labelSuffix :
+    {
+      check : "String",
+      init : " :",
+      event : "changeLabelSuffix",
+      nullable : true
+    },
+
+    /**
+     * A string that is appended to the label and the label suffix if the corresponding
+     * form field is mandatory. Defaults to space plus a red asterisk.
+     */
+    requiredSuffix :
+    {
+      check : "String",
+      init : " <span style='color:red'>*</span> ",
+      event : "changeRequiredSuffix",
+      nullable : false
+    }
+  },
+
 
   members :
   {
@@ -61,7 +87,7 @@ qx.Class.define("qx.ui.form.renderer.AbstractRenderer",
 
 
     /**
-     * Renders the form: add's the items and buttons.
+     * Renders the form: adds the items and buttons.
      */
     _render : function() {
       // add the groups
@@ -142,14 +168,14 @@ qx.Class.define("qx.ui.form.renderer.AbstractRenderer",
      */
     _createLabelText : function(name, item)
     {
-      var required = "";
+      var requiredSuffix = "";
       if (item.getRequired()) {
-       required = " <span style='color:red'>*</span> ";
+        requiredSuffix = this.getRequiredSuffix();
       }
 
-      // Create the label. Append a colon only if there's text to display.
-      var colon = name.length > 0 || item.getRequired() ? " :" : "";
-      return name + required + colon;
+      // Create the label. Append a suffix only if there's text to display.
+      var labelSuffix = name.length > 0 || item.getRequired() ? this.getLabelSuffix() : "";
+      return name + requiredSuffix + labelSuffix;
     },
 
 
@@ -179,5 +205,8 @@ qx.Class.define("qx.ui.form.renderer.AbstractRenderer",
       qx.locale.Manager.getInstance().removeListener("changeLocale", this._onChangeLocale, this);
     }
     this._names = null;
+
+    this._form.removeListener("change", this._onFormChange, this);
+    this._form = null;
   }
 });

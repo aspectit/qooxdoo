@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -92,7 +91,17 @@ qx.Class.define("qx.ui.form.TextField",
     _onKeyPress : function(evt) {
       // On return
       if (evt.getKeyIdentifier() == "Enter") {
-        this.blur();
+        if (this.isFocusable()) {
+          this.blur();
+        }
+        else {
+           // When the text field is not focusable, blur() will raise an exception on
+           // touch devices and the virtual keyboard is not closed. To work around this
+           // issue, we're enabling the focus just for the blur() call.
+           this.setFocusable(true);
+           this.blur();
+           this.setFocusable(false);
+        }
       }
     }
   },

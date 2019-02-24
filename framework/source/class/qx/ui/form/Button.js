@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -87,7 +86,9 @@ qx.Class.define("qx.ui.form.Button",
     this.addListener("keyup", this._onKeyUp);
 
     // Stop events
-    this.addListener("dbltap", this._onStopEvent);
+    this.addListener("dblclick", function(e) {
+      e.stopPropagation();
+    });
   },
 
 
@@ -194,7 +195,7 @@ qx.Class.define("qx.ui.form.Button",
      * <li>Removes "abandoned" and adds "pressed" state (if "abandoned" state is set)</li>
      * </ul>
      *
-     * @param e {Event} Mouse event
+     * @param e {qx.event.type.Pointer} Mouse event
      */
     _onPointerOver : function(e)
     {
@@ -219,7 +220,7 @@ qx.Class.define("qx.ui.form.Button",
      * <li>Adds "abandoned" and removes "pressed" state (if "pressed" state is set)</li>
      * </ul>
      *
-     * @param e {Event} Mouse event
+     * @param e {qx.event.type.Pointer} Mouse event
      */
     _onPointerOut : function(e)
     {
@@ -244,7 +245,7 @@ qx.Class.define("qx.ui.form.Button",
      * <li>Adds "pressed" state</li>
      * </ul>
      *
-     * @param e {Event} Mouse event
+     * @param e {qx.event.type.Pointer} Mouse event
      */
     _onPointerDown : function(e)
     {
@@ -271,7 +272,7 @@ qx.Class.define("qx.ui.form.Button",
      * <li>Adds "hovered" state (if "abandoned" state is not set)</li>
      *</ul>
      *
-     * @param e {Event} Mouse event
+     * @param e {qx.event.type.Pointer} Mouse event
      */
     _onPointerUp : function(e)
     {

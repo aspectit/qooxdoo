@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -47,6 +46,7 @@ qx.Interface.define("qx.event.IEventDispatcher",
      * @param target {Element|Event} The event dispatch target
      * @param event {qx.event.type.Event} event object to dispatch
      * @param type {String} the event type
+     * @return {qx.Promise?} a promise, if one or more of the event handlers returned a promise
      */
     dispatchEvent : function(target, event, type)
     {

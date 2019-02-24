@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -156,7 +155,7 @@ qx.Mixin.define("qx.dev.unit.MTestLoader", {
     /**
      * Runs exactly one test from the test suite
      *
-     * @param testResult {TestResult} the result logger
+     * @param testResult {qx.dev.unit.TestResult} the result logger
      * @param className {String} Name of the test class
      * @param methodName {String} Name of the test method
      */
@@ -188,7 +187,7 @@ qx.Mixin.define("qx.dev.unit.MTestLoader", {
     /**
      * Runs all tests inside of the given namespace
      *
-     * @param testResult {TestResult} the result logger
+     * @param testResult {qx.dev.unit.TestResult} the result logger
      * @param namespaceName {String} Namespace of the tests to run
      */
     runTestsFromNamespace : function(testResult, namespaceName)

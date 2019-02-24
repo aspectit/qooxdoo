@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -26,35 +25,44 @@ qx.Class.define("qx.test.ui.LocaleSwitch",
   construct : function()
   {
     this.base(arguments);
-    var manager = this.manager = qx.locale.Manager.getInstance();
-
-    // add dummy translations
-    manager.addTranslation("en_QX", {
-      "test one": "test one",
-      "test two": "test two",
-      "test Hello %1!": "test Hello %1!",
-      "test Jonny": "test Jonny",
-      "test One car": "test One car",
-      "test %1 cars": "test %1 cars",
-      "key_short_Shift": "Shift"
-    });
-    manager.addTranslation("de_QX", {
-      "test one": "Eins",
-      "test two": "Zwei",
-      "test Hello %1!": "Servus %1!",
-      "test Jonny": "Jonathan",
-      "test One car": "Ein Auto",
-      "test %1 cars": "%1 Autos",
-      "key_short_Shift": "Umschalt"
-    });
+    this.manager = qx.locale.Manager.getInstance();
   },
 
 
 
   members :
   {
+    manager: null,
+    __translationAdded : null,
+
     setUp : function() {
+      if (!this.__translationAdded) {
+        // add dummy translations
+        this.manager.addTranslation("en_QX", {
+          "test one"        : "test one",
+          "test two"        : "test two",
+          "test Hello %1!"  : "test Hello %1!",
+          "test Jonny"      : "test Jonny",
+          "test One car"    : "test One car",
+          "test %1 cars"    : "test %1 cars",
+          "key_short_Shift" : "Shift"
+        });
+        this.manager.addTranslation("de_QX", {
+          "test one"        : "Eins",
+          "test two"        : "Zwei",
+          "test Hello %1!"  : "Servus %1!",
+          "test Jonny"      : "Jonathan",
+          "test One car"    : "Ein Auto",
+          "test %1 cars"    : "%1 Autos",
+          "key_short_Shift" : "Umschalt"
+        });
+        this.__translationAdded = true;
+      }
       this.manager.setLocale("en_QX");
+    },
+
+    tearDown : function() {
+      this.manager.resetLocale();
     },
 
 
@@ -75,25 +83,23 @@ qx.Class.define("qx.test.ui.LocaleSwitch",
 
     testLabel : function()
     {
-      var manager = qx.locale.Manager.getInstance();
-
       var label = new qx.ui.basic.Label(this.tr("test one"));
       this.getRoot().add(label);
 
       this.assertEquals("test one", label.getValue());
-      manager.setLocale("de_QX");
+      this.manager.setLocale("de_QX");
       this.assertEquals("Eins", label.getValue());
-      manager.setLocale("en_QX");
+      this.manager.setLocale("en_QX");
 
       label.setValue(this.tr("test Hello %1!", this.tr("test Jonny")));
       this.assertEquals("test Hello test Jonny!", label.getValue());
-      manager.setLocale("de_QX");
+      this.manager.setLocale("de_QX");
       this.assertEquals("Servus Jonathan!", label.getValue());
 
       // de -> en
       label.setValue(this.tr("test two"));
       this.assertEquals("Zwei", label.getValue());
-      manager.setLocale("en_QX");
+      this.manager.setLocale("en_QX");
       this.assertEquals("test two", label.getValue());
 
       label.destroy();
@@ -102,7 +108,6 @@ qx.Class.define("qx.test.ui.LocaleSwitch",
 
     testToolTipText : function()
     {
-      var manager = qx.locale.Manager.getInstance();
 
       var widget = new qx.ui.core.Widget();
       this.getRoot().add(widget);
@@ -110,7 +115,7 @@ qx.Class.define("qx.test.ui.LocaleSwitch",
       widget.setToolTipText(this.tr("test one"));
 
       this.assertEquals("test one", widget.getToolTipText());
-      manager.setLocale("de_QX");
+      this.manager.setLocale("de_QX");
       this.assertEquals("Eins", widget.getToolTipText());
 
       widget.destroy();

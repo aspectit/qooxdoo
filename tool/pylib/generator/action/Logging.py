@@ -10,8 +10,7 @@
 #    2006-2012 1&1 Internet AG, Germany, http://www.1und1.de
 #
 #  License:
-#    LGPL: http://www.gnu.org/licenses/lgpl.html
-#    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+#    MIT: https://opensource.org/licenses/MIT
 #    See the LICENSE file in the project's top-level directory for details.
 #
 #  Authors:
@@ -29,6 +28,7 @@ from generator         import Context
 from misc              import filetool, textutil, json, util
 from misc.ExtMap       import ExtMap
 from ecmascript.transform.optimizer import privateoptimizer
+from ecmascript.transform.optimizer import featureoptimizer
 from generator.output.CodeGenerator   import CodeGenerator
 from generator.code.Class           import Class, CompileOptions
 
@@ -120,6 +120,17 @@ def runPrivateDebug(jobconf):
     console.info("Privates debugging...")
     privateoptimizer.debug(privates)
 
+
+def runStaticsOptimizedDebug(jobconf):
+    if not jobconf.get("log/statics-optimized", False):
+        return
+    console = Context.console
+    cache   = Context.cache
+
+    features, _ = cache.read(featureoptimizer.cacheId)
+
+    console.info("Optimized statics as JSON...")
+    featureoptimizer.debug(features)
 
 ##
 #

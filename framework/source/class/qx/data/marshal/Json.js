@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -20,6 +19,8 @@
 /**
  * This class is responsible for converting json data to class instances
  * including the creation of the classes.
+ * To retrieve the native data of created models use the methods
+ *   described in {@link qx.util.Serializer}.
  */
 qx.Class.define("qx.data.marshal.Json",
 {
@@ -61,6 +62,21 @@ qx.Class.define("qx.data.marshal.Json",
       this.$$instance.toClass(data, includeBubbleEvents);
       // return the model
       return this.$$instance.toModel(data);
+    },
+    
+    /**
+     * Legacy json hash method used as default in Qooxdoo < v6.0.
+     * You can go back to the old behaviour like this:
+     * 
+     * <code>
+     *  var marshaller = new qx.data.marshal.Json({
+     *   getJsonHash: qx.data.marshal.Json.legacyJsonHash
+     *  });
+     * </code>
+     */
+    legacyJsonHash: function (data, includeBubbleEvents) {
+      return Object.keys(data).sort().join('"')
+        + (includeBubbleEvents===true ? "♥" : "");
     }
   },
 
@@ -76,10 +92,54 @@ qx.Class.define("qx.data.marshal.Json",
      *
      * @param data {Object} The JavaScript object from which the hash is
      *   required.
+     * @param includeBubbleEvents {Boolean?false} Whether the model should
+     *   support the bubbling of change events or not.
      * @return {String} The hash representation of the given JavaScript object.
      */
-    __jsonToHash: function(data) {
-      return Object.keys(data).sort().join('"');
+    __jsonToHash : function (data, includeBubbleEvents)
+    {
+      if (this.__delegate && this.__delegate.getJsonHash) {
+        return this.__delegate.getJsonHash(data, includeBubbleEvents);
+      }
+      return Object.keys(data).sort().join('|')
+           + (includeBubbleEvents===true ? "♥" : "");
+    },
+
+
+    /**
+     * Get the "most enhanced" hash for a given object.  That is the hash for
+     * the class that is most feature rich in respect of the bubble event
+     * feature. If there are two equal classes available (defined), one with
+     * and one without the bubble event feature, this method will return the
+     * hash of the class that includes the bubble event.
+     *
+     * @param data {Object} The JavaScript object from which the hash is
+     *   required.
+     * @param includeBubbleEvents {Boolean} Whether the preferred model should
+     *   support the bubbling of change events or not.
+     *   If <code>null</code>, an automatic selection will take place which
+     *   selects the "best" model currently available.
+     * @return {String} The hash representation of the given JavaScript object.
+     */
+    __jsonToBestHash : function (data, includeBubbleEvents)
+    {
+      // forced mode?
+      //
+      if (includeBubbleEvents === true) {
+        return this.__jsonToHash(data, true);
+      }
+      if (includeBubbleEvents === false) {
+        return this.__jsonToHash(data, false);
+      }
+
+      // automatic mode!
+      //
+      var hash = this.__jsonToHash(data); // without bubble event feature
+      var bubbleClassHash = hash + "♥";   // with bubble event feature
+      var bubbleClassName = "qx.data.model." + bubbleClassHash;
+
+      // In case there's a class with bubbling, we *always* prefer that one!
+      return qx.Class.isDefined(bubbleClassName) ? bubbleClassHash : hash;
     },
 
 
@@ -134,7 +194,7 @@ qx.Class.define("qx.data.marshal.Json",
         return;
       }
 
-      var hash = this.__jsonToHash(data);
+      var hash = this.__jsonToHash(data, includeBubbleEvents);
 
       // ignore rules
       if (this.__ignore(hash, parentProperty, depth)) {
@@ -170,12 +230,12 @@ qx.Class.define("qx.data.marshal.Json",
           key = this.__delegate.getPropertyMapping(key, hash);
         }
 
-        // stip the unwanted characters
+        // strip the unwanted characters
         key = key.replace(/-|\.|\s+/g, "");
         // check for valid JavaScript identifier (leading numbers are ok)
         if (qx.core.Environment.get("qx.debug")) {
           this.assertTrue((/^[$0-9A-Za-z_]*$/).test(key),
-          "The key '" + key + "' is not a valid JavaScript identifier.")
+          "The key '" + key + "' is not a valid JavaScript identifier.");
         }
 
         properties[key] = {};
@@ -227,23 +287,10 @@ qx.Class.define("qx.data.marshal.Json",
         extend : superClass,
         include : mixins,
         properties : properties,
-        members : members,
-        destruct : this.__disposeProperties
+        members : members
       };
 
       qx.Class.define("qx.data.model." + hash, newClass);
-    },
-
-
-    /**
-     * Destructor for all created classes which disposes all stuff stored in
-     * the properties.
-     */
-    __disposeProperties : function() {
-      var properties = qx.util.PropertyUtil.getAllProperties(this.constructor);
-      for (var desc in properties) {
-        this.__disposeItem(this.get(properties[desc].name));
-      };
     },
 
 
@@ -276,7 +323,8 @@ qx.Class.define("qx.data.marshal.Json",
      * @param data {Map} The data for which an instance should be created.
      * @return {qx.core.Object} An instance of the corresponding class.
      */
-    __createInstance: function(hash, data, parentProperty, depth) {
+    __createInstance : function (hash, data, parentProperty, depth)
+    {
       var delegateClass;
       // get the class from the delegate
       if (this.__delegate && this.__delegate.getModelClass) {
@@ -287,7 +335,15 @@ qx.Class.define("qx.data.marshal.Json",
       } else {
         var className = "qx.data.model." + hash;
         var clazz = qx.Class.getByName(className);
-        if (!clazz) {
+        if (!clazz)
+        {
+          // Extra check for possible bubble-event feature inconsistency
+          var noBubbleClassName = className.replace("♥", "");
+          if (qx.Class.getByName(noBubbleClassName))
+          {
+            throw new Error( "Class '" + noBubbleClassName + "' found, " +
+                             "but it does not support changeBubble event." );
+          }
           throw new Error("Class '" + className + "' could not be found.");
         }
         return (new clazz());
@@ -317,11 +373,14 @@ qx.Class.define("qx.data.marshal.Json",
      * given.
      *
      * @param data {Object} The object for which models should be created.
-     *
+     * @param includeBubbleEvents {Boolean?null} Whether the model should
+     *   support the bubbling of change events or not.
+     *   If omitted or <code>null</code>, an automatic selection will take place
+     *   which selects the "best" model currently available.
      * @return {qx.core.Object} The created model object.
      */
-    toModel: function(data) {
-      return this.__toModel(data, null, 0);
+    toModel : function (data, includeBubbleEvents) {
+      return this.__toModel(data, includeBubbleEvents, null, 0);
     },
 
 
@@ -329,12 +388,17 @@ qx.Class.define("qx.data.marshal.Json",
      * Implementation of {@link #toModel} used for recursion.
      *
      * @param data {Object} The object for which models should be created.
+     * @param includeBubbleEvents {Boolean|null} Whether the model should
+     *   support the bubbling of change events or not.
+     *   If <code>null</code>, an automatic selection will take place which
+     *   selects the "best" model currently available.
      * @param parentProperty {String|null} The name of the property the
      *   data will be stored in.
      * @param depth {Number} The depth of the data relative to the data's root.
      * @return {qx.core.Object} The created model object.
      */
-    __toModel: function(data, parentProperty, depth) {
+    __toModel : function (data, includeBubbleEvents, parentProperty, depth)
+    {
       var isObject = qx.lang.Type.isObject(data);
       var isArray = data instanceof Array || qx.Bootstrap.getClass(data) == "Array";
 
@@ -346,7 +410,7 @@ qx.Class.define("qx.data.marshal.Json",
         return data;
 
       // ignore rules
-      } else if (this.__ignore(this.__jsonToHash(data), parentProperty, depth)) {
+      } else if (this.__ignore(this.__jsonToBestHash(data, includeBubbleEvents), parentProperty, depth)) {
         return data;
 
       } else if (isArray) {
@@ -361,13 +425,13 @@ qx.Class.define("qx.data.marshal.Json",
         array.setAutoDisposeItems(true);
 
         for (var i = 0; i < data.length; i++) {
-          array.push(this.__toModel(data[i], parentProperty + "[" + i + "]", depth+1));
+          array.push(this.__toModel(data[i], includeBubbleEvents, parentProperty + "[" + i + "]", depth+1));
         }
         return array;
 
       } else if (isObject) {
         // create an instance for the object
-        var hash = this.__jsonToHash(data);
+        var hash = this.__jsonToBestHash(data, includeBubbleEvents);
         var model = this.__createInstance(hash, data, parentProperty, depth);
 
         // go threw all element in the data
@@ -394,7 +458,7 @@ qx.Class.define("qx.data.marshal.Json",
           // only set the properties if they are available [BUG #5909]
           var setterName = "set" + qx.lang.String.firstUp(propertyName);
           if (model[setterName]) {
-            model[setterName](this.__toModel(data[key], key, depth+1));
+            model[setterName](this.__toModel(data[key], includeBubbleEvents, key, depth+1));
           }
         }
         return model;
@@ -402,15 +466,5 @@ qx.Class.define("qx.data.marshal.Json",
 
       throw new Error("Unsupported type!");
     }
-  },
-
-  /*
-   *****************************************************************************
-      DESTRUCT
-   *****************************************************************************
-   */
-
-  destruct : function() {
-    this.__delegate = null;
   }
 });

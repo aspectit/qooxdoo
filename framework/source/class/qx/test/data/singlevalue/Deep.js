@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -269,11 +268,6 @@ qx.Class.define("qx.test.data.singlevalue.Deep",
           qx.data.SingleValueBinding.bind(a, "chiild.name", label, "value");
         }, qx.core.AssertionError, null, "Wrong property name.");
 
-        // set a wrong second parameter in the chain
-        this.assertException(function() {
-          qx.data.SingleValueBinding.bind(a, "child.naame", label, "value");
-        }, qx.core.AssertionError, null, "Wrong property name.");
-
         // set a complete wrong chain
         this.assertException(function() {
           qx.data.SingleValueBinding.bind(a, "affe", label, "value");
@@ -287,10 +281,10 @@ qx.Class.define("qx.test.data.singlevalue.Deep",
       qx.data.SingleValueBinding.bind(this.__a, "name", this.__label, "value");
 
       // chech the initial value
-      this.assertEquals("a", this.__label.getValue(), "Single property names dont work!");
+      this.assertEquals("a", this.__label.getValue(), "Single property names don't work!");
       // check the binding
       this.__a.setName("A");
-      this.assertEquals("A", this.__label.getValue(), "Single property names dont work!");
+      this.assertEquals("A", this.__label.getValue(), "Single property names don't work!");
     },
 
 
@@ -313,7 +307,7 @@ qx.Class.define("qx.test.data.singlevalue.Deep",
 
       // check the binding
       this.__b1.setName("A");
-      this.assertEquals("A", this.__label.getValue(), "Single property names dont work!");
+      this.assertEquals("A", this.__label.getValue(), "Single property names don't work!");
 
       // remove the binding
       qx.data.SingleValueBinding.removeBindingFromObject(this.__a, id);
@@ -648,6 +642,36 @@ qx.Class.define("qx.test.data.singlevalue.Deep",
 
       this.__a.setName(null);
       this.assertEquals(this.__a.getName(), this.__b2.getName());
+    },
+
+
+    /**
+     * Remove a deep binding that has a class in its binding that does not have a property in the chain.
+     */
+    testRemoveIncompleteBinding : function () {
+      var source = qx.data.marshal.Json.createModel({a: null});
+      var a = qx.data.marshal.Json.createModel({}); // a class that does not contain a property with name "b"
+      var target = qx.data.marshal.Json.createModel({result: null});
+
+      try {
+        source.bind('a.b', target, 'result');
+        source.setA(a);
+        source.removeAllBindings();
+      } catch (e) {
+        this.error(e);
+        this.assertTrue(false, e.message);
+      }
+
+      source = qx.data.marshal.Json.createModel({a: null});
+      source.setA(a);
+
+      try {
+        source.bind('a.b', target, 'result');
+        source.removeAllBindings();
+      } catch (e) {
+        this.error(e);
+        this.assertTrue(false, e.message);
+      }
     }
 
   }

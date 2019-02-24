@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -84,7 +83,7 @@ qx.Class.define("qx.ui.mobile.form.Slider",
      */
     minimum :
     {
-      check : "Integer",
+      check : "Number",
       init : 0,
       apply : "_refresh",
       event : "changeMinimum"
@@ -97,7 +96,7 @@ qx.Class.define("qx.ui.mobile.form.Slider",
      */
     maximum :
     {
-      check : "Integer",
+      check : "Number",
       init : 100,
       apply : "_refresh",
       event : "changeMaximum"
@@ -110,14 +109,14 @@ qx.Class.define("qx.ui.mobile.form.Slider",
      */
     step :
     {
-      check : "Integer",
+      check : "Number",
       init : 1,
       event : "changeStep"
     },
 
 
     /**
-     * Reverses the display direction of the slider knob. If true, the maxium of
+     * Reverses the display direction of the slider knob. If true, the maxmium of
      * the slider is on the left side and minimum on the right side.
      */
     reverseDirection :
@@ -277,7 +276,7 @@ qx.Class.define("qx.ui.mobile.form.Slider",
     /**
      * Returns the current position of the knob.
      *
-     * @param documentLeft {Integer} The left positon of the knob
+     * @param documentLeft {Integer} The left position of the knob
      * @return {Integer} The current position of the container element.
      */
     _getPosition : function(documentLeft)

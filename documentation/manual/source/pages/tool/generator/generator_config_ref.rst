@@ -138,7 +138,7 @@ Define the paths to cache directories, particularly to the compile cache. Takes 
 Possible keys are
 
 * **compile** : path to the "main" cache, the directory where compile results are cached, relative to the current (default:  ":doc:`${CACHE} <generator_config_macros>`")
-* **downloads** : directory where to put downloads (e.g. ``contrib://*`` libraries), relative to the current (default: ":doc:`${CACHE} <generator_config_macros>`/downloads")
+* **downloads** : directory where to put downloads, relative to the current (default: ":doc:`${CACHE} <generator_config_macros>`/downloads")
 * **invalidate-on-tool-change** : when true, the *compile* cache (but not the downloads) will be cleared whenever the tool chain is newer (relevant mainly for trunk users; default: *true*)
 
 :ref:`Special section <pages/tool/generator/generator_config_articles#cache_key>`
@@ -705,20 +705,10 @@ Define libraries to be taken into account for this job. Takes an array of maps.
 
 Each map can contain the keys
 
-* **manifest** *(required)* : specifies the qooxdoo library to use; can take
-  several forms:
+* **manifest** *(required)* : specifies the qooxdoo library to use:
 
-  * *a local file system path*: This must reference the Manifest file of
+  * *local file system path*: This must reference the Manifest file of
     the library; may be relative to config file location.
-  * ``contrib://`` *URL*: This must reference the catalog Manifest file of a
-    contribution's version, as available in the :doc:`qooxdoo-contrib
-    </pages/development/contrib>` catalog.
-  * ``http(s)://`` *URL*: This must reference one of two things:
-
-    * *a downloadeable archive*: The URL ends in an archive extension (like
-      *.zip*), the archive contains the contribution library.
-    * *a .json file*: The referenced JSON file is a catalog-style Manifest file which
-      contains a download URL.
 
 * **uri** : URI prefix from your HTML file to the directory of the library's
   "Manifest" file
@@ -1216,30 +1206,6 @@ and it will work from everywhere.
 
 * **command-not-found** : message string to be shown if command is not found within PATH system variable and it's not a built-in shell command
 
-.. _pages/tool/generator/generator_config_ref#simulate:
-
-simulate (deprecated)
-=====================
-
-Runs a suite of GUI tests (simulated interaction). Takes a map.
-
-::
-
-  "simulate" :
-  {
-    "java-classpath" : ["../rhino/js.jar", "../selenium/selenium-java-client-driver.jar"],
-    "qxselenium-path" : "${SIMULATOR_ROOT}/tool",
-    "rhino-class" : "org.mozilla.javascript.tools.shell.Main",
-    "simulator-script" : "${BUILD_PATH}/script/simulator.js"
-  }
-
-Possible keys are
-
-* **java-classpath** *(required)*: Java classpath argument for Rhino application. Takes an Array. Must point to the Selenium client driver and Rhino JARs. (default: *${SIMULATOR_CLASSPATH}*)
-* **qxselenium-path** *(required)*: Location of the QxSelenium Java class. (default: *${SIMULATOR_ROOT}/tool*)
-* **rhino-class** *(required)*: Full name of the Mozilla Rhino class that should be used to run the simulation. Set to *org.mozilla.javascript.tools.debugger.Main* to run the test application in Rhino's visual debugger. (default: *org.mozilla.javascript.tools.shell.Main*)
-* **simulator-script** *(required)*: Path of the compiled Simulator application to be run. (default: *${ROOT}/simulator/script/simulator.js*)
-
 .. _pages/tool/generator/generator_config_ref#slice-images:
 
 slice-images
@@ -1285,6 +1251,46 @@ Triggers cutting images into regions. Takes a map.
     * **border-width** : pixel width to cut into original image when slicing borders etc. Takes either a single integer (common border width for all sides) or an array of four integers (top, right, bottom, left).
     * **trim-width** : reduce the width of the center slice to no more than 20 pixels. (default: *true*)
 
+.. _pages/tool/generator/generator_config_ref#font_map_ref:
+
+font-map
+========
+
+Triggers the creation of a font map needed for icon fonts. This command uses the FontForge
+package to analyze a given font. The resulting data is saved in your application package, so that
+it is possible to lookup image sources like @FontAwesome/house.
+
+::
+
+  "font-map" :
+  {
+    "fonts" :
+    {
+      "${RESPATH}/foo/fonts/fontawesome-webfont.ttf" :
+      {
+        "prefix": [ "${RESPATH}" ],
+        "alias" : "FontAwesome",
+        "size" : 40
+      }
+    }
+  }
+
+.. note::
+
+  peer-keys: :ref:`pages/tool/generator/generator_config_ref#cache`
+
+.. note::
+
+  This key requires an external library (FontForge) to run successfully.
+
+* **fonts** : map with font entries.
+
+  * **<input_font>** :  path to input file for the slicing; may be relative to config file location
+
+    * **prefix** *(required)* : file name prefix used for the output files; will be interpreted relative to the input file location (so a plain name will result in output files in the same directory, but you can also navigate away with ``../../....`` etc.)
+    * **alias** : Alias used in the source identifier (i.e. FontAwesome as an alias will lead to @FontAwesome/ prefixes in your image source)
+    * **size** : pixel width that is used for the icon font by default.
+
 .. _pages/tool/generator/generator_config_ref#translate:
 
 translate
@@ -1296,10 +1302,12 @@ translate
 
   "translate" :
   {
-    "namespaces"               : [ "qx.util" ],
-    "locales"                  : [ "en", "de" ],
-    "pofile-with-metadata"     : (true|false)
-    "poentry-with-occurrences" : (true|false)
+    "namespaces"                  : [ "qx.util" ],
+    "locales"                     : [ "en", "de" ],
+    "pofile-with-metadata"        : (true|false)
+    "poentry-with-occurrences"    : (true|false)
+    "occurrences-with-linenumber" : (true|false),
+    "eol-style"                   : "(LF|CR|CRLF)"
   }
 
 .. note::
@@ -1310,6 +1318,8 @@ translate
 * **locales** :  List of locale identifiers to update.
 * **pofile-with-metadata** : Whether meta data is automatically added to a *new* .po file; on existing .po files the meta data is retained (default: *true*)
 * **poentry-with-occurrences** : Whether each PO entry is preceded by ``#:`` comments in the *.po* files, which indicate in which source file(s) and line number(s) this key is used (default: *true*)
+* **occurrences-with-linenumber** : Enables (or suppress) appending of line-numbers to every PO entry comment (default: *true*). Only effective when *poentry-with-occurrences* is enabled.
+* **eol-style** : Determines which line end character sequence to use (default: *LF*)
 
 .. _pages/tool/generator/generator_config_ref#use:
 

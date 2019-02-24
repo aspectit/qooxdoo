@@ -8,8 +8,7 @@
      2007-2013 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -113,13 +112,15 @@ qx.Class.define("qx.test.bom.element.Style",
       var isOldSafari = (qx.core.Environment.get("browser.name") == "safari" &&
                          qx.core.Environment.get("browser.version") < 6);
 
-      if (engine == "opera" || (engine == "webkit" && !isOldSafari)) {
+      if (engine == "opera" ||
+        (engine == "webkit" && !isOldSafari && qx.core.Environment.get("browser.name") !== "edge")) {
         expected = ["1px", "solid", "rgb(255, 0, 0)"];
       }
 
       qx.bom.element.Style.set(this.__element, name, style);
       if (qx.core.Environment.get("engine.name") == "mshtml" &&
-          qx.core.Environment.get("browser.documentmode") < 9)
+          qx.core.Environment.get("browser.documentmode") < 9 &&
+          qx.core.Environment.get("browser.name") !== "edge")
       {
         this.assertEquals("red 1px solid", qx.bom.element.Style.get(this.__element, name));
       }
@@ -134,13 +135,30 @@ qx.Class.define("qx.test.bom.element.Style",
     testSetFloat : function()
     {
       qx.bom.element.Style.set(this.__element, "float", "left");
-      this.assertEquals("left", this.__element.style.float);
+      this.assertEquals("left", this.__element.style.float || this.__element.style.styleFloat);
     },
 
     testCompileFloat : function()
     {
       var css = qx.bom.element.Style.compile({"float" : "left"});
       this.assertEquals("float:left;", css);
+    },
+
+    testGetFloat : function() {
+      // known to fail in chrome
+      if (qx.core.Environment.get("browser.name") == "chrome") {
+        throw new qx.dev.unit.RequirementError();
+      }
+
+      // important to set this value as CSS class
+      var sheet = qx.bom.Stylesheet.createElement('.right { float: right; }');
+      this.__element.className = 'right';
+
+      var floatValue = qx.bom.element.Style.get(this.__element, 'float');
+      this.assertEquals('right', floatValue);
+
+      qx.bom.Stylesheet.removeSheet(sheet);
+      this.__element.className = '';
     },
 
     testCompileContent : function()

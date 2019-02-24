@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -77,7 +76,7 @@ qx.Class.define("qx.ui.form.Form",
      * @param name {String?null} The name which is used by the data binding
      *   controller {@link qx.data.controller.Form}.
      * @param validatorContext {var?null} The context of the validator.
-     * @param options {Map?null} An additional map containin custom data which
+     * @param options {Map?null} An additional map containing custom data which
      *   will be available in your form renderer specific to the added item.
      */
     add : function(item, label, validator, name, validatorContext, options) {
@@ -136,7 +135,7 @@ qx.Class.define("qx.ui.form.Form",
      * *Hint:* The order of all add calls represent the order in the layout.
      *
      * @param button {qx.ui.form.Button} The button to add.
-     * @param options {Map?null} An additional map containin custom data which
+     * @param options {Map?null} An additional map containing custom data which
      *   will be available in your form renderer specific to the added button.
      */
     addButton : function(button, options) {
@@ -271,6 +270,45 @@ qx.Class.define("qx.ui.form.Form",
     },
 
 
+    /**
+     * Returns all added items as a map.
+     *
+     * @return {Map} A map containing for every item an entry with its name.
+     */
+    getItems : function() {
+      var items = {};
+      // go threw all groups
+      for (var i = 0; i < this.__groups.length; i++) {
+        var group = this.__groups[i];
+        // get all items
+        for (var j = 0; j < group.names.length; j++) {
+          var name = group.names[j];
+          items[name] = group.items[j];
+        }
+      }
+      return items;
+    },
+
+
+    /**
+     * Return an item by name.
+     *
+     * @param name {string} Item name.
+     * @return {qx.ui.form.IForm|null} The form item or null.
+     */
+    getItem : function(name) {
+      for (var i = 0; i < this.__groups.length; i++) {
+        var group = this.__groups[i];
+        for (var j = 0; j < group.names.length; j++) {
+          if (group.names[j] === name) {
+            return group.items[j];
+          }
+        }
+      }
+
+      return null;
+    },
+
 
     /*
     ---------------------------------------------------------------------------
@@ -383,28 +421,6 @@ qx.Class.define("qx.ui.form.Form",
        INTERNAL
     ---------------------------------------------------------------------------
     */
-
-    /**
-     * Returns all added items as a map.
-     *
-     * @return {Map} A map containing for every item an entry with its name.
-     *
-     * @internal
-     */
-    getItems : function() {
-      var items = {};
-      // go threw all groups
-      for (var i = 0; i < this.__groups.length; i++) {
-        var group = this.__groups[i];
-        // get all items
-        for (var j = 0; j < group.names.length; j++) {
-          var name = group.names[j];
-          items[name] = group.items[j];
-        }
-      }
-      return items;
-    },
-
 
     /**
      * Creates and returns the used validation manager.

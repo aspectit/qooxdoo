@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -27,7 +26,7 @@ qx.Class.define("qx.test.bom.Basic",
     setUp : function()
     {
       var div = document.createElement("div");
-      div.id = "html_basics"
+      div.id = "html_basics";
 
       div.innerHTML =
         '<div id="test1" class="hello world" title="hello world title">' +
@@ -38,7 +37,7 @@ qx.Class.define("qx.test.bom.Basic",
         '  <a id="test6" style="color:red;background:blue" href="../foo.html"><b>Foo</b>-Link</a>' +
         '  <table id="test7" valign="bottom"><tr><td colspan="3"></td></tr></table>' +
         '  <span id="test8">Black</span>' +
-        '</div>'
+        '</div>';
       document.body.appendChild(div);
     },
 
@@ -84,7 +83,7 @@ qx.Class.define("qx.test.bom.Basic",
       this.assertTrue(attrib.get(document.getElementById("test5"), "readonly"));
 
       this.info("test6");
-      this.assert(qx.lang.String.endsWith(attrib.get(document.getElementById("test6"), "href"), "/foo.html"));
+      this.assert(attrib.get(document.getElementById("test6"), "href").endsWith("/foo.html"));
 
       var test6Color = style.get(document.getElementById("test6"), "color");
       this.assertCssColor("red", test6Color);

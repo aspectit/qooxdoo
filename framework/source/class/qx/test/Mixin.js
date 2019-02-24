@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -235,8 +234,9 @@ qx.Class.define("qx.test.Mixin",
       {
         members :
         {
-          sayJuhu : function() { return this.base(arguments) + " Kinners"},
+          sayJuhu : function() { return this.base(arguments) + " Kinners";},
 
+          /** @lint ignoreUndeclaredPrivates(__b) */
           foo : function(dontRecurs)
           {
             var s = "";
@@ -255,7 +255,7 @@ qx.Class.define("qx.test.Mixin",
       if (this.isDebugOn())
       {
         this.assertException(function() {
-          qx.Class.include(qx.Patch1, qx.MPatch)
+          qx.Class.include(qx.Patch1, qx.MPatch);
         }, Error, new RegExp('Overwriting member ".*" of Class ".*" is not allowed!'));
       };
 

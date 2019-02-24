@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -799,7 +798,7 @@ qx.Class.define("qx.ui.layout.Dock",
       return {
         x : separatorWidthX || 0,
         y : separatorWidthY || 0
-      }
+      };
     },
 
 
@@ -852,7 +851,7 @@ qx.Class.define("qx.ui.layout.Dock",
           case 2:
             // Find the maximum width used by these fully stretched items
             // The recommended width used by these must add the currently
-            // occupied width by the ortogonal ordered children.
+            // occupied width by the orthogonal ordered children.
             widthY = Math.max(widthY, hint.width + widthX + marginX);
             minWidthY = Math.max(minWidthY, hint.minWidth + minWidthX + marginX);
 
@@ -872,7 +871,7 @@ qx.Class.define("qx.ui.layout.Dock",
           case 4:
             // Find the maximum height used by these fully stretched items
             // The recommended height used by these must add the currently
-            // occupied height by the ortogonal ordered children.
+            // occupied height by the orthogonal ordered children.
             heightX = Math.max(heightX, hint.height + heightY + marginY);
             minHeightX = Math.max(minHeightX, hint.minHeight + minHeightY + marginY);
 

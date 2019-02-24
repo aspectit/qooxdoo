@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -101,6 +100,10 @@ qx.Class.define("qx.ui.tree.provider.WidgetProvider",
         widget.setOpenSymbolMode("auto");
       }
 
+      if (this._tree.getOpenProperty()) {
+        widget.setModel(item);
+      }
+
       this._bindItem(widget, row);
       qx.ui.core.queue.Widget.add(widget);
 
@@ -132,7 +135,7 @@ qx.Class.define("qx.ui.tree.provider.WidgetProvider",
       if (createItem == null) {
         createItem = function() {
           return new qx.ui.tree.VirtualTreeItem();
-        }
+        };
       }
 
       var renderer = new qx.ui.virtual.cell.WidgetCell();

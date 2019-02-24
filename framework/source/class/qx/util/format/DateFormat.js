@@ -8,8 +8,7 @@
      2006 STZ-IDA, Germany, http://www.stz-ida.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -65,11 +64,14 @@
  * single-quoted.
  *
  * The same format patterns will be used for both parsing and output formatting.
+ * 
+ * NOTE: Instances of this class must be disposed of after use
+ *
  */
 qx.Class.define("qx.util.format.DateFormat",
 {
   extend : qx.core.Object,
-  implement : qx.util.format.IFormat,
+  implement : [ qx.util.format.IFormat ],
 
 
 
@@ -89,18 +91,7 @@ qx.Class.define("qx.util.format.DateFormat",
   {
     this.base(arguments);
 
-    if (!locale)
-    {
-      this.__locale = qx.locale.Manager.getInstance().getLocale();
-      this.__bindingId = qx.locale.Manager.getInstance().bind("locale", this, "locale");
-    }
-    else
-    {
-      this.__locale = locale;
-      this.setLocale(locale);
-    }
-
-    this.__initialLocale = this.__locale;
+    this.__initialLocale = this.__locale = locale;
 
     if (format != null)
     {
@@ -114,28 +105,10 @@ qx.Class.define("qx.util.format.DateFormat",
       }
     } else
     {
-      this.__format = qx.locale.Date.getDateFormat("long", this.__locale) + " " + qx.locale.Date.getDateTimeFormat("HHmmss", "HH:mm:ss", this.__locale);
+      this.__format = qx.locale.Date.getDateFormat("long", this.getLocale()) + " " + qx.locale.Date.getDateTimeFormat("HHmmss", "HH:mm:ss", this.getLocale());
     }
   },
 
-
-  /*
-  *****************************************************************************
-     PROPERTIES
-  *****************************************************************************
-  */
-
-  properties :
-  {
-
-    /** The locale used in this DateFormat instance*/
-    locale :
-    {
-      apply : "_applyLocale",
-      nullable : true,
-      check : "String"
-    }
-  },
 
   /*
   *****************************************************************************
@@ -230,7 +203,6 @@ qx.Class.define("qx.util.format.DateFormat",
 
   members :
   {
-    __bindingId : null,
     __locale : null,
     __initialLocale : null,
     __format : null,
@@ -330,7 +302,7 @@ qx.Class.define("qx.util.format.DateFormat",
     /**
      * Returns the week year of a date. (that is the year of the week where this date happens to be)
      * For a week in the middle of the summer, the year is easily obtained, but for a week
-     * when New Year's Eve takes place, the year of that week is ambigous.
+     * when New Year's Eve takes place, the year of that week is ambiguous.
      * The thursday day of that week is used to determine the year.
      *
      * @param date {Date} the date to get the week in year of.
@@ -423,14 +395,34 @@ qx.Class.define("qx.util.format.DateFormat",
     },
 
     /**
-     * Applies the new value for locale property
+     * Sets the new value for locale property
      * @param value {String} The new value.
-     * @param old {String} The old value.
      *
      */
-    _applyLocale : function(value, old)
+    setLocale : function(value)
     {
-      this.__locale = value === null ? this.setLocale(this.__initialLocale) : value;
+      if (value !== null && typeof value != "string") {
+        throw new Error("Cannot set locale to " + value + " - please provide a string");
+      }
+      this.__locale = value === null ? this.__initialLocale : value;
+    },
+    
+    /**
+     * Resets the Locale
+     */
+    resetLocale : function() {
+      this.setLocale(null);
+    },
+    
+    /**
+     * Returns the locale
+     */
+    getLocale : function() {
+      var locale = this.__locale;
+      if (locale === undefined) {
+        locale = qx.locale.Manager.getInstance().getLocale();
+      }
+      return locale;
     },
 
     /**
@@ -457,7 +449,7 @@ qx.Class.define("qx.util.format.DateFormat",
         date = new Date(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate(),date.getUTCHours(),date.getUTCMinutes(),date.getUTCSeconds(),date.getUTCMilliseconds());
       }
 
-      var locale = this.__locale;
+      var locale = this.getLocale();
 
       var fullYear = date.getFullYear();
       var month = date.getMonth();
@@ -1107,7 +1099,7 @@ qx.Class.define("qx.util.format.DateFormat",
     },
 
     /**
-     * Checks wether the rule matches the wildcard or not.
+     * Checks whether the rule matches the wildcard or not.
      * @param rule {Object} the rule we try to match with the wildcard
      * @param wildcardChar {String} the character in the wildcard
      * @param wildcardSize {Integer} the number of  wildcardChar characters in the wildcard
@@ -1147,9 +1139,9 @@ qx.Class.define("qx.util.format.DateFormat",
 
       var rules = this.__parseRules = [];
 
-      var amMarker = qx.locale.Date.getAmMarker(this.__locale).toString() || DateFormat.AM_MARKER;
-      var pmMarker = qx.locale.Date.getPmMarker(this.__locale).toString() || DateFormat.PM_MARKER;
-      var locale = this.__locale;
+      var amMarker = qx.locale.Date.getAmMarker(this.getLocale()).toString() || DateFormat.AM_MARKER;
+      var pmMarker = qx.locale.Date.getPmMarker(this.getLocale()).toString() || DateFormat.PM_MARKER;
+      var locale = this.getLocale();
 
       var yearManipulator = function(dateValues, value)
       {
@@ -1277,7 +1269,7 @@ qx.Class.define("qx.util.format.DateFormat",
           {
             value = LString.escapeRegexpChars(value);
             dateValues[isMonth ? 'month' : 'weekDay'] = names.indexOf(value);
-          }
+          };
         }
 
         return cache[pattern];
@@ -1764,22 +1756,5 @@ qx.Class.define("qx.util.format.DateFormat",
         manipulator : ignoreManipulator
       });
     }
-  },
-
-
-
-
-  /*
-  *****************************************************************************
-     DESTRUCTOR
-  *****************************************************************************
-  */
-
-  destruct : function()
-  {
-    if (this.__bindingId != null) {
-      qx.locale.Manager.getInstance().removeBinding(this.__bindingId);
-    }
-    this.__formatTree = this.__parseFeed = this.__parseRules = null;
   }
 });

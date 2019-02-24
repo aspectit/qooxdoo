@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -191,6 +190,42 @@ qx.Class.define("qx.data.controller.List",
       event: "changeDelegate",
       init: null,
       nullable: true
+    },
+    
+    /**
+     * Whether a special "null" value is included in the list
+     */
+    allowNull :
+    {
+      apply: "_applyAllowNull",
+      event: "changeAllowNull",
+      init: false,
+      nullable: false,
+      check: "Boolean"
+    },
+    
+    /**
+     * Title for the special null value entry
+     */
+    nullValueTitle:
+    {
+      apply: "_applyNullValueTitle",
+      event: "changeNullValueTitle",
+      init: null,
+      nullable: true,
+      check: "String"
+    },
+    
+    /**
+     * Icon for the special null value entry
+     */
+    nullValueIcon:
+    {
+      apply: "_applyNullValueIcon",
+      event: "changeNullValueIcon",
+      init: null,
+      nullable: true,
+      check: "String"
     }
   },
 
@@ -298,6 +333,38 @@ qx.Class.define("qx.data.controller.List",
       this.__renewBindings();
     },
 
+    
+    /**
+     * Apply method for the `allowNull` property 
+     */
+    _applyAllowNull: function(value, oldValue) {
+      this.__refreshModel();
+    },
+    
+    /**
+     * Apply method for the `allowNull` property 
+     */
+    _applyNullValueTitle: function(value, oldValue) {
+      this.__refreshModel();
+    },
+    
+    /**
+     * Apply method for the `allowNull` property 
+     */
+    _applyNullValueIcon: function(value, oldValue) {
+      this.__refreshModel();
+    },
+
+    /**
+     * Refreshes the model, uses when the model and target are not changing but the appearance
+     * and bindings may need to be updated
+     */
+    __refreshModel: function() {
+      if (this.getModel() && this.getTarget()) {
+        this.update();
+      }
+    },
+
 
     /**
      * Apply-method which will be called if the model has been changed. It
@@ -401,7 +468,17 @@ qx.Class.define("qx.data.controller.List",
      * Only the selection needs to be changed. The change of the data will
      * be done by the binding.
      */
+    __inChangeModel: false,
+
+    /**
+     * Event handler for the changeModel of the model. Updates the controller.
+     */
     __changeModel: function() {
+      if (this.__inChangeModel) {
+        return;
+      }
+
+      this.__inChangeModel = true;
       // need an asynchronous selection update because the bindings have to be
       // executed to update the selection probably (using the widget queue)
       // this.__syncTargetSelection = true;
@@ -409,9 +486,8 @@ qx.Class.define("qx.data.controller.List",
       qx.ui.core.queue.Widget.add(this);
 
       // update on filtered lists... (bindings need to be renewed)
-      if (this.__lookupTable.length != this.getModel().getLength()) {
-        this.update();
-      }
+      this.update();
+      this.__inChangeModel = false;
     },
 
 
@@ -464,6 +540,9 @@ qx.Class.define("qx.data.controller.List",
           this.__removeItem();
         }
       }
+
+      // build up the look up table
+      this.__buildUpLookupTable();
 
       // sync the target selection in case someone deleted a item in
       // selection mode "one" [BUG #4839]
@@ -588,6 +667,13 @@ qx.Class.define("qx.data.controller.List",
      * @param index {Number} The index of the ListItem.
      */
     _bindListItem: function(item, index) {
+      // -1 is the special, "null" value item.  Nothing to bind, just fix the display and model
+      if (index < 0) {
+        item.setLabel(this.getNullValueTitle()||"");
+        item.setIcon(this.getNullValueIcon());
+        item.setModel(null);
+        return;
+      }
       var delegate = this.getDelegate();
       // if a delegate for creating the binding is given, use it
       if (delegate != null && delegate.bindItem != null) {
@@ -660,7 +746,7 @@ qx.Class.define("qx.data.controller.List",
         this.__onUpdate[targetProperty] = null;
       }
       options.onUpdate =  qx.lang.Function.bind(this._onBindingSet, this, index);
-      options.ignoreConverter = "model"
+      options.ignoreConverter = "model";
 
       // build up the path for the binding
       var bindPath = "model[" + index + "]";
@@ -672,7 +758,7 @@ qx.Class.define("qx.data.controller.List",
       targetWidget.setUserData(targetProperty + "BindingId", id);
 
       // save the bound property
-      if (!qx.lang.Array.contains(this.__boundProperties, targetProperty)) {
+      if (!this.__boundProperties.includes(targetProperty)) {
         this.__boundProperties.push(targetProperty);
       }
     },
@@ -705,7 +791,7 @@ qx.Class.define("qx.data.controller.List",
       sourceWidget.setUserData(targetPath + "ReverseBindingId", id);
 
       // save the bound property
-      if (!qx.lang.Array.contains(this.__boundPropertiesReverse, targetPath)) {
+      if (!this.__boundPropertiesReverse.includes(targetPath)) {
         this.__boundPropertiesReverse.push(targetPath);
       }
     },
@@ -748,16 +834,16 @@ qx.Class.define("qx.data.controller.List",
         var id = item.getUserData(this.__boundProperties[i] + "BindingId");
         if (id != null) {
           this.removeBinding(id);
+          item.setUserData(this.__boundProperties[i] + "BindingId", null);
         }
       }
       // go through all reverse bound properties
       for (var i = 0; i < this.__boundPropertiesReverse.length; i++) {
         // get the binding id and remove it, if possible
-        var id = item.getUserData(
-          this.__boundPropertiesReverse[i] + "ReverseBindingId"
-        );
+        var id = item.getUserData(this.__boundPropertiesReverse[i] + "ReverseBindingId");
         if (id != null) {
           item.removeBinding(id);
+          item.getUserData(this.__boundPropertiesReverse[i] + "ReverseBindingId", null);
         }
       };
     },
@@ -976,6 +1062,11 @@ qx.Class.define("qx.data.controller.List",
       }
 
       this.__lookupTable = [];
+      
+      // -1 is a special lookup value, to represent the "null" option 
+      if (this.isAllowNull()) {
+        this.__lookupTable.push(-1);
+      }
       for (var i = 0; i < model.getLength(); i++) {
         if (filter == null || filter(model.getItem(i))) {
           this.__lookupTable.push(i);

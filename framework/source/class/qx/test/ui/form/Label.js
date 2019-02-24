@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -40,7 +39,7 @@ qx.Class.define("qx.test.ui.form.Label",
     __testEnabled: function() {
       this.__label.setBuddy(this.__formWidget);
 
-      // check the inital enabled state
+      // check the initial enabled state
       this.assertTrue(this.__formWidget.getEnabled(), "Form widget is disabled.");
       this.assertTrue(this.__label.getEnabled(), "Label widget is disabled.");
 

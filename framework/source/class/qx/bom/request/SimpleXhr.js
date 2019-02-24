@@ -8,8 +8,7 @@
      2013 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -57,7 +56,8 @@
 qx.Bootstrap.define("qx.bom.request.SimpleXhr",
 {
 
-  extend: Object,
+  extend: qx.event.Emitter,
+  implement: [ qx.core.IDisposable ],
 
   /**
    * @param url {String?} The URL of the resource to request.
@@ -106,6 +106,26 @@ qx.Bootstrap.define("qx.bom.request.SimpleXhr",
      */
     getRequestHeader: function(key) {
       return this.__requestHeaders[key];
+    },
+
+
+    /**
+     * Returns a single response header
+     *
+     * @param header {String} Name of the header to get.
+     * @return {String} Response header
+     */
+    getResponseHeader: function(header) {
+      return this._transport.getResponseHeader(header);
+    },
+
+
+    /**
+     * Returns all response headers
+     * @return {String} String of response headers
+     */
+    getAllResponseHeaders: function() {
+      return this._transport.getAllResponseHeaders();
     },
 
     /**
@@ -162,7 +182,8 @@ qx.Bootstrap.define("qx.bom.request.SimpleXhr",
      * @return {qx.bom.request.SimpleXhr} Self for chaining.
      */
     setRequestData: function(data) {
-      if (qx.lang.Type.isString(data) || qx.lang.Type.isObject(data)) {
+      if (qx.lang.Type.isString(data) || qx.lang.Type.isObject(data) ||
+         ["ArrayBuffer", "Blob", "FormData"].indexOf(qx.lang.Type.getClass(data)) !== -1) {
         this.__requestData = data;
       }
       return this;
@@ -180,7 +201,7 @@ qx.Bootstrap.define("qx.bom.request.SimpleXhr",
     /**
      * Gets parsed response.
      *
-     * If problems occured an empty string ("") is more likely to be returned (instead of null).
+     * If problems occurred an empty string ("") is more likely to be returned (instead of null).
      *
      * @return {String|null} The parsed response of the request.
      */
@@ -377,7 +398,7 @@ qx.Bootstrap.define("qx.bom.request.SimpleXhr",
         this._transport.send();
       } else {
         // POST & PUT ...
-        if (typeof curContentType === "undefined") {
+        if (typeof curContentType === "undefined" && ["ArrayBuffer", "Blob", "FormData"].indexOf(qx.Bootstrap.getClass(serializedData)) === -1) {
           // by default, set content-type urlencoded for requests with body
           this._transport.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         }
@@ -424,7 +445,7 @@ qx.Bootstrap.define("qx.bom.request.SimpleXhr",
     /**
      * Creates XHR transport.
      *
-     * May be overriden to change type of resource.
+     * May be overridden to change type of resource.
      * @return {qx.bom.request.IRequest} Transport.
      */
     _createTransport: function() {
@@ -443,6 +464,7 @@ qx.Bootstrap.define("qx.bom.request.SimpleXhr",
       transport.ontimeout = qx.lang.Function.bind(this._onTimeout, this);
       transport.onerror = qx.lang.Function.bind(this._onError, this);
       transport.onabort = qx.lang.Function.bind(this._onAbort, this);
+      transport.onprogress = qx.lang.Function.bind(this._onProgress, this);
       return transport;
     },
 
@@ -468,7 +490,7 @@ qx.Bootstrap.define("qx.bom.request.SimpleXhr",
      * Serializes data.
      *
      * @param data {String|Map} Data to serialize.
-     * @param contentType {String?} Content-Type which influences the serialisation.
+     * @param contentType {String?} Content-Type which influences the serialization.
      * @return {String|null} Serialized data.
      */
     _serializeData: function(data, contentType) {
@@ -489,6 +511,10 @@ qx.Bootstrap.define("qx.bom.request.SimpleXhr",
 
       if (qx.lang.Type.isObject(data)) {
         return qx.util.Uri.toParameter(data, isPost);
+      }
+
+      if (["ArrayBuffer", "Blob", "FormData"].indexOf(qx.Bootstrap.getClass(data)) !== -1) {
+        return data;
       }
 
       return null;
@@ -552,7 +578,20 @@ qx.Bootstrap.define("qx.bom.request.SimpleXhr",
      * @return {qx.bom.request.Xhr} Self for chaining.
      */
     addListenerOnce: function(name, listener, ctx) {
-      this._transport._emitter.once(name, listener, ctx);
+      this.once(name, listener, ctx);
+      return this;
+    },
+
+    /**
+     * Adds an event listener for the given event name.
+     *
+     * @param name {String} The name of the event to listen to.
+     * @param listener {Function} The function to execute when the event is fired
+     * @param ctx {var?} The context of the listener.
+     * @return {qx.bom.request.Xhr} Self for chaining.
+     */
+    addListener: function(name, listener, ctx) {
+      this._transport._emitter.on(name, listener, ctx);
       return this;
     },
 
@@ -590,7 +629,7 @@ qx.Bootstrap.define("qx.bom.request.SimpleXhr",
 
         this._setResponse(this.__parser.parse(response, contentType));
 
-        this._transport._emit("success");
+        this.emit("success");
 
       // Erroneous HTTP status
       } else {
@@ -603,7 +642,7 @@ qx.Bootstrap.define("qx.bom.request.SimpleXhr",
 
         // A remote error failure
         if (this._transport.status !== 0) {
-          this._transport._emit("fail");
+          this.emit("fail");
         }
       }
     },
@@ -612,34 +651,41 @@ qx.Bootstrap.define("qx.bom.request.SimpleXhr",
      * Handles "loadEnd" event.
      */
     _onLoadEnd: function() {
-      this._transport._emit("loadEnd");
+      this.emit("loadEnd");
     },
 
     /**
      * Handles "abort" event.
      */
     _onAbort: function() {
-      this._transport._emit("abort");
+      this.emit("abort");
     },
 
     /**
      * Handles "timeout" event.
      */
     _onTimeout: function() {
-      this._transport._emit("timeout");
+      this.emit("timeout");
 
       // A network error failure
-      this._transport._emit("fail");
+      this.emit("fail");
     },
 
     /**
      * Handles "error" event.
      */
     _onError: function() {
-      this._transport._emit("error");
+      this.emit("error");
 
       // A network error failure
-      this._transport._emit("fail");
+      this.emit("fail");
+    },
+
+    /**
+     * Handles "error" event.
+     */
+    _onProgress: function() {
+      this.emit("progress");
     }
 
   }

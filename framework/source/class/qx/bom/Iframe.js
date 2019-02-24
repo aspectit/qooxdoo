@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -135,7 +134,7 @@ qx.Class.define("qx.bom.Iframe",
       }
       catch(ex)
       {
-        return null
+        return null;
       }
     },
 
@@ -232,7 +231,7 @@ qx.Class.define("qx.bom.Iframe",
       var callback = function() {
         qx.bom.Event.removeNativeListener(iframe, "load", callback);
         iframe.$$url = qx.bom.Iframe.queryCurrentUrl(iframe);
-      }
+      };
 
       qx.bom.Event.addNativeListener(iframe, "load", callback);
     }

@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -30,7 +29,7 @@
  * popup.show();
  * </pre>
  * Here we show a popup consisting of a single buttons alerting the user
- * that an error has occured.
+ * that an error has occurred.
  * It will be centered to the screen.
  * <pre class='javascript'>
  * var label = new qx.ui.mobile.basic.Label("Item1");

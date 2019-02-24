@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -46,7 +45,11 @@ qx.Class.define("qx.dev.unit.AsyncWrapper",
       if (qx.lang.Type.isFunction(arguments[i])) {
         this.setDeferredFunction(arguments[i]);
       } else if (qx.lang.Type.isNumber(arguments[i])) {
-        this.setDelay(arguments[i]);
+        if (qx.core.Environment.get("qx.test.delay.scale")) {
+          this.setDelay(arguments[i] * parseInt(qx.core.Environment.get("qx.test.delay.scale"), 10));
+        } else {
+          this.setDelay(arguments[i]);
+        }
       }
     }
 
@@ -76,7 +79,7 @@ qx.Class.define("qx.dev.unit.AsyncWrapper",
     {
       check: "Integer",
       nullable : false,
-      init : 5000
+      init : 10000
     }
   }
 

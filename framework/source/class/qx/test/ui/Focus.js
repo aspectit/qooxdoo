@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -82,7 +81,7 @@ qx.Class.define("qx.test.ui.Focus",
 
 
     addInput : function() {
-      this.getContainer().add(this.input, {row: 2, column: 0})
+      this.getContainer().add(this.input, {row: 2, column: 0});
     },
 
 
@@ -216,9 +215,9 @@ qx.Class.define("qx.test.ui.Focus",
        this.input.focus();
        this.flush();
 
-       this.assertTrue(this.ref_blur_called, "reference must be blured");
-       this.assertTrue(this.target_focus_called, "target must be focued");
-       this.assertFalse(this.target_blur_called, "target must not be blured");
+       this.assertTrue(this.ref_blur_called, "reference must be blurred");
+       this.assertTrue(this.target_focus_called, "target must be focused");
+       this.assertFalse(this.target_blur_called, "target must not be blurred");
      },
 
 
@@ -331,9 +330,9 @@ qx.Class.define("qx.test.ui.Focus",
       this.input.hide();
       this.flush();
 
-      this.assertTrue(this.ref_blur_called, "reference must be blured");
+      this.assertTrue(this.ref_blur_called, "reference must be blurred");
       this.assertTrue(this.target_focus_called, "target must be focused");
-      this.assertTrue(this.target_blur_called, "target must be blured");
+      this.assertTrue(this.target_blur_called, "target must be blurred");
 
       this.input.show();
     },

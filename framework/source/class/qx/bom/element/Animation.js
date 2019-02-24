@@ -8,8 +8,7 @@
      2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -19,7 +18,7 @@
 
 /**
  * Wrapper for {@link qx.bom.element.AnimationCss} and
- * {@link qx.bom.element.AnimationJs}. It offers the pubilc API and decides using
+ * {@link qx.bom.element.AnimationJs}. It offers the public API and decides using
  * feature checks either to use CSS animations or JS animations.
  *
  * If you use this class, the restrictions of the JavaScript animations apply.

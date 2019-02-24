@@ -8,8 +8,7 @@
      2008 Derrell Lipman
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -241,7 +240,7 @@ qx.Class.define("qx.ui.progressive.Progressive",
     },
 
     /**
-     * Remove a previosly added renderer.
+     * Remove a previously added renderer.
      *
      * @param name {String}
      *   Remove the renderer which was assigned this name.
@@ -337,7 +336,7 @@ qx.Class.define("qx.ui.progressive.Progressive",
      * @param value {qx.ui.progressive.model.Abstract}
      *   The new data model.
      *
-     * @param value {qx.ui.progressive.model.Abstract}
+     * @param old {qx.ui.progressive.model.Abstract}
      *   The old data model.
      *
      */

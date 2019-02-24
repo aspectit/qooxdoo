@@ -8,8 +8,7 @@
      2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -402,7 +401,7 @@ qx.Class.define("qx.test.ui.tree.virtual.Tree",
       var openNodes = this.tree.getOpenNodes();
       this.assertEquals(expectedOpen.length, openNodes.length);
       for (var i = 0; i < expectedOpen.length; i++) {
-        this.assertTrue(qx.lang.Array.contains(openNodes, expectedOpen[i]));
+        this.assertTrue(openNodes.includes(expectedOpen[i]));
       }
     },
 
@@ -471,7 +470,7 @@ qx.Class.define("qx.test.ui.tree.virtual.Tree",
       var root = this.createModelAndSetModel(2);
       this.tree.setShowLeafs(false);
       this.assertTrue(this.tree.hasChildren(root));
-      this.tree.openNode(root.getChildren().getItem(0))
+      this.tree.openNode(root.getChildren().getItem(0));
       this.assertTrue(this.tree.hasChildren(root.getChildren().getItem(0)));
 
       var node = new qx.test.ui.tree.virtual.Node("Node");
@@ -533,7 +532,7 @@ qx.Class.define("qx.test.ui.tree.virtual.Tree",
         filter : function(child) {
           return child.getName() == filterNode ? false : true;
         }
-      }
+      };
 
       this.tree.setDelegate(delegate);
       this.tree.setModel(root);

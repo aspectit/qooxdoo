@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -141,6 +140,18 @@ qx.Interface.define("qx.data.marshal.IMarshalerDelegate",
      * @return {Class|null} Returns the class which should be used as array class.
      *   If <code>null</code> will be returned, {@link qx.data.Array} will be used as array class.
      */
-    getArrayClass : function(parentProperty, depth) {}
+    getArrayClass : function(parentProperty, depth) {},
+
+    /**
+     * Converts a given object into a hash which will be used to identify the
+     * classes under the namespace <code>qx.data.model</code>.
+     *
+     * @param data {Object} The JavaScript object from which the hash is
+     *   required.
+     * @param includeBubbleEvents {Boolean?false} Whether the model should
+     *   support the bubbling of change events or not.
+     * @return {String} The hash representation of the given JavaScript object.
+     */
+    getJsonHash : function(data, includeBubbleEvents) {}
   }
 });

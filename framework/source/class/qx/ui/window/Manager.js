@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -42,7 +41,16 @@ qx.Class.define("qx.ui.window.Manager",
     setDesktop : function(desktop)
     {
       this.__desktop = desktop;
-      this.updateStack();
+        
+      if(desktop) {
+        this.updateStack();
+      }
+      else {
+         // the window manager should be removed
+         // from the widget queue if the desktop
+         // was set to null
+         qx.ui.core.queue.Widget.remove(this);
+      }
     },
 
 

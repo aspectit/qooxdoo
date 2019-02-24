@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -23,10 +22,13 @@
  * EXPERIMENTAL - NOT READY FOR PRODUCTION
  *
  * Media element. Other media types can derive from this class.
+ * 
+ * NOTE: Instances of this class must be disposed of to free resources
  */
 qx.Class.define("qx.bom.media.Abstract",
 {
   extend: qx.core.Object,
+  implement: [ qx.core.IDisposable ],
   type: "abstract",
 
 
@@ -81,10 +83,10 @@ qx.Class.define("qx.bom.media.Abstract",
     /** Fired when the volume property is changed */
     "volumechange": "qx.event.type.Event",
 
-    /** Fired when the media is laoded enough to start play*/
+    /** Fired when the media is loaded enough to start play*/
     "loadeddata": "qx.event.type.Event",
 
-    /** Fired when the media is laoded enough to start play*/
+    /** Fired when the media is loaded enough to start play*/
     "loadedmetadata": "qx.event.type.Event"
   },
 
@@ -283,6 +285,28 @@ qx.Class.define("qx.bom.media.Abstract",
 
 
     /**
+     * Sets the source object of the media file.
+     *
+     * @param sourceObject {MediaStream} the source media stream.
+     */
+    setSourceObject: function (sourceObject)
+    {
+      this._media.srcObject = sourceObject;
+    },
+
+    
+    /**
+     * Gets the source object of the media file.
+     *
+     * @return {MediaStream|null} the source stream object to the media file, if it exists.
+     */
+    getSourceObject: function ()
+    {
+      return this._media.srcObject;
+    },
+
+
+    /**
      * Checks if the media element shows its controls.
      *
      * @return {Boolean}
@@ -337,7 +361,7 @@ qx.Class.define("qx.bom.media.Abstract",
      *
      * @param preload {String} One of the following values:
      *  "none": Hints to the user agent that either the author does not expect
-     *  the user to need the media resource, or that the server wants to minimise
+     *  the user to need the media resource, or that the server wants to minimize
      *  unnecessary traffic.
      *  "metadata": Hints to the user agent that the author does not expect the
      *  user to need the media resource, but that fetching the resource metadata

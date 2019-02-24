@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -75,6 +74,27 @@ qx.Class.define("qx.lang.Number",
       } else {
         return nr;
       }
+    },
+
+
+    /**
+     * Checks the equality of two numbers regarding the imprecision of floats.
+     *
+     * @param x {Number}
+     * @param y {Number}
+     * @return {Boolean}
+     */
+    equals : function(x, y)
+    {
+      if (qx.core.Environment.get("qx.debug")) {
+        qx.core.Assert.assertNumber(x);
+        qx.core.Assert.assertNumber(y);
+      }
+
+      // 1e-14 is the relative difference.
+      return x === y ||
+             Math.abs(x - y) < Number.EPSILON ||
+             Math.abs(x - y) <= Math.max(Math.abs(x), Math.abs(y)) * 1e-14;
     }
   }
 });

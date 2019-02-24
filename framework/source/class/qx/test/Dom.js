@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -27,7 +26,7 @@ qx.Class.define("qx.test.Dom",
     setUp : function()
     {
       var div = document.createElement("div");
-      div.id = "html_basics"
+      div.id = "html_basics";
 
       div.innerHTML =
         '<div id="test1">' +
@@ -38,7 +37,7 @@ qx.Class.define("qx.test.Dom",
           '<div id="test4"></div>' +
         '</div>' +
 
-        '</div>'
+        '</div>';
 
       document.body.appendChild(div);
     },

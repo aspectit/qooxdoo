@@ -9,8 +9,7 @@
      2006 Derrell Lipman
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -26,12 +25,15 @@
  * This class is a singleton and is used by qx.io.remote.Request to schedule its
  * requests. It should not be used directly.
  *
+ * NOTE: Instances of this class must be disposed of after use
+ *
  * @internal
  */
 qx.Class.define("qx.io.remote.RequestQueue",
 {
   type : "singleton",
   extend : qx.core.Object,
+  implement : [ qx.core.IDisposable ],
 
 
 
@@ -135,7 +137,7 @@ qx.Class.define("qx.io.remote.RequestQueue",
     /**
      * Get a list of queued requests
      *
-     * @return {Request[]} The list of queued requests
+     * @return {qx.io.remote.Request[]} The list of queued requests
      */
     getRequestQueue : function() {
       return this.__queue;
@@ -146,7 +148,7 @@ qx.Class.define("qx.io.remote.RequestQueue",
      * Get a list of active queued requests, each one wrapped in an instance of
      * {@link qx.io.remote.Exchange}
      *
-     * @return {Exchange[]} The list of active queued requests, each one
+     * @return {qx.io.remote.Exchange[]} The list of active queued requests, each one
      *   wrapped in an instance of {@link qx.io.remote.Exchange}
      */
     getActiveQueue : function() {
@@ -494,7 +496,7 @@ qx.Class.define("qx.io.remote.RequestQueue",
 
       if (vTransport) {
         vTransport.abort();
-      } else if (qx.lang.Array.contains(this.__queue, vRequest)) {
+      } else if (this.__queue.includes(vRequest)) {
         qx.lang.Array.remove(this.__queue, vRequest);
       }
     }

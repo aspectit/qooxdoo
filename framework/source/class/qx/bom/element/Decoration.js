@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -132,11 +131,44 @@ qx.Class.define("qx.bom.element.Decoration",
       var tag = this.getTagName(repeat, source);
       var ret = this.getAttributes(source, repeat, style);
       var css = qx.bom.element.Style.compile(ret.style);
+      var ResourceManager = qx.util.ResourceManager.getInstance();
 
-      if (tag === "img") {
-        return '<img src="' + ret.src + '" style="' + css + '"/>';
-      } else {
-        return '<div style="' + css + '"></div>';
+      if (ResourceManager.isFontUri(source)) {
+        var font = qx.theme.manager.Font.getInstance().resolve(source.match(/@([^/]+)/)[1]);
+
+        var styles = qx.lang.Object.clone(font.getStyles());
+        styles['width'] = style.width;
+        styles['height'] = style.height;
+        styles['fontSize'] = (parseInt(style.width) > parseInt(style.height) ? style.height : style.width);
+        styles['display'] = style.display;
+        styles['verticalAlign'] = style.verticalAlign;
+        styles['position'] = style.position;
+
+        var css = "";
+        for (var _style in styles) {
+          if (styles.hasOwnProperty(_style)) {
+            css += qx.bom.Style.getCssName(_style) + ": " + styles[_style] + ";";
+          }
+        }
+
+        var resource = ResourceManager.getData(source);
+        var charCode;
+        if (resource) {
+          charCode = resource[2];
+        }
+        else {
+          charCode = parseInt(qx.theme.manager.Font.getInstance().resolve(source.match(/@([^/]+)\/(.*)$/)[2]), 16);
+          qx.core.Assert.assertNumber(charCode, "Font source needs either a glyph name or the unicode number in hex");
+        }
+        
+        return '<div style="' + css + '">' + String.fromCharCode(charCode) + '</div>';
+      }
+      else {
+        if (tag === "img") {
+          return '<img src="' + ret.src + '" style="' + css + '"/>';
+        } else {
+          return '<div style="' + css + '"></div>';
+        }
       }
     },
 
@@ -155,7 +187,7 @@ qx.Class.define("qx.bom.element.Decoration",
     getTagName : function(repeat, source)
     {
       if (source && qx.core.Environment.get("css.alphaimageloaderneeded") &&
-          this.__alphaFixRepeats[repeat] && qx.lang.String.endsWith(source, ".png"))
+          this.__alphaFixRepeats[repeat] && source.endsWith(".png"))
       {
         return "div";
       }
@@ -192,7 +224,7 @@ qx.Class.define("qx.bom.element.Decoration",
       }
       else if ((qx.core.Environment.get("engine.name") == "webkit"))
       {
-        // This stops images from being dragable in webkit
+        // This stops images from being draggable in webkit
         style.WebkitUserDrag = "none";
       }
 

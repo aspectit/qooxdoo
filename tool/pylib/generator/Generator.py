@@ -11,8 +11,7 @@
 #    2006-2012 1&1 Internet AG, Germany, http://www.1und1.de
 #
 #  License:
-#    LGPL: http://www.gnu.org/licenses/lgpl.html
-#    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+#    MIT: https://opensource.org/licenses/MIT
 #    See the LICENSE file in the project's top-level directory for details.
 #
 #  Authors:
@@ -34,7 +33,7 @@ from generator.output.Part             import Part
 from generator.output.CodeGenerator  import CodeGenerator
 from generator.action.ActionLib      import ActionLib
 from generator.action.Locale         import Locale as LocaleCls
-from generator.action                import ApiLoader, Locale, CodeMaintenance, Testing
+from generator.action                import ApiLoader, Locale, CodeMaintenance
 from generator.action                import Logging, FileSystem, Resources
 from generator.action                import MiniWebServer, JsonValidation
 from generator.output                import CodeProvider
@@ -185,13 +184,14 @@ class Generator(object):
               "type"   : "JSimpleJob"
             },
 
+            "font-map" :
+            {
+              "type"   : "JSimpleJob"
+            },
+
             "translate" :
             {
               "type"   : "JClassDepJob"
-            },
-            "simulate" :
-            {
-              "type"   : "JSimpleJob"
             },
             "watch-files" :
             {
@@ -497,6 +497,8 @@ class Generator(object):
             FileSystem.runCopyFiles(self._job, self._config)
         if takeout(jobTriggers, "combine-images"):
             Resources.runImageCombining(self._job, self._config)
+        if takeout(jobTriggers, "font-map"):
+            Resources.runFontMap(self._job, self._config)
         if takeout(jobTriggers, "clean-files"):
             FileSystem.runClean(self._job, self._config, self._cache)
         if takeout(jobTriggers, "validation-config"):
@@ -507,8 +509,6 @@ class Generator(object):
             CodeMaintenance.runMigration(self._job, config.get("library"))
         if takeout(jobTriggers, "shell"):
             self._actionLib.runShellCommands(self._job)
-        if takeout(jobTriggers, "simulate"):
-            Testing.runSimulation(self._job)
         if takeout(jobTriggers, "slice-images"):
             Resources.runImageSlicing(self._job, self._config)
         if takeout(jobTriggers, "watch-files"):
@@ -610,6 +610,7 @@ class Generator(object):
                 if "log" in jobTriggers:
                     Logging.runLogDependencies(self._job, script)
                     Logging.runPrivateDebug(self._job)
+                    Logging.runStaticsOptimizedDebug(self._job)
                     #Logging.runClassOrderingDebug(self._job, script)
                     Logging.runLogUnusedClasses(self._job, script)
                     Logging.runLogResources(self._job, script)

@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -20,11 +19,33 @@
 
 /**
  * Manager for font themes
+ * 
+ * NOTE: Instances of this class must be disposed of after use
+ *
+ * @ignore(qx.$$fontBootstrap)
  */
 qx.Class.define("qx.theme.manager.Font",
 {
   type : "singleton",
   extend : qx.util.ValueManager,
+  implement : [ qx.core.IDisposable ],
+
+  /*
+  *****************************************************************************
+     CONSTRUCTOR
+  *****************************************************************************
+  */
+
+  construct : function()
+  {
+    this.base(arguments);
+
+    // Grab bootstrap info
+    if (qx.$$fontBootstrap) {
+      this._manifestFonts = qx.$$fontBootstrap;
+      delete qx.$$fontBootstrap;
+    }
+  },
 
 
   /*
@@ -57,6 +78,8 @@ qx.Class.define("qx.theme.manager.Font",
 
   members :
   {
+    _manifestFonts : null,
+
     /**
      * Returns the dynamically interpreted result for the incoming value
      *
@@ -94,7 +117,15 @@ qx.Class.define("qx.theme.manager.Font",
       if (theme !== null && theme.fonts[value])
       {
         var font = this.__getFontClass(theme.fonts[value]);
-        return cache[value] = (new font).set(theme.fonts[value]);
+        var fo = (new font);
+
+        // Inject information about custom charcter set tests before we apply the
+        // complete blob in one.
+        if (theme.fonts[value].comparisonString) {
+          fo.setComparisonString(theme.fonts[value].comparisonString);
+        }
+
+        return cache[value] = fo.set(theme.fonts[value]);
       }
 
       return value;
@@ -124,7 +155,15 @@ qx.Class.define("qx.theme.manager.Font",
       if (theme !== null && value && theme.fonts[value])
       {
         var font = this.__getFontClass(theme.fonts[value]);
-        cache[value] = (new font).set(theme.fonts[value]);
+        var fo = (new font);
+
+        // Inject information about custom charcter set tests before we apply the
+        // complete blob in one.
+        if (theme.fonts[value].comparisonString) {
+          fo.setComparisonString(theme.fonts[value].comparisonString);
+        }
+
+        cache[value] = fo.set(theme.fonts[value]);
         return true;
       }
 
@@ -172,7 +211,7 @@ qx.Class.define("qx.theme.manager.Font",
 
       if (value)
       {
-        var source = value.fonts;
+        var source = this._manifestFonts ? Object.assign(value.fonts, this._manifestFonts) : value.fonts;
 
         for (var key in source)
         {
@@ -181,7 +220,15 @@ qx.Class.define("qx.theme.manager.Font",
           }
 
           var font = this.__getFontClass(source[key]);
-          dest[key] = (new font).set(source[key]);
+          var fo = (new font);
+
+          // Inject information about custom charcter set tests before we apply the
+          // complete blob in one.
+          if (source[key].comparisonString) {
+            fo.setComparisonString(source[key].comparisonString);
+          }
+
+          dest[key] = fo.set(source[key]);
           dest[key].themed = true;
         }
       }

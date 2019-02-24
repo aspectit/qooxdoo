@@ -8,8 +8,7 @@
      2006 Christian Boulanger
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -121,7 +120,7 @@ qx.Class.define("qx.ui.table.celleditor.SelectBox",
       var value = "";
 
       if (selection && selection[0]) {
-        var userValue = selection[0].getUserData("row")
+        var userValue = selection[0].getUserData("row");
         value = userValue === undefined ? selection[0].getLabel() : userValue;
       }
 

@@ -8,8 +8,7 @@
      2004-2010 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -71,7 +70,7 @@ qx.Class.define("qx.ui.list.List",
   /**
    * Creates the <code>qx.ui.list.List</code> with the passed model.
    *
-   * @param model {qx.data.IListData|null} model for the list.
+   * @param model {qx.data.IListData|null?} model for the list.
    */
   construct : function(model)
   {
@@ -87,6 +86,15 @@ qx.Class.define("qx.ui.list.List",
     }
 
     this.initItemHeight();
+  },
+
+
+  events :
+  {
+    /**
+     * Fired when the length of {@link #model} changes.
+     */
+    "changeModelLength" : "qx.event.type.Data"
   },
 
 
@@ -141,6 +149,17 @@ qx.Class.define("qx.ui.list.List",
       check : "Integer",
       init : 25,
       apply : "_applyRowHeight",
+      themeable : true
+    },
+
+
+    /** Group item height */
+    groupItemHeight :
+    {
+      check : "Integer",
+      init : null,
+      nullable : true,
+      apply : "_applyGroupRowHeight",
       themeable : true
     },
 
@@ -250,6 +269,19 @@ qx.Class.define("qx.ui.list.List",
       event: "changeGroups",
       nullable: false,
       deferredInit: true
+    },
+
+
+    /** 
+     * Render list items with variable height, 
+     * calculated from the individual item size. 
+     */
+    variableItemHeight :
+    {
+      check : "Boolean",
+      apply : "_applyVariableItemHeight",
+      nullable : false,
+      init : true
     }
   },
 
@@ -307,6 +339,8 @@ qx.Class.define("qx.ui.list.List",
     __defaultGroupUsed : false,
 
     __defaultGroups : null,
+
+    __deferredLayerUpdate : null,
 
 
     /**
@@ -369,6 +403,7 @@ qx.Class.define("qx.ui.list.List",
     _initLayer : function()
     {
       this._layer = this._provider.createLayer();
+      this._layer.addListener("updated", this._onLayerUpdated, this);
       this.getPane().addLayer(this._layer);
     },
 
@@ -498,7 +533,6 @@ qx.Class.define("qx.ui.list.List",
         old.removeListener("changeLength", this._onModelChange, this);
       }
 
-      this._provider.removeBindings();
       this._onModelChange();
     },
 
@@ -508,6 +542,10 @@ qx.Class.define("qx.ui.list.List",
       this.getPane().getRowConfig().setDefaultItemSize(value);
     },
 
+    // apply method
+    _applyGroupRowHeight : function(value, old) {
+      this.__updateGroupRowHeight();
+    },
 
     // apply method
     _applyLabelPath : function(value, old) {
@@ -552,6 +590,18 @@ qx.Class.define("qx.ui.list.List",
     },
 
 
+    // property apply
+    _applyVariableItemHeight : function(value, old) {
+      if(value) {
+        this._setRowItemSize();
+      }
+      else {
+        this.getPane().getRowConfig().resetItemSizes();
+        this.getPane().fullUpdate();
+      }
+    },
+
+
     /*
     ---------------------------------------------------------------------------
       EVENT HANDLERS
@@ -575,8 +625,38 @@ qx.Class.define("qx.ui.list.List",
      * @param e {qx.event.type.Data} model change event.
      */
     _onModelChange : function(e) {
+      // we have to remove the bindings before we rebuild the lookup table
+      // otherwise bindings might be dispatched to wrong items
+      // see: https://github.com/qooxdoo/qooxdoo/issues/196
+      this._provider.removeBindings();
       this.__buildUpLookupTable();
       this._applyDefaultSelection();
+
+      if (e instanceof qx.event.type.Data) {
+        this.fireDataEvent("changeModelLength", e.getData(), e.getOldData());
+      }
+    },
+
+
+    /**
+     * Event handler for the updated event of the 
+     * qx.ui.virtual.layer.WidgetCell layer.
+     *
+     * Recalculates the item sizes in a deffered call,
+     * which only happens if we have variable item heights
+     */
+    _onLayerUpdated: function () {
+      if (this.isVariableItemHeight() === false) {
+        return;
+      }
+
+      if (this.__deferredLayerUpdate === null) {
+        this.__deferredLayerUpdate = new qx.util.DeferredCall(function () {
+          this._setRowItemSize();
+        }, this);
+      }
+
+      this.__deferredLayerUpdate.schedule();
     },
 
 
@@ -594,6 +674,26 @@ qx.Class.define("qx.ui.list.List",
     {
       this.getPane().getRowConfig().setItemCount(this.__lookupTable.length);
       this.getPane().fullUpdate();
+    },
+
+
+    /**
+     * Helper method to update row heights.
+     */
+    __updateGroupRowHeight : function()
+    {
+      var rc = this.getPane().getRowConfig();
+      var gh = this.getGroupItemHeight();
+      rc.resetItemSizes();
+
+      if (gh) {
+        for (var i = 0,l = this.__lookupTable.length; i < l; ++i)
+        {
+          if (this.__lookupTable[i] == -1) {
+            rc.setItemSize(i, gh);
+          }
+        }
+      }
     },
 
 
@@ -619,6 +719,7 @@ qx.Class.define("qx.ui.list.List",
       }
 
       this._updateSelection();
+      this.__updateGroupRowHeight();
       this.__updateRowCount();
     },
 
@@ -791,18 +892,45 @@ qx.Class.define("qx.ui.list.List",
         throw new Error("GroupingTypeError: You can't mix 'Objects' and 'Strings' as" +
           " group identifier!");
       }
+    },
+
+
+    /**
+     * Get the height of each visible item and set it as the
+     * row size
+     */
+    _setRowItemSize : function() {
+      var rowConfig = this.getPane().getRowConfig();
+      var layer = this._layer;
+      
+      var firstRow = layer.getFirstRow();
+      var lastRow = firstRow + layer.getRowSizes().length;
+
+      for (var row = firstRow; row < lastRow; row++) {
+        var widget = layer.getRenderedCellWidget(row, 0);
+        if (widget !== null) {
+          var height = widget.getSizeHint().height;
+          
+          rowConfig.setItemSize(
+              row,
+              height
+          );
+        }
+      }
     }
   },
 
 
   destruct : function()
   {
+    this._disposeObjects("__deferredLayerUpdate");
+    
     var model = this.getModel();
     if (model != null) {
       model.removeListener("changeLength", this._onModelChange, this);
     }
 
-    var pane = this.getPane()
+    var pane = this.getPane();
     if (pane != null) {
       pane.removeListener("resize", this._onResize, this);
     }

@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -54,6 +53,8 @@ qx.Class.define("qx.dev.unit.TestCase",
 
   members :
   {
+    __autoDispose : null,
+
     /**
      * Whether If debugging code is enabled. (i.e. the setting
      * <code>qx.debug</code> has the value <code>on</code>.)
@@ -104,6 +105,32 @@ qx.Class.define("qx.dev.unit.TestCase",
       );
     },
 
+    /**
+     * Cancel a timeout started with <code>wait()</code> in setUp() and run the test
+     * function. Used for asynchronous setUp of tests.
+     *
+     * @return {var} The return value of the testRun
+     */
+    resumeSetUp : function() {
+      var func = this.getTestFunc();
+      var inst = this;
+      var method = func.getName();
+
+      return this.getTestResult().run(
+        func,
+        function()
+        {
+          try {
+            inst[method]();
+          } catch (ex) {
+            throw ex;
+          }
+        },
+        this,
+        true
+      );
+    },
+
 
     /**
      * Cancel a timeout started with <code>wait()</code> and return a function,
@@ -149,6 +176,41 @@ qx.Class.define("qx.dev.unit.TestCase",
     skip : function(message)
     {
       throw new qx.dev.unit.RequirementError(null, message || "Called skip()");
+    },
+
+
+    /**
+     * Add an object to the auto dispose list. This can be cleared manually or will
+     * be flushed when the test case is disposed.
+     *
+     * @param obj {qx.core.Object} Object to be automatically disposed.
+     */
+    addAutoDispose : function(obj)
+    {
+      if (!this.__autoDispose) {
+        this.__autoDispose = [];
+      }
+      this.__autoDispose.push(obj);
+    },
+
+    /**
+     * Dispose all objects that got registered for auto disposal.
+     */
+    doAutoDispose : function()
+    {
+      if (this.__autoDispose) {
+        this.__autoDispose.forEach(function(obj) {
+          if (!obj.isDisposed()) {
+            if (obj instanceof qx.ui.core.Widget) {
+              obj.destroy();
+            }
+            else if (obj instanceof qx.core.Object) {
+              obj.dispose();
+            }
+          }
+        });
+        this.__autoDispose = null;
+      }
     }
   }
 });

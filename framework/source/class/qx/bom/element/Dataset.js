@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Author:
@@ -53,10 +52,11 @@ qx.Bootstrap.define("qx.bom.element.Dataset",
           element.dataset[name] = value;
         }
       } else {
-        if (value === undefined) {
-          value = null;
+        if ((value === null) || (value == undefined)) {
+          qx.bom.element.Attribute.reset(element, "data-" + qx.lang.String.hyphenate(name));
+        } else {
+          qx.bom.element.Attribute.set(element, "data-" + qx.lang.String.hyphenate(name), value);
         }
-        qx.bom.element.Attribute.set(element, "data-" + qx.lang.String.hyphenate(name), value);
       }
     },
 
@@ -105,7 +105,7 @@ qx.Bootstrap.define("qx.bom.element.Dataset",
 
     /**
     * Checks if any element in the collection has a "data-*" attribute
-    * @param element {Element} The DOM Element to check the presence of data-* attrubutes on.
+    * @param element {Element} The DOM Element to check the presence of data-* attributes on.
     * @return {Boolean} True if any element in the collection has a "data-*" attribute
     */
     hasData : function(element)

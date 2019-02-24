@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -78,7 +77,6 @@ qx.Class.define("qx.test.Bootstrap",
 
       qx.Bootstrap.setRoot(undefined);
 
-      delete foobar;
       qx.Class.undefine("vanillebaer.test.ROOT");
     },
 
@@ -133,7 +131,7 @@ qx.Class.define("qx.test.Bootstrap",
       qx.Class.undefine("qx.test.MyClass");
     },
 
-    "test: define class with contructor" : function()
+    "test: define class with constructor" : function()
     {
       var c = qx.Bootstrap.define("qx.test.Construct",
       {
@@ -293,7 +291,7 @@ qx.Class.define("qx.test.Bootstrap",
 
           stopEngine : function()
           {
-            var ret = arguments.callee.base.call();
+            var ret = this.base(arguments);
             return "brrr " + ret;
           },
 
@@ -363,8 +361,8 @@ qx.Class.define("qx.test.Bootstrap",
     {
       var undef;
       var callback = function(undef, arg) {
-        this.assertTrue(arg)
-      }
+        this.assertTrue(arg);
+      };
       var bound = qx.Bootstrap.bind(callback, this, undef, true);
       bound();
     },

@@ -8,8 +8,7 @@
      2014 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -53,13 +52,6 @@ qx.Bootstrap.define("qx.module.event.PointerHandler", {
      * @param type {String} event type
      */
     register : function(element, type) {
-      // force qx.bom.Event.supportsEvent to return true for this type so we
-      // can use the native addEventListener (synthetic gesture events use the
-      // native dispatchEvent).
-      if (!element["on" + type]) {
-        element["on" + type] = true;
-      }
-
       if (!element.$$pointerHandler) {
 
         if (!qx.core.Environment.get("event.dispatchevent")) {

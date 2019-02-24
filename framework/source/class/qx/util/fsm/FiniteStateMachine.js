@@ -8,8 +8,7 @@
      2006, 2007, 2011 Derrell Lipman
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -142,6 +141,14 @@ qx.Class.define("qx.util.fsm.FiniteStateMachine",
     }
   },
 
+  events :
+  {
+    /**
+     * Fired when the finite state machine terminates. Data is the last state
+     * before termination.
+     */
+    "terminated" : "qx.event.type.Data"
+  },
 
   properties :
   {
@@ -244,7 +251,17 @@ qx.Class.define("qx.util.fsm.FiniteStateMachine",
     __groupToFriendly            : null,
     __friendlyToGroups           : null,
     __bEventProcessingInProgress : false,
+    __bTerminated                : true,
 
+    /**
+     * Checks whether the finite state machine is terminated or not.
+     *
+     * @return {Boolean} If the finite state machine is terminated.
+     */
+    isTerminated : function()
+    {
+      return this.__bTerminated;
+    },
 
     /**
      * Add a state to the finite state machine.
@@ -356,7 +373,7 @@ qx.Class.define("qx.util.fsm.FiniteStateMachine",
      */
     addObject : function(friendlyName, obj, groupNames)
     {
-      var hash = obj.toHashCode();
+      var hash = qx.core.ObjectRegistry.toHashCode(obj);
       this.__friendlyToHash[friendlyName] = hash;
       this.__hashToFriendly[hash] = friendlyName;
       this.__friendlyToObject[friendlyName] = obj;
@@ -422,7 +439,7 @@ qx.Class.define("qx.util.fsm.FiniteStateMachine",
 
       hash = this.__friendlyToHash[friendlyName];
 
-      // Delete references to any groupos this friendly name was in
+      // Delete references to any groups this friendly name was in
       if (this.__friendlyToGroups[friendlyName])
       {
         for (var i = 0; i < this.__friendlyToGroups[friendlyName].length; i++)
@@ -488,7 +505,7 @@ qx.Class.define("qx.util.fsm.FiniteStateMachine",
      */
     getFriendlyName : function(obj)
     {
-      var hash = obj ? obj.toHashCode() : null;
+      var hash = obj ? qx.core.ObjectRegistry.toHashCode(obj) : null;
       return hash ? this.__hashToFriendly[hash] : null;
     },
 
@@ -582,6 +599,8 @@ qx.Class.define("qx.util.fsm.FiniteStateMachine",
      */
     start : function()
     {
+      this.__bTerminated = false;
+
       var stateName = this.__startState;
 
       if (stateName == null)
@@ -766,6 +785,14 @@ qx.Class.define("qx.util.fsm.FiniteStateMachine",
      */
     eventListener : function(event)
     {
+      if (this.__bTerminated)
+      {
+        this.debug(this.getName() + ": Cannot listen to event '" +
+                   event.getType() +
+                   "', because the finite state machine is not running.");
+        return;
+      }
+
       // Events are enqueued upon receipt.  Some events are then processed
       // immediately; other events get processed later.  We need to allow the
       // event dispatcher to free the source event upon our return, so we'll
@@ -799,6 +826,13 @@ qx.Class.define("qx.util.fsm.FiniteStateMachine",
      */
     fireImmediateEvent : function(type, target, data)
     {
+      if (this.__bTerminated)
+      {
+        this.debug(this.getName() + ": Cannot listen to event '" + type +
+                   "', because the finite state machine is not running.");
+        return;
+      }
+
       if (data)
       {
         var event =
@@ -931,7 +965,7 @@ qx.Class.define("qx.util.fsm.FiniteStateMachine",
       // Get the debug flags
       var debugFlags = this.getDebugFlags();
 
-      // Allow slightly faster access to determine if debug is enableda
+      // Allow slightly faster access to determine if debug is enabled
       var debugEvents =
         debugFlags & qx.util.fsm.FiniteStateMachine.DebugFlags.EVENTS;
       var debugTransitions =
@@ -1120,6 +1154,12 @@ qx.Class.define("qx.util.fsm.FiniteStateMachine",
               this.setNextState(nextState);
               break;
 
+            case qx.util.fsm.FiniteStateMachine.StateChange.TERMINATE:
+              // Terminate fsm
+              this.__bTerminated = true;
+              this.setNextState(null);
+              break;
+
             default:
               throw new Error("Internal error: invalid nextState");
           }
@@ -1183,6 +1223,17 @@ qx.Class.define("qx.util.fsm.FiniteStateMachine",
         {
           // ... then dispose it now that it's no longer in use
           currentState.dispose();
+        }
+
+        // It the fsm has terminated, stop right here
+        if (this.__bTerminated)
+        {
+          if (debugFunctions)
+          {
+            this.debug(this.getName() + "#" + "TERMINATED");
+          }
+          this.fireDataEvent("terminated", thisState);
+          return true;
         }
 
         // Reset currentState to the new state object

@@ -8,8 +8,7 @@
      2006 STZ-IDA, Germany, http://www.stz-ida.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -149,7 +148,7 @@ qx.Class.define("qx.ui.table.pane.Model",
     {
       if (this.__tableColumnModel) {
         this.__tableColumnModel.removeListener("visibilityChangedPre", this._onColVisibilityChanged, this);
-        this.__tableColumnModel.removeListener("headerCellRendererChanged", this._onColVisibilityChanged, this);
+        this.__tableColumnModel.removeListener("headerCellRendererChanged", this._onHeaderCellRendererChanged, this);
       }
       this.__tableColumnModel = tableColumnModel;
       this.__tableColumnModel.addListener("visibilityChangedPre", this._onColVisibilityChanged, this);
@@ -303,7 +302,7 @@ qx.Class.define("qx.ui.table.pane.Model",
     if (this.__tableColumnModel)
     {
       this.__tableColumnModel.removeListener("visibilityChangedPre", this._onColVisibilityChanged, this);
-      this.__tableColumnModel.removeListener("headerCellRendererChanged", this._onColVisibilityChanged, this);
+      this.__tableColumnModel.removeListener("headerCellRendererChanged", this._onHeaderCellRendererChanged, this);
     }
     this.__tableColumnModel = null;
   }

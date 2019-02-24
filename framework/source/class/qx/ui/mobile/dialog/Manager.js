@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -96,7 +95,7 @@ qx.Class.define("qx.ui.mobile.dialog.Manager",
           if (handler) {
             handler.call(scope);
           }
-        }
+        };
         var button = this.__processDialogButtons(button);
         return navigator.notification.alert(text, callback, title, button);
       }
@@ -130,7 +129,7 @@ qx.Class.define("qx.ui.mobile.dialog.Manager",
         var callback = function(index)
         {
           handler.call(scope, index-1);
-        }
+        };
         var buttons = this.__processDialogButtons(buttons);
         return navigator.notification.confirm(text, callback, title, buttons);
       }
@@ -181,7 +180,7 @@ qx.Class.define("qx.ui.mobile.dialog.Manager",
           if (handler) {
             handler.call(scope);
           }
-        }
+        };
         var button = this.__processDialogButtons(button);
         return navigator.notification.alert(text, callback, title, button);
       }
@@ -214,7 +213,7 @@ qx.Class.define("qx.ui.mobile.dialog.Manager",
           if (handler) {
             handler.call(scope);
           }
-        }
+        };
         var button = this.__processDialogButtons(button);
         return navigator.notification.alert(text, callback, title, button);
       }

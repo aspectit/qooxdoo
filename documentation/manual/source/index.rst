@@ -8,8 +8,7 @@
    #    2006-2012 1&1 Internet AG, Germany, http://www.1und1.de
    #
    #  License:
-   #    LGPL: http://www.gnu.org/licenses/lgpl.html
-   #    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+   #    MIT: https://opensource.org/licenses/MIT
    #    See the LICENSE file in the project's top-level directory for details.
    #
    #  Authors:
@@ -36,10 +35,14 @@ qooxdoo Manual v%{version}
 .. |tooling| image:: _static/tooling.png
 .. |refer| image:: _static/references.png
 
-Welcome to the manual of qooxdoo. Here are some highlights of what you can find here. The main entries are the qooxdoo components *Core*, *Website*, *Desktop*, *Mobile* and *Server*. For a full overview proceed to the :doc:`table of contents <toc>`.
+Welcome to the manual of qooxdoo.
+
+The table below provides some entry points to the documentation of components such as *Core*, *Website*, *Desktop*, *Mobile*, *Server* or *Tooling*.
+
+For a full overview proceed to the :doc:`table of contents <toc>`.
 
 .. rst-class:: toc
-.. rst-class:: table-overview 
+.. rst-class:: table-overview
 
 +----------+-------------------------------------------------------------------------------------+
 ||started| | **Getting Started**                                                                 |
@@ -81,5 +84,3 @@ Welcome to the manual of qooxdoo. Here are some highlights of what you can find 
 |          |   * :ref:`Index                              <genindex>`                            |
 |          |   * `Offline Manual <qooxdoo.pdf>`__                                                |
 +----------+-------------------------------------------------------------------------------------+
-
-

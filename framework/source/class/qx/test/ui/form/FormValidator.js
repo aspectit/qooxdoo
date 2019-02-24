@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -158,7 +157,7 @@ qx.Class.define("qx.test.ui.form.FormValidator",
       var asyncValidator = new qx.ui.form.validation.AsyncValidator(
       function() {
         self.assertEquals(1, this.a);
-      })
+      });
       this.__manager.setValidator(asyncValidator);
       this.__manager.setContext({a: 1});
 
@@ -192,7 +191,7 @@ qx.Class.define("qx.test.ui.form.FormValidator",
       // remove the username
       this.__username.resetValue();
 
-      // validate = faíl
+      // validate = fail
       this.assertFalse(this.__manager.validate());
       this.assertFalse(this.__manager.getValid());
       this.assertFalse(this.__username.getValid());
@@ -464,7 +463,7 @@ qx.Class.define("qx.test.ui.form.FormValidator",
 
 
     testRequiredFieldMessage : function() {
-      // set a global and an individual requred field message
+      // set a global and an individual required field message
       this.__manager.setRequiredFieldMessage("affe");
       this.__password1.setRequiredInvalidMessage("AFFEN");
 
@@ -766,7 +765,7 @@ qx.Class.define("qx.test.ui.form.FormValidator",
 
 
 
-    // Mixed self contaned //////////
+    // Mixed self contained //////////
     testMixedSelfContained3NotNullAsyncFail: function(){
       var asyncValidator1 = new qx.ui.form.validation.AsyncValidator(this.__asyncValidator);
 
@@ -1061,6 +1060,26 @@ qx.Class.define("qx.test.ui.form.FormValidator",
       var items = this.__manager.getItems();
       this.assertInArray(this.__username, items);
       this.assertInArray(this.__password1, items);
+    },
+    // //////////////////////////////
+
+
+    // validate //////////////////////
+    testValidateDataBindingSelection : function() {
+      "use strict";
+      var vsb = new qx.ui.form.VirtualSelectBox();
+      vsb.setRequired(true);
+      this.__manager.add(vsb);
+      this.__manager.validate();
+      this.assertFalse(vsb.isValid());
+
+      var m = qx.data.marshal.Json.createModel(['a', 'b']);
+      vsb.setModel(m);
+      this.__manager.validate();
+      this.assertTrue(vsb.isValid());
+
+      vsb.dispose();
+      m.dispose();
     }
     // //////////////////////////////
   }

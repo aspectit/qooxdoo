@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -60,8 +59,8 @@ qx.Class.define("qx.ui.window.Window",
   */
 
   /**
-   * @param caption {String} The caption text
-   * @param icon {String} The URL of the caption bar icon
+   * @param caption {String?} The caption text
+   * @param icon {String?} The URL of the caption bar icon
    */
   construct : function(caption, icon)
   {
@@ -95,13 +94,13 @@ qx.Class.define("qx.ui.window.Window",
     // Automatically add to application root.
     qx.core.Init.getApplication().getRoot().add(this);
 
-    // Initialize visibiltiy
+    // Initialize visibility
     this.initVisibility();
 
     // Register as root for the focus handler
     qx.ui.core.FocusHandler.getInstance().addRoot(this);
 
-    // change the reszie frames appearance
+    // Change the resize frames appearance
     this._getResizeFrame().setAppearance("window-resize-frame");
   },
 
@@ -126,7 +125,7 @@ qx.Class.define("qx.ui.window.Window",
 
   /*
   *****************************************************************************
-     PROPERTIES
+     EVENTS
   *****************************************************************************
   */
 
@@ -373,6 +372,61 @@ qx.Class.define("qx.ui.window.Window",
       check : "Boolean",
       init : false,
       apply : "_applyShowStatusbar"
+    },
+
+
+
+
+    /*
+    ---------------------------------------------------------------------------
+      WHEN TO AUTOMATICALY CENTER
+    ---------------------------------------------------------------------------
+    */
+
+    /** Whether this window should be automatically centered when it appears */
+    centerOnAppear :
+    {
+      init  : false,
+      check : "Boolean",
+      apply : "_applyCenterOnAppear"
+    },
+
+    /** 
+     * Whether this window should be automatically centered when its container
+     * is resized.
+     */
+    centerOnContainerResize :
+    {
+      init  : false,
+      check : "Boolean",
+      apply : "_applyCenterOnContainerResize"
+    },
+
+
+
+    /*
+    ---------------------------------------------------------------------------
+      CLOSE BEHAVIOR
+    ---------------------------------------------------------------------------
+    */
+
+    /** 
+     * Should the window be automatically destroyed when it is closed.
+     *
+     * When false, closing the window behaves like hiding the window.
+     * 
+     * When true, the window is removed from its container (the root), all
+     * listeners are removed, the window's widgets are removed, and the window
+     * is destroyed.
+     *
+     * NOTE: If any widgets that were added to this window require special
+     * clean-up, you should listen on the 'close' event and remove and clean
+     * up those widgets there.
+     */
+    autoDestroy :
+    {
+      check : "Boolean",
+      init : false
     }
   },
 
@@ -387,12 +441,17 @@ qx.Class.define("qx.ui.window.Window",
 
   members :
   {
-    /** @type {Integer} Original top value before maximation had occoured */
+    /** @type {Integer} Original top value before maximation had occurred */
     __restoredTop : null,
 
-    /** @type {Integer} Original left value before maximation had occoured */
+    /** @type {Integer} Original left value before maximation had occurred */
     __restoredLeft : null,
 
+    /** @type {Integer} Listener ID for centering on appear */
+    __centeringAppearId : null,
+
+    /** @type {Integer} Listener ID for centering on resize */
+    __centeringResizeId : null,
 
 
     /*
@@ -428,6 +487,8 @@ qx.Class.define("qx.ui.window.Window",
     // overridden
     setLayoutParent : function(parent)
     {
+      var             oldParent;
+
       if (qx.core.Environment.get("qx.debug"))
       {
         parent && this.assertInterface(
@@ -436,7 +497,24 @@ qx.Class.define("qx.ui.window.Window",
           "qx.ui.window.IDesktop. All root widgets implement this interface."
         );
       }
+
+      // Before changing the parent, if there's a prior one, remove our resize
+      // listener
+      oldParent = this.getLayoutParent();
+      if (oldParent && this.__centeringResizeId) {
+        oldParent.removeListenerById(this.__centeringResizeId);
+        this.__centeringResizeId = null;
+      }
+
+      // Call the superclass
       this.base(arguments, parent);
+
+      // Re-add a listener for resize, if required
+      if (parent && this.getCenterOnContainerResize())
+      {
+        this.__centeringResizeId =
+          parent.addListener("resize", this.center, this);
+      }
     },
 
 
@@ -553,7 +631,7 @@ qx.Class.define("qx.ui.window.Window",
         this._excludeChildControl("icon");
       }
 
-      var caption = this.getCaption()
+      var caption = this.getCaption();
       if (caption) {
         this.getChildControl("title").setValue(caption);
         this._showChildControl("title");
@@ -619,12 +697,15 @@ qx.Class.define("qx.ui.window.Window",
     */
 
     /**
-     * Closes the current window instance.
-     * Technically calls the {@link qx.ui.core.Widget#hide} method.
+     * Close the current window instance.
+     *
+     * Simply calls the {@link qx.ui.core.Widget#hide} method if the
+     * {@link qx.ui.win.Window#autoDestroy} property is false; otherwise 
+     * removes and destroys the window.
      */
     close : function()
     {
-      if (!this.isVisible()) {
+      if (!this.getAutoDestroy() && !this.isVisible()) {
         return;
       }
 
@@ -633,11 +714,20 @@ qx.Class.define("qx.ui.window.Window",
         this.hide();
         this.fireEvent("close");
       }
+
+      // If automatically destroying the window upon close was requested, do
+      // so now. (Note that we explicitly re-obtain the autoDestroy property
+      // value, allowing the user's close handler to enable/disable it before
+      // here.)
+      if (this.getAutoDestroy())
+      {
+        this.dispose();
+      }
     },
 
 
     /**
-     * Opens the window.
+     * Open the window.
      */
     open : function()
     {
@@ -930,6 +1020,41 @@ qx.Class.define("qx.ui.window.Window",
       }
     },
 
+    _applyCenterOnAppear : function(value, old)
+    {
+      // Remove prior listener for centering on appear
+      if (this.__centeringAppearId !== null) {
+        this.removeListenerById(this.__centeringAppearId);
+        this.__centeringAppearId = null;
+      }
+
+      // If we are to center on appear, arrange to do so
+      if (value) {
+        this.__centeringAppearId =
+          this.addListener("appear", this.center, this);
+      }
+    },
+
+    _applyCenterOnContainerResize : function(value, old)
+    {
+      var             parent = this.getLayoutParent();
+
+      // Remove prior listener for centering on resize
+      if (this.__centeringResizeId !== null) {
+        parent.removeListenerById(this.__centeringResizeId);
+        this.__centeringResizeId = null;
+      }
+
+      // If we are to center on resize, arrange to do so
+      if (value) {
+        if (parent) {
+          this.__centeringResizeId =
+            parent.addListener("resize", this.center, this);
+          
+        }
+      }
+    },
+
 
     /*
     ---------------------------------------------------------------------------
@@ -1050,6 +1175,26 @@ qx.Class.define("qx.ui.window.Window",
     {
       this.close();
       this.getChildControl("close-button").reset();
+    }
+  },
+
+  destruct : function()
+  {
+    var id;
+    var parent;
+
+    // Remove ourselves from the focus handler
+    qx.ui.core.FocusHandler.getInstance().removeRoot(this);
+
+    // If we haven't been removed from our parent, clean it up too.
+    parent = this.getLayoutParent();
+    if (parent) {
+      // Remove the listener for resize, if there is one
+      id = this.__centeringResizeId;
+      id && parent.removeListenerById(id);
+
+      // Remove ourself from our parent
+      parent.remove(this);
     }
   }
 });

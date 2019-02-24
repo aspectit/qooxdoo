@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -101,7 +100,7 @@ qx.Class.define("qx.ui.form.Spinner",
     }
 
     // CREATE CONTROLS
-    this._createChildControl("textfield");
+    var textField = this._createChildControl("textfield");
     this._createChildControl("upbutton");
     this._createChildControl("downbutton");
 
@@ -119,6 +118,16 @@ qx.Class.define("qx.ui.form.Spinner",
     } else {
       this.initValue();
     }
+
+    // forward the focusin and focusout events to the textfield. The textfield
+    // is not focusable so the events need to be forwarded manually.
+    this.addListener("focusin", function(e) {
+      textField.fireNonBubblingEvent("focusin", qx.event.type.Focus);
+    }, this);
+
+    this.addListener("focusout", function(e) {
+      textField.fireNonBubblingEvent("focusout", qx.event.type.Focus);
+    }, this);
   },
 
 
@@ -292,12 +301,16 @@ qx.Class.define("qx.ui.form.Spinner",
      */
     _getFilterRegExp : function()
     {
-      var decimalSeparator = qx.locale.Number.getDecimalSeparator(
-        qx.locale.Manager.getInstance().getLocale()
-      );
-      var groupSeparator = qx.locale.Number.getGroupSeparator(
-        qx.locale.Manager.getInstance().getLocale()
-      );
+      var decimalSeparator, groupSeparator, locale;
+
+      if (this.getNumberFormat() !== null) {
+        locale = this.getNumberFormat().getLocale();
+      } else {
+        locale = qx.locale.Manager.getInstance().getLocale();
+      }
+
+      decimalSeparator = qx.locale.Number.getDecimalSeparator(locale);
+      groupSeparator = qx.locale.Number.getGroupSeparator(locale);
 
       var prefix = "";
       var postfix = "";
@@ -425,8 +438,7 @@ qx.Class.define("qx.ui.form.Spinner",
     /**
      * Apply routine for the value property.
      *
-     * It checks the min and max values, disables / enables the
-     * buttons and handles the wrap around.
+     * It disables / enables the buttons and handles the wrap around.
      *
      * @param value {Number} The new value of the spinner
      * @param old {Number} The former value of the spinner
@@ -486,17 +498,23 @@ qx.Class.define("qx.ui.form.Spinner",
     /**
      * Apply routine for the numberFormat property.<br/>
      * When setting a number format, the display of the
-     * value in the textfield will be changed immediately.
+     * value in the text-field will be changed immediately.
      *
      * @param value {Boolean} The new value of the numberFormat property
      * @param old {Boolean} The former value of the numberFormat property
      */
     _applyNumberFormat : function(value, old) {
-      var textfield = this.getChildControl("textfield");
-      textfield.setFilter(this._getFilterRegExp());
+      var textField = this.getChildControl("textfield");
+      textField.setFilter(this._getFilterRegExp());
 
-      this.getNumberFormat().addListener("changeNumberFormat",
-        this._onChangeNumberFormat, this);
+      if (old) {
+        old.removeListener("changeNumberFormat", this._onChangeNumberFormat, this);
+      }
+
+      var numberFormat = this.getNumberFormat();
+      if (numberFormat !== null) {
+        numberFormat.addListener("changeNumberFormat", this._onChangeNumberFormat, this);
+      }
 
       this._applyValue(this.__lastValidValue, undefined);
     },
@@ -690,17 +708,19 @@ qx.Class.define("qx.ui.form.Spinner",
       // if the result is a number
       if (!isNaN(value))
       {
-        // Fix range
+        // Fix value if invalid
         if (value > this.getMaximum()) {
-          textField.setValue(this.getMaximum() + "");
-          return;
+          value = this.getMaximum();
         } else if (value < this.getMinimum()) {
-          textField.setValue(this.getMinimum() + "");
-          return;
+          value = this.getMinimum();
         }
 
-        // set the value in the spinner
-        this.setValue(value);
+        // If value is the same than before, call directly _applyValue()
+        if (value === this.__lastValidValue) {
+          this._applyValue(this.__lastValidValue);
+        } else {
+          this.setValue(value);
+        }
       }
       else
       {
@@ -810,12 +830,24 @@ qx.Class.define("qx.ui.form.Spinner",
      */
     gotoValue : function(value) {
       return this.setValue(Math.min(this.getMaximum(), Math.max(this.getMinimum(), value)));
+    },
+
+    // overridden
+    focus : function()
+    {
+      this.base(arguments);
+      this.getChildControl("textfield").getFocusElement().focus();
     }
   },
 
 
   destruct : function()
   {
+    var nf = this.getNumberFormat();
+    if (nf) {
+      nf.removeListener("changeNumberFormat", this._onChangeNumberFormat, this);
+    }
+
     if (qx.core.Environment.get("qx.dynlocale")) {
       qx.locale.Manager.getInstance().removeListener("changeLocale", this._onChangeLocale, this);
     }

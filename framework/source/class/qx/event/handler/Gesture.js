@@ -8,8 +8,7 @@
      2014 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -25,7 +24,7 @@
 qx.Class.define("qx.event.handler.Gesture",
 {
   extend : qx.event.handler.GestureCore,
-  implement : qx.event.IEventHandler,
+  implement : [ qx.event.IEventHandler, qx.core.IDisposable ],
 
   statics : {
 
@@ -91,6 +90,13 @@ qx.Class.define("qx.event.handler.Gesture",
     __onDblClickWrapped : null,
     __fireRollWrapped : null,
 
+    /**
+     * Getter for the internal __window object
+     * @return {Window} DOM window instance
+     */
+    getWindow: function() {
+      return this.__window;
+    },
 
     // interface implementation
     canHandleEvent : function(target, type) {},
@@ -123,7 +129,9 @@ qx.Class.define("qx.event.handler.Gesture",
       // list to wheel events
       var data = qx.bom.client.Event.getMouseWheel(this.__window);
       this.__fireRollWrapped = qx.lang.Function.listener(this._fireRoll, this);
-      qx.bom.Event.addNativeListener(data.target, data.type, this.__fireRollWrapped, this);
+      // replaced the useCapture (4th parameter) from this to true
+      // see https://github.com/qooxdoo/qooxdoo/pull/9292
+      qx.bom.Event.addNativeListener(data.target, data.type, this.__fireRollWrapped, true);
     },
 
     /**
@@ -209,9 +217,9 @@ qx.Class.define("qx.event.handler.Gesture",
 
 
     /**
-     * Call overriden method.
+     * Call overridden method.
      *
-     * @param method {String} Name of the overriden method.
+     * @param method {String} Name of the overridden method.
      * @param args {Array} Arguments.
      */
     __callBase: function(method, args) {

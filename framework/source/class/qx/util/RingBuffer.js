@@ -9,8 +9,7 @@
      2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -25,7 +24,7 @@
  * entries are deleted.
  *
  * A mark feature also exists which can be used to remember a point in time.
- * When retrieving entriues, it is possible to get only those entries
+ * When retrieving entries, it is possible to get only those entries
  * after the marked time. This is useful if data from the buffer is extracted
  * and processed. Whenever this happens, a mark() call can be used so that the
  * next extraction will only get new data.
@@ -112,6 +111,15 @@ qx.Bootstrap.define("qx.util.RingBuffer",
       if (this.__isMarkActive && (this.__entriesStoredSinceMark < max)){
         this.__entriesStoredSinceMark++;
       }
+    },
+    
+    
+    /**
+     * Returns the number of entries stored
+     * @return {Integer}
+     */
+    getNumEntriesStored: function() {
+      return this.__entriesStored;
     },
 
 

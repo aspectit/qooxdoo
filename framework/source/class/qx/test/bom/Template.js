@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -46,7 +45,7 @@ qx.Class.define("qx.test.bom.Template",
 
     testFunc : function() {
       var template = "{{name}} xyz";
-      var view = {name: function() {return "abc"}};
+      var view = {name: function() {return "abc";}};
       var result = qx.bom.Template.render(template, view);
       var expected = "abc xyz";
 
@@ -228,6 +227,16 @@ qx.Class.define("qx.test.bom.Template",
 
       // IE uses uppercase tag names
       this.assertEquals("123<span>234</span>", el.innerHTML.toLowerCase());
+    },
+
+    // test a potential exploit https://nodesecurity.io/advisories/62
+    testHtmlEscaping : function() {
+        var template = "<a href={{foo}}/>";
+        var view = {foo: 'test.com onload=alert(1)'};
+        var result = qx.bom.Template.render(template, view);
+        var expected = "<a href=test.com onload&#x3D;alert(1)/>";
+
+        this.assertEquals(expected, result);
     }
   }
 });

@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -60,6 +59,52 @@ qx.Class.define("qx.test.ui.form.AbstractVirtualBox",
       this.__comboBox.close();
       this.flush();
       this.assertFalse(this.__comboBox.hasState("popupOpen"));
+    },
+
+    testListLengthAfterModelChangeSelectBox : function()
+    {
+      var model = new qx.data.Array(["a", "b", "c"]);
+      this.__selectBox.setModel(model);
+      this.__selectBox.open();
+      this.flush();
+
+      var dropDown = this.__selectBox.getChildControl("dropdown");
+      var firstHeight = dropDown.getBounds().height;
+      this.assertPositiveInteger(firstHeight);
+
+      model.replace(["d", "e", "f", "g", "h", "j", "k", "l"]);
+      this.flush();
+      var secondHeight = dropDown.getBounds().height;
+      this.assertPositiveInteger(secondHeight);
+
+      this.assertNotEquals(secondHeight, firstHeight);
+      this.assertTrue(secondHeight > firstHeight);
+
+      this.__selectBox.close();
+      this.__selectBox.resetModel();
+    },
+
+    testListLengthAfterModelChangeComboBox : function()
+    {
+      var model = new qx.data.Array(["a", "b", "c"]);
+      this.__comboBox.setModel(model);
+      this.__comboBox.open();
+      this.flush();
+
+      var dropDown = this.__comboBox.getChildControl("dropdown");
+      var firstHeight = dropDown.getBounds().height;
+      this.assertPositiveInteger(firstHeight);
+
+      model.replace(["d", "e", "f", "g", "h", "j", "k", "l"]);
+      this.flush();
+      var secondHeight = dropDown.getBounds().height;
+      this.assertPositiveInteger(secondHeight);
+
+      this.assertNotEquals(secondHeight, firstHeight);
+      this.assertTrue(secondHeight > firstHeight);
+
+      this.__comboBox.close();
+      this.__comboBox.resetModel();
     }
   }
 });

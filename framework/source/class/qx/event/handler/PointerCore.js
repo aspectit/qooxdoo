@@ -8,8 +8,7 @@
      2014 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -22,10 +21,12 @@
  * Low-level pointer event handler.
  *
  * @require(qx.bom.client.Event)
+ * @require(qx.bom.client.Device)
  */
 qx.Bootstrap.define("qx.event.handler.PointerCore", {
 
   extend : Object,
+  implement: [ qx.core.IDisposable ],
 
   statics : {
     MOUSE_TO_POINTER_MAPPING: {
@@ -61,6 +62,9 @@ qx.Bootstrap.define("qx.event.handler.PointerCore", {
       pointermove : "gesturemove"
     },
 
+    LEFT_BUTTON : (qx.core.Environment.get("engine.name") == "mshtml" &&
+      qx.core.Environment.get("browser.documentmode") <= 8) ? 1 : 0,
+
     SIM_MOUSE_DISTANCE : 25,
 
     SIM_MOUSE_DELAY : 2500,
@@ -88,17 +92,26 @@ qx.Bootstrap.define("qx.event.handler.PointerCore", {
     this.__eventNames = [];
     this.__buttonStates = [];
     this.__activeTouches = [];
+    this._processedFlag = "$$qx" +
+      this.classname.substr(this.classname.lastIndexOf(".") + 1) +
+      "Processed";
 
     var engineName = qx.core.Environment.get("engine.name");
     var docMode = parseInt(qx.core.Environment.get("browser.documentmode"), 10);
     if (engineName == "mshtml" && docMode == 10) {
-      this.__eventNames = ["MSPointerDown", "MSPointerMove", "MSPointerUp", "MSPointerCancel", "MSPointerOver", "MSPointerOut"];
+      // listen to native prefixed events and custom unprefixed (see bug #8921)
+      this.__eventNames = [
+        "MSPointerDown", "MSPointerMove", "MSPointerUp", "MSPointerCancel", "MSPointerOver", "MSPointerOut",
+        "pointerdown", "pointermove", "pointerup", "pointercancel", "pointerover", "pointerout"
+      ];
       this._initPointerObserver();
     } else {
       if (qx.core.Environment.get("event.mspointer")) {
         this.__nativePointerEvents = true;
       }
-      this.__eventNames = ["pointerdown", "pointermove", "pointerup", "pointercancel", "pointerover", "pointerout"];
+      this.__eventNames = [
+        "pointerdown", "pointermove", "pointerup", "pointercancel", "pointerover", "pointerout"
+      ];
       this._initPointerObserver();
     }
     if (!qx.core.Environment.get("event.mspointer")) {
@@ -107,10 +120,13 @@ qx.Bootstrap.define("qx.event.handler.PointerCore", {
         this._initObserver(this._onTouchEvent);
       }
 
-      this.__eventNames = ["mousedown", "mouseup", "mousemove", "mouseover", "mouseout", "contextmenu"];
+      this.__eventNames = [
+        "mousedown", "mouseup", "mousemove", "mouseover", "mouseout", "contextmenu"
+      ];
       this._initObserver(this._onMouseEvent);
     }
   },
+
 
   members : {
     __defaultTarget : null,
@@ -122,6 +138,7 @@ qx.Bootstrap.define("qx.event.handler.PointerCore", {
     __buttonStates : null,
     __primaryIdentifier : null,
     __activeTouches : null,
+    _processedFlag : null,
 
     /**
      * Adds listeners to native pointer events if supported
@@ -172,15 +189,16 @@ qx.Bootstrap.define("qx.event.handler.PointerCore", {
       this._fireEvent(evt, type, target);
     },
 
+
     /**
      * Handler for touch events
      * @param domEvent {Event} Native DOM event
      */
     _onTouchEvent: function(domEvent) {
-      if (domEvent.$$qxProcessed) {
+      if (domEvent[this._processedFlag]) {
         return;
       }
-      domEvent.$$qxProcessed = true;
+      domEvent[this._processedFlag] = true;
       var type = qx.event.handler.PointerCore.TOUCH_TO_POINTER_MAPPING[domEvent.type];
       var changedTouches = domEvent.changedTouches;
 
@@ -273,10 +291,10 @@ qx.Bootstrap.define("qx.event.handler.PointerCore", {
     * @param domEvent {Event} Native DOM event
     */
     _onMouseEvent : function(domEvent) {
-      if (domEvent.$$qxProcessed) {
+      if (domEvent[this._processedFlag]) {
         return;
       }
-      domEvent.$$qxProcessed = true;
+      domEvent[this._processedFlag] = true;
 
       if (this._isSimulatedMouseEvent(domEvent.clientX, domEvent.clientY)) {
         /*
@@ -289,6 +307,12 @@ qx.Bootstrap.define("qx.event.handler.PointerCore", {
       if (domEvent.type == "mousedown") {
         this.__buttonStates[domEvent.which] = 1;
       } else if (domEvent.type == "mouseup") {
+        if (qx.core.Environment.get("os.name") == "osx" && qx.core.Environment.get("engine.name") == "gecko") {
+          if (this.__buttonStates[domEvent.which] != 1 && domEvent.ctrlKey) {
+            this.__buttonStates[1] = 0;
+          }
+        }
+
         this.__buttonStates[domEvent.which] = 0;
       }
 
@@ -396,6 +420,7 @@ qx.Bootstrap.define("qx.event.handler.PointerCore", {
      * @param domEvent {Event} DOM event
      * @param type {String ? null} type of the event
      * @param target {Element ? null} event target
+     * @return {qx.Promise?} a promise, if one was returned by event handlers
      */
     _fireEvent : function(domEvent, type, target)
     {
@@ -403,24 +428,41 @@ qx.Bootstrap.define("qx.event.handler.PointerCore", {
       type = type || domEvent.type;
 
       var gestureEvent;
-      if (type == "pointerdown" || type == "pointerup" || type == "pointermove") {
+      if ((domEvent.pointerType !== "mouse" ||
+           domEvent.button <= qx.event.handler.PointerCore.LEFT_BUTTON) &&
+        (type == "pointerdown" || type == "pointerup" || type == "pointermove"))
+      {
         gestureEvent = new qx.event.type.dom.Pointer(
           qx.event.handler.PointerCore.POINTER_TO_GESTURE_MAPPING[type],
           domEvent);
         qx.event.type.dom.Pointer.normalize(gestureEvent);
-        gestureEvent.srcElement = target;
+        try {
+          gestureEvent.srcElement = target;
+        }catch(ex) {
+          // Nothing - strict mode prevents writing to read only properties
+        }
       }
 
       if (qx.core.Environment.get("event.dispatchevent")) {
+        var tracker = {};
         if (!this.__nativePointerEvents) {
-          target.dispatchEvent(domEvent);
+          qx.event.Utils.then(tracker, function() {
+            return target.dispatchEvent(domEvent);
+          });
         }
         if (gestureEvent) {
-          target.dispatchEvent(gestureEvent);
+          qx.event.Utils.then(tracker, function() {
+            return target.dispatchEvent(gestureEvent);
+          });
         }
+        return tracker.promise;
       } else {
         // ensure compatibility with native events for IE8
-        domEvent.srcElement = target;
+        try {
+          domEvent.srcElement = target;
+        }catch(ex) {
+          // Nothing - strict mode prevents writing to read only properties
+        }
 
         while (target) {
           if (target.$$emitter) {

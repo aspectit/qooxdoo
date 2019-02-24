@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -266,15 +265,15 @@ qx.Class.define("qx.test.ui.layout.Flow",
 
       var c1 = new qx.test.ui.layout.LayoutItem(100, 60).set({
         alignY: "top"
-      })
+      });
       container.add(c1);
       var c2 = new qx.test.ui.layout.LayoutItem(100, 100).set({
         alignY: "middle"
-      })
+      });
       container.add(c2);
       var c3 = new qx.test.ui.layout.LayoutItem(100, 40).set({
         alignY: "bottom"
-      })
+      });
       container.add(c3);
 
       // reference
@@ -390,7 +389,7 @@ qx.Class.define("qx.test.ui.layout.Flow",
 
       var c1 = new qx.test.ui.layout.LayoutItem(100, 50).set({
         margin: [5, 10, 15, 20]
-      })
+      });
       container.add(c1);
       var c2 = new qx.test.ui.layout.LayoutItem(100, 50).set({
         margin: [10, 20, 30, 40]
@@ -398,7 +397,7 @@ qx.Class.define("qx.test.ui.layout.Flow",
       container.add(c2);
       var c3 = new qx.test.ui.layout.LayoutItem(100, 50).set({
         margin: [15]
-      })
+      });
       container.add(c3);
 
       this.flush();

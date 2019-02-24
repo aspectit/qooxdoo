@@ -10,8 +10,7 @@
 #    2006-2010 1&1 Internet AG, Germany, http://www.1und1.de
 #
 #  License:
-#    LGPL: http://www.gnu.org/licenses/lgpl.html
-#    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+#    MIT: https://opensource.org/licenses/MIT
 #    See the LICENSE file in the project's top-level directory for details.
 #
 #  Authors:
@@ -29,9 +28,8 @@ from generator.code.qcEnvClass    import qcEnvClass
 from generator.resource.Resource  import Resource
 from generator.resource.Image     import Image
 from generator.resource.CombinedImage    import CombinedImage
-from generator.action.ContribLoader      import ContribLoader
+from generator.resource.FontMap   import FontMap
 from generator.config.Manifest    import Manifest
-from generator.config.ConfigurationError import ConfigurationError
 from generator                    import Context as context
 
 
@@ -57,7 +55,7 @@ class Library(object):
         self.assets["classes"] = {}
         self.assets["translations"] = {}
         self.assets["resources"] = {}
-        
+
         self.__youngest = (None, None) # to memoize youngest file in lib
         self._dependencies = None  # for dependencies.json
 
@@ -66,15 +64,13 @@ class Library(object):
 
         # check contrib:// URI
         if self.manipath.startswith(("contrib://", "http://", "https://")):
-            newmanipath = self._download_contrib(self.manipath)
-            if not newmanipath:
-                raise RuntimeError("Unable to get contribution from internet: %s" % self.manipath)
-            else:
-                self.manipath = context.config.absPath(os.path.normpath(newmanipath))
+            raise RuntimeError(("Contrib URIs (starting with 'contrib://', 'http://' or 'https://') are "
+                "no longer supported. Find the download locations of those in the contrib "
+                "catalog and download them manually. Then point to the 'Manifest.json' files with local filepaths."))
 
         manifest = Manifest(self.manipath)
         self.manifest = manifest
-        
+
         self.path = os.path.dirname(self.manipath)
         self.encoding = manifest.encoding
         self.classPath = manifest.classpath
@@ -86,7 +82,7 @@ class Library(object):
         self.assets["translations"]["path"]  = manifest.translation
         self.assets["resources"]["path"] = self.resourcePath
 
-        if not self.namespace: 
+        if not self.namespace:
             raise RuntimeError
 
         # ensure translation dir
@@ -94,7 +90,7 @@ class Library(object):
         #if not os.path.isdir(transPath):
         #    os.makedirs(transPath)
 
-        self._dependencies_path = os.path.join(self.path, 
+        self._dependencies_path = os.path.join(self.path,
             os.path.dirname(self.classPath),  # this is to come to 'source/script'
             'script', 'dependencies.json')
 
@@ -108,29 +104,6 @@ class Library(object):
 
     def __eq__(self, other):
         return self.manipath == other.manipath
-
-
-    def _download_contrib(self, contribUri):
-        cacheMap = context.jobconf.getFeature("cache")
-        catalogBase = context.jobconf.getFeature("let/CONTRIB_CATALOG_BASEURL")
-        if cacheMap and 'downloads' in cacheMap:
-            contribCachePath = cacheMap['downloads']
-            contribCachePath = context.config.absPath(contribCachePath)
-        else:
-            contribCachePath = "cache-downloads"
-        self._console.info("Checking network-based contrib: %s" % contribUri)
-        self._console.indent()
-
-        dloader = ContribLoader(catalog_base_url=catalogBase)
-        (updatedP, revNo, manipath) = dloader.download(contribUri, contribCachePath)
-
-        if updatedP:
-            self._console.info("downloaded contrib: %s" % contribUri)
-        else:
-            self._console.debug("using cached version")
-        self._console.outdent()
-
-        return manipath
 
 
     ##
@@ -347,9 +320,11 @@ class Library(object):
                     else:
                         res = Image(fpath)
                     res.analyzeImage()
+                elif FontMap.isFontMap(fpath):
+                    res = FontMap(fpath)
                 else:
                     res = Resource(fpath)
-                
+
                 res.set_id(Path.posifyPath(fpath[lib_prefix_len:]))
                 res.library= self
 
@@ -395,7 +370,7 @@ class Library(object):
 
         check_multiple_namespaces(classRoot)
         check_manifest_namespace(classRoot)
-            
+
         self._console.debug("Scanning class folder...")
 
         # Iterate...
@@ -460,8 +435,8 @@ class Library(object):
         self._console.debug("Found %s docs" % len(docs))
         self._console.outdent()
 
-        #return classList, docs 
-        return classList, docs 
+        #return classList, docs
+        return classList, docs
 
 
     def _scanTranslationPath(self):
@@ -521,7 +496,7 @@ class Library(object):
             "namespace" : namespace
         }
 
-    
+
     ##
     # Given a dottedExpr ("foo.bar.baz.a.b.c"), check if there is a matching
     # file (e.g. "foo/bar/baz.js") or directory ("foo/bar") and return the path,
@@ -539,7 +514,7 @@ class Library(object):
             if nameParts[0] + ".js" in osListDir:
                 return pathParts + [nameParts[0] + ".js"]
             elif nameParts[0] in osListDir:
-                return findClassR(nameParts[1:], os.path.join(inDir,nameParts[0]), 
+                return findClassR(nameParts[1:], os.path.join(inDir,nameParts[0]),
                     pathParts + [nameParts[0]])
             else:
                 return []  # no matching class in this tree

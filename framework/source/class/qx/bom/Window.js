@@ -8,8 +8,7 @@
      2004-2010 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -32,7 +31,7 @@ qx.Class.define("qx.bom.Window",
     /** Window handle which is currently blocked. */
     __blockerWindow : null,
 
-    /** Timer instance to poll for unblocking if the modale window was closed */
+    /** Timer instance to poll for unblocking if the modal window was closed */
     __timer : null,
 
     /** Supported options and their mapping to window options */
@@ -190,12 +189,11 @@ qx.Class.define("qx.bom.Window",
       if(newWindow && listener && (listener instanceof Function)){
         var context = self || newWindow;
         var onLoadFunction = qx.lang.Function.bind(listener, context);
-        qx.bom.Event.addNativeListener(
-          newWindow, 'load', function(){
-            onLoadFunction();
-            qx.bom.Event.removeNativeListener(newWindow, 'load', arguments.callee);
-          }
-        );
+        var onNativeLoad = function(){
+          onLoadFunction();
+          qx.bom.Event.removeNativeListener(newWindow, 'load', onNativeLoad);
+        }
+        qx.bom.Event.addNativeListener(newWindow, 'load', onNativeLoad);
       }
       return newWindow;
     },

@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -119,7 +118,7 @@ qx.Class.define("qx.html.Input",
      * for disabling the fields in webkit. All other browsers use the disabled
      * attribute.
      *
-     * @param value {Boolean} true, if the inpout element should be enabled.
+     * @param value {Boolean} true, if the input element should be enabled.
      */
     setEnabled : function(value)
     {

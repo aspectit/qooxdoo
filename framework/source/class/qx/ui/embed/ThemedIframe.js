@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -399,7 +398,7 @@ qx.Class.define("qx.ui.embed.ThemedIframe",
         var frameSize = {
           width: qx.bom.Document.getWidth(win),
           height: qx.bom.Document.getHeight(win)
-        }
+        };
         return frameSize;
       }
       catch (e)
@@ -427,7 +426,7 @@ qx.Class.define("qx.ui.embed.ThemedIframe",
 
 
     /**
-     * Configures the given scollbar
+     * Configures the given scrollbar
      *
      * @param scrollbarId {String} child control id of the scrollbar to
      *   configure
@@ -455,7 +454,7 @@ qx.Class.define("qx.ui.embed.ThemedIframe",
       }
       else
       {
-        bar.setMaximum(1000000)
+        bar.setMaximum(1000000);
         bar.set({
           position: Math.min(bar.getPosition(), contentSize),
           maximum: contentSize - containerSize,
@@ -526,4 +525,4 @@ qx.Class.define("qx.ui.embed.ThemedIframe",
     this._stopIframeObserver();
     this.__iframeSize = null;
   }
-})
+});

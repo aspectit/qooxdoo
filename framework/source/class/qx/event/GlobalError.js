@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -55,9 +54,9 @@ qx.Bootstrap.define("qx.event.GlobalError",
     /**
      * Set the global fallback error handler
      *
-     * @param callback {Function} The error handler. The first argument is the
+     * @param callback {Function?null} The error handler. The first argument is the
      *    exception, which caused the error
-     * @param context {Object} The "this" context of the callback function
+     * @param context {Object?window} The "this" context of the callback function
      */
     setErrorHandler : function(callback, context)
     {
@@ -102,14 +101,16 @@ qx.Bootstrap.define("qx.event.GlobalError",
      * handling.
      *
      * @param msg {String} browser error message
-     * @param uri {String} uri to errornous script
+     * @param uri {String} uri to erroneous script
      * @param lineNumber {Integer} line number of error
+     * @param columnNumber {Integer} column number of error
+     * @param exception {Error} orginal error
      */
-    __onErrorWindow : function(msg, uri, lineNumber)
+    __onErrorWindow : function(msg, uri, lineNumber, columnNumber, exception)
     {
       if (this.__callback)
       {
-        this.handleError(new qx.core.WindowError(msg, uri, lineNumber));
+        this.handleError(new qx.core.WindowError(msg, uri, lineNumber, columnNumber, exception));
       }
     },
 

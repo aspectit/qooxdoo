@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -29,12 +28,16 @@
  *
  * To adjust the behavior of {@link #send} override
  * {@link #_getConfiguredUrl} and {@link #_getConfiguredRequestHeaders}.
+ * 
+ * NOTE: Instances of this class must be disposed of after use
+ *
  */
 qx.Class.define("qx.io.request.AbstractRequest",
 {
   type : "abstract",
 
   extend : qx.core.Object,
+  implement: [ qx.core.IDisposable ],
 
   /**
    * @param url {String?} The URL of the resource to request.
@@ -111,6 +114,11 @@ qx.Class.define("qx.io.request.AbstractRequest",
     "statusError": "qx.event.type.Event",
 
     /**
+     * Fired when the configured parser runs into an unrecoverable error.
+     */
+    "parseError": "qx.event.type.Data",
+
+    /**
      * Fired on timeout, error or remote error.
      *
      * This event is fired for convenience. Usually, it is recommended
@@ -170,15 +178,18 @@ qx.Class.define("qx.io.request.AbstractRequest",
     },
 
     /**
-     * Data to be send as part of the request.
+     * Data to be sent as part of the request.
      *
      * Supported types:
      *
      * * String
      * * Map
      * * qooxdoo Object
+     * * Blob
+     * * ArrayBuffer
+     * * FormData
      *
-     * For every supported type except strings, a URL encoded string
+     * For maps, Arrays and qooxdoo objects, a URL encoded string
      * with unsafe characters escaped is internally generated and sent
      * as part of the request.
      *
@@ -195,7 +206,10 @@ qx.Class.define("qx.io.request.AbstractRequest",
         return qx.lang.Type.isString(value) ||
                qx.Class.isSubClassOf(value.constructor, qx.core.Object) ||
                qx.lang.Type.isObject(value) ||
-               qx.lang.Type.isArray(value);
+               qx.lang.Type.isArray(value) ||
+               qx.Bootstrap.getClass(value) == "Blob" ||
+               qx.Bootstrap.getClass(value) == "ArrayBuffer" ||
+               qx.Bootstrap.getClass(value) == "FormData";
       },
       nullable: true
     },
@@ -253,6 +267,11 @@ qx.Class.define("qx.io.request.AbstractRequest",
      * Holds transport.
      */
     _transport: null,
+
+    /**
+     * Holds information about the parser status for the last request.
+     */
+    _parserFailed: false,
 
     /*
     ---------------------------------------------------------------------------
@@ -346,7 +365,7 @@ qx.Class.define("qx.io.request.AbstractRequest",
      */
     send: function() {
       var transport = this._transport,
-          url, method, async, serializedData;
+          url, method, async, requestData;
 
       //
       // Open request
@@ -379,7 +398,10 @@ qx.Class.define("qx.io.request.AbstractRequest",
       // Send request
       //
 
-      serializedData = this._serializeData(this.getRequestData());
+      requestData = this.getRequestData();
+      if (["ArrayBuffer", "Blob", "FormData"].indexOf(qx.Bootstrap.getClass(requestData)) == -1) {
+        requestData = this._serializeData(requestData);
+      }
 
       this._setRequestHeaders();
 
@@ -387,7 +409,8 @@ qx.Class.define("qx.io.request.AbstractRequest",
       if (qx.core.Environment.get("qx.debug.io")) {
         this.debug("Send low-level request");
       }
-      method == "GET" ? transport.send() : transport.send(serializedData);
+
+      method == "GET" ? transport.send() : transport.send(requestData);
       this._setPhase("sent");
     },
 
@@ -732,7 +755,11 @@ qx.Class.define("qx.io.request.AbstractRequest",
 
         this._setResponse(this._getParsedResponse());
 
-        this._fireStatefulEvent("success");
+        if (this._parserFailed) {
+          this.fireEvent("fail");
+        } else {
+          this._fireStatefulEvent("success");
+        }
 
       // Erroneous HTTP status
       } else {
@@ -860,6 +887,8 @@ qx.Class.define("qx.io.request.AbstractRequest",
       if (qx.lang.Type.isObject(data)) {
         return qx.util.Uri.toParameter(data, isPost);
       }
+
+      return null;
     }
   },
 

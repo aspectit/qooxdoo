@@ -8,8 +8,7 @@
      2007-2013 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -22,7 +21,7 @@
  */
 qx.Bootstrap.define("qx.module.Dataset", {
 
-  statics: {
+  members: {
 
     /**
      * Sets an HTML "data-*" attribute on each item in the collection
@@ -84,7 +83,7 @@ qx.Bootstrap.define("qx.module.Dataset", {
 
 
     /**
-     * Remove an HTML "data-*" attribute from the given DOM element
+     * Remove an HTML "data-*" attribute on each item in the collection
      *
      * @attach {qxWeb}
      * @param name {String} Name of the attribute
@@ -92,9 +91,10 @@ qx.Bootstrap.define("qx.module.Dataset", {
      */
     removeData : function(name)
     {
-      if (this[0] && this[0].nodeType === 1) {
-        qx.bom.element.Dataset.remove(this[0], name);
-      }
+      this._forEachElement(function(item) {
+        qx.bom.element.Dataset.remove(item, name);
+      });
+
       return this;
     }
 
@@ -102,13 +102,7 @@ qx.Bootstrap.define("qx.module.Dataset", {
 
   defer : function(statics)
   {
-    qxWeb.$attach({
-      "getData" : statics.getData,
-      "setData" : statics.setData,
-      "removeData" : statics.removeData,
-      "getAllData" : statics.getAllData,
-      "hasData" : statics.hasData
-    });
+    qxWeb.$attachAll(this);
 
    }
 });

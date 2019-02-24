@@ -8,8 +8,7 @@
      2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -60,7 +59,7 @@ qx.Interface.define("qx.ui.tree.core.IVirtualTreeDelegate",
      * controller.bindProperty(null, "value", options, item, id);
      * </code>
      *
-     * @param controller {MWidgetController} The currently used controller.
+     * @param controller {qx.ui.list.core.MWidgetController} The currently used controller.
      * @param item {qx.ui.core.Widget} The created and used item.
      * @param id {Integer} The id for the binding.
      */

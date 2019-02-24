@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -103,7 +102,7 @@ qx.Class.define("qx.event.dispatch.MouseCapture",
         target = this.__captureElement;
       }
 
-      this.base(arguments, target, event, type);
+      return this.base(arguments, target, event, type);
     },
 
 
@@ -170,11 +169,12 @@ qx.Class.define("qx.event.dispatch.MouseCapture",
       if (this.hasNativeCapture) {
         this.nativeSetCapture(element, containerCapture);
         var self = this;
-        qx.bom.Event.addNativeListener(element, "losecapture", function()
+        var onNativeListener = function()
         {
-          qx.bom.Event.removeNativeListener(element, "losecapture", arguments.callee);
+          qx.bom.Event.removeNativeListener(element, "losecapture", onNativeListener);
           self.releaseCapture();
-        });
+        };
+        qx.bom.Event.addNativeListener(element, "losecapture", onNativeListener);
       }
 
       this.__containerCapture = containerCapture;
@@ -258,11 +258,6 @@ qx.Class.define("qx.event.dispatch.MouseCapture",
 
       "default" : (function() {})
     })
-  },
-
-
-  destruct : function() {
-    this.__captureElement = this.__window = this.__registration = null;
   },
 
 

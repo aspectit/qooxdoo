@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -40,16 +39,16 @@ qx.Class.define("qx.test.ui.LayoutTestCase",
 
 
     tearDown : function() {
-      this.getRoot().removeAll();
+      this.getRoot().removeAll().forEach(function(widget) {
+        widget.dispose();
+      });
 
-      if (qx.core.Environment.get("qx.debug.dispose")) {
-        var cls = qx.test.ui.LayoutTestCase;
+      var cls = qx.test.ui.LayoutTestCase;
 
-        if (cls._root) {
-          cls._root.destroy();
-          cls._root = null;
-          qx.core.Init.getApplication = cls.__oldGetApp;
-        }
+      if (cls._root) {
+        cls._root.destroy();
+        cls._root = null;
+        qx.core.Init.getApplication = cls.__oldGetApp;
       }
     },
 
@@ -75,8 +74,8 @@ qx.Class.define("qx.test.ui.LayoutTestCase",
           },
           close : function() {},
           terminate : function() {}
-        }
-      }
+        };
+      };
 
       return cls._root;
     },
@@ -128,9 +127,9 @@ qx.Class.define("qx.test.ui.LayoutTestCase",
       {
         var obj = reg[key];
 
-        // skip pooled objects
-        if (obj.$$pooled) {
-          continue
+        // skip pooled objects + DeferredCall which cleans the event listener blacklist
+        if (obj.$$pooled || obj.$$blackListCleaner) {
+          continue;
         }
         this.assertNotUndefined(
           regCopy[key],

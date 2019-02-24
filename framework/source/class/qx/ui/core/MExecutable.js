@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -53,9 +52,7 @@ qx.Mixin.define("qx.ui.core.MExecutable",
      */
     command :
     {
-      check : function(value) {
-        return value instanceof qx.ui.core.Command || value instanceof qx.ui.command.Command;
-      },
+      check : "qx.ui.command.Command",
       apply : "_applyCommand",
       event : "changeCommand",
       nullable : true
@@ -124,8 +121,10 @@ qx.Mixin.define("qx.ui.core.MExecutable",
         this.__semaphore = false;
         return;
       }
-      this.__semaphore = true;
-      this.execute();
+      if (this.isEnabled()) {
+        this.__semaphore = true;
+        this.execute();
+      }
     },
 
 
@@ -161,7 +160,7 @@ qx.Mixin.define("qx.ui.core.MExecutable",
 
         // add the new binding
         if (value != null && qx.Class.hasProperty(this.constructor, property)) {
-          // handle the init value (dont sync the initial null)
+          // handle the init value (don't sync the initial null)
           var cmdPropertyValue = value.get(property);
           if (cmdPropertyValue == null) {
             selfPropertyValue = this.get(property);

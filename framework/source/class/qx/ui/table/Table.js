@@ -8,8 +8,7 @@
      2006 STZ-IDA, Germany, http://www.stz-ida.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -189,7 +188,7 @@ qx.Class.define("qx.ui.table.Table",
 
     // Make focusable
     this.setTabIndex(1);
-    this.addListener("keypress", this._onKeyPress);
+    this.addListener("keydown", this._onKeyDown);
     this.addListener("focus", this._onFocusChanged);
     this.addListener("blur", this._onFocusChanged);
 
@@ -586,6 +585,19 @@ qx.Class.define("qx.ui.table.Table",
       check : "Function",
       init : null,
       nullable : true
+    },
+
+
+    /**
+     * By default, all Scrollers' (meta-columns') horizontal scrollbars are
+     * shown if any one is required. Allow not showing any that are not
+     * required.
+     */
+    excludeScrollerScrollbarsIfNotNeeded :
+    {
+      check : "Boolean",
+      init : false,
+      nullable : false
     },
 
 
@@ -1293,6 +1305,18 @@ qx.Class.define("qx.ui.table.Table",
       );
     },
 
+
+    // overridden
+    _onContextMenuOpen : function(e)
+    {
+      // This is Widget's context menu handler which typically retrieves
+      // and displays the menu as soon as it receives a "contextmenu" event.
+      // We want to allow the cellContextmenu handler to create the menu,
+      // so we'll override this method with a null one, and do the menu
+      // placement and display handling in our _onContextMenu method.
+    },
+
+
     /**
      * To update the table if the table model has changed and remove selection.
      *
@@ -1309,7 +1333,7 @@ qx.Class.define("qx.ui.table.Table",
 
       // update selection if rows were removed
       if (removeCount) {
-        this.getSelectionModel().removeSelectionInterval(removeStart, removeStart + removeCount);
+        this.getSelectionModel().removeSelectionInterval(removeStart, removeStart + removeCount - 1, true);
         // remove focus if the focused row has been removed
         if (this.__focusedRow >= removeStart && this.__focusedRow < (removeStart + removeCount)) {
           this.setFocusedCell();
@@ -1363,8 +1387,20 @@ qx.Class.define("qx.ui.table.Table",
      * Event handler. Called when a key was pressed.
      *
      * @param evt {qx.event.type.KeySequence} the event.
+     * @deprecated {6.0} please use _onKeyDown instead!
      */
     _onKeyPress : function(evt)
+    {
+       qx.log.Logger.deprecatedMethodWarning(this._onKeyPress, "The method '_onKeyPress()' is deprecated. Please use '_onKeyDown()' instead.");
+       qx.log.Logger.deprecateMethodOverriding(this, qx.ui.table.Table, "_onKeyPress", "The method '_onKeyPress()' is deprecated. Please use '_onKeyDown()' instead.");
+       this._onKeyDown(evt);
+    },
+    /**
+     * Event handler. Called when on key down event
+     *
+     * @param evt {qx.event.type.KeySequence} the event.
+     */
+    _onKeyDown : function(evt)
     {
       if (!this.getEnabled()) {
         return;
@@ -1372,7 +1408,7 @@ qx.Class.define("qx.ui.table.Table",
 
       // No editing mode
       var oldFocusedRow = this.__focusedRow;
-      var consumed = true;
+      var consumed = false;
 
       // Handle keys that are independent from the modifiers
       var identifier = evt.getKeyIdentifier();
@@ -1409,11 +1445,11 @@ qx.Class.define("qx.ui.table.Table",
       }
       else
       {
+        consumed = true;
         // No editing mode
         if (evt.isCtrlPressed())
         {
           // Handle keys that depend on modifiers
-          consumed = true;
 
           switch(identifier)
           {
@@ -1534,7 +1570,7 @@ qx.Class.define("qx.ui.table.Table",
       var data = evt.getData();
       if (this.__columnMenuButtons != null && data.col != null &&
           data.visible != null) {
-        this.__columnMenuButtons[data.col].setVisible(data.visible);
+        this.__columnMenuButtons[data.col].setColumnVisible(data.visible);
       }
 
       this._updateScrollerWidths();
@@ -2007,35 +2043,61 @@ qx.Class.define("qx.ui.table.Table",
       // Check which scroll bars are needed
       var horNeeded = false;
       var verNeeded = false;
+      var excludeScrollerScrollbarsIfNotNeeded;
 
-      for (var i=0; i<scrollerArr.length; i++)
+      
+      // Determine whether we need to render horizontal scrollbars for meta
+      // columns that don't themselves actually require it
+      excludeScrollerScrollbarsIfNotNeeded =
+        this.getExcludeScrollerScrollbarsIfNotNeeded();
+
+      if (! excludeScrollerScrollbarsIfNotNeeded)
       {
-        var isLast = (i == (scrollerArr.length - 1));
+        for (var i=0; i<scrollerArr.length; i++)
+        {
+          var isLast = (i == (scrollerArr.length - 1));
 
-        // Only show the last vertical scrollbar
-        var bars = scrollerArr[i].getNeededScrollBars(horNeeded, !isLast);
+          // Only show the last vertical scrollbar
+          var bars = scrollerArr[i].getNeededScrollBars(horNeeded, !isLast);
 
-        if (bars & horBar) {
-          horNeeded = true;
-        }
+          if (bars & horBar) {
+            horNeeded = true;
+          }
 
-        if (isLast && (bars & verBar)) {
-          verNeeded = true;
+          if (isLast && (bars & verBar)) {
+            verNeeded = true;
+          }
         }
       }
 
       // Set the needed scrollbars
       for (var i=0; i<scrollerArr.length; i++)
       {
-        var isLast = (i == (scrollerArr.length - 1));
+        isLast = (i == (scrollerArr.length - 1));
 
-        // Only show the last vertical scrollbar
-        scrollerArr[i].setHorizontalScrollBarVisible(horNeeded);
+        // If we don't want to include scrollbars for meta columns that don't
+        // require it, find out whether this meta column requires it.
+        if (excludeScrollerScrollbarsIfNotNeeded)
+        {
+          horNeeded =
+            !! (scrollerArr[i].getNeededScrollBars(false, !isLast) & horBar);
+
+          // Show the horizontal scrollbar if needed. Specify null to indicate
+          // that the scrollbar should be hidden rather than excluded.
+          scrollerArr[i].setHorizontalScrollBarVisible(horNeeded || null);
+        }
+        else
+        {
+          // Show the horizontal scrollbar if needed.
+          scrollerArr[i].setHorizontalScrollBarVisible(horNeeded);
+        }
 
         // If this is the last meta-column...
         if (isLast)
         {
           // ... then get the current (old) use of vertical scroll bar
+          verNeeded =
+            !! (scrollerArr[i].getNeededScrollBars(false, false) & verBar);
           if (this.__hadVerticalScrollBar == null) {
             this.__hadVerticalScrollBar = scrollerArr[i].getVerticalScrollBarVisible();
             this.__timer = qx.event.Timer.once(function()
@@ -2099,7 +2161,7 @@ qx.Class.define("qx.ui.table.Table",
                                        qx.ui.table.IColumnMenuItem);
 
         menuButton.addListener(
-          "changeVisible",
+          "changeColumnVisible",
           this._createColumnVisibilityCheckBoxHandler(col), this);
         this.__columnMenuButtons[col] = menuButton;
       }

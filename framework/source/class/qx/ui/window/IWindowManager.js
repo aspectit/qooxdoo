@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -21,7 +20,7 @@
  * Required interface for all window manager.
  *
  * Window manager handle the z-order and modality blocking of windows managed
- * by the connected desktop {@link IDesktop}.
+ * by the connected desktop {@link qx.ui.window.IDesktop}.
  */
 qx.Interface.define("qx.ui.window.IWindowManager",
 {
@@ -30,17 +29,19 @@ qx.Interface.define("qx.ui.window.IWindowManager",
     /**
      * Connect the window manager to the window desktop
      *
-     * @param desktop {IDesktop} The connected desktop
+     * @param desktop {qx.ui.window.IDesktop|null} The connected desktop or null
      */
     setDesktop : function(desktop) {
-      this.assertInterface(desktop, qx.ui.window.IDesktop);
+      if (desktop !== null) {
+        this.assertInterface(desktop, qx.ui.window.IDesktop);
+      }
     },
 
     /**
      * Inform the window manager about a new active window
      *
-     * @param active {Window} new active window
-     * @param oldActive {Window} old active window
+     * @param active {qx.ui.window.Window} new active window
+     * @param oldActive {qx.ui.window.Window} old active window
      */
     changeActiveWindow : function(active, oldActive) {},
 
@@ -52,7 +53,7 @@ qx.Interface.define("qx.ui.window.IWindowManager",
     /**
      * Ask the manager to bring a window to the front.
      *
-     * @param win {Window} window to bring to front
+     * @param win {qx.ui.window.Window} window to bring to front
      */
     bringToFront : function(win) {
       this.assertInstance(win, qx.ui.window.Window);
@@ -61,7 +62,7 @@ qx.Interface.define("qx.ui.window.IWindowManager",
     /**
      * Ask the manager to send a window to the back.
      *
-     * @param win {Window} window to sent to back
+     * @param win {qx.ui.window.Window} window to sent to back
      */
     sendToBack : function(win) {
       this.assertInstance(win, qx.ui.window.Window);

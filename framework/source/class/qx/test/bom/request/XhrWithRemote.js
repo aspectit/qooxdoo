@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -50,15 +49,6 @@ qx.Class.define("qx.test.bom.request.XhrWithRemote",
 
     tearDown: function() {
       this.req.dispose();
-    },
-
-    __skip : function(skipOs) {
-      // certain tests fail if loaded through the Selenium proxy on Windows and OS X
-      if (qx.core.Environment.get("browser.name") == "chrome" &&
-          qx.lang.Array.contains(skipOs, qx.core.Environment.get("os.name")))
-      {
-        this.require(["noSelenium"]);
-      }
     },
 
     //
@@ -620,7 +610,6 @@ qx.Class.define("qx.test.bom.request.XhrWithRemote",
     //
 
     "test: call onerror on network error": function() {
-      this.__skip(["win", "osx"]);
       var req = this.req;
 
       var that = this;
@@ -660,7 +649,6 @@ qx.Class.define("qx.test.bom.request.XhrWithRemote",
     },
 
     "test: throw error on network error when sync": function() {
-      this.__skip(["win", "osx"]);
       var req = this.req;
 
       // Network error (sync)
@@ -798,7 +786,6 @@ qx.Class.define("qx.test.bom.request.XhrWithRemote",
     },
 
     "test: call handler in order when request failed": function() {
-      this.__skip(["win", "osx"]);
       var req = this.req;
 
       var that = this;
@@ -852,7 +839,8 @@ qx.Class.define("qx.test.bom.request.XhrWithRemote",
     },
 
     hasNoIe: function() {
-      return !(qx.core.Environment.get("engine.name") == "mshtml");
+      return qx.core.Environment.get("engine.name") !== "mshtml" &&
+        qx.core.Environment.get("browser.name") !== "edge";
     },
 
     hasNoIe9: function() {

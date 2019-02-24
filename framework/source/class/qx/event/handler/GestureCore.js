@@ -8,8 +8,7 @@
      2014 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -24,6 +23,7 @@
  */
 qx.Bootstrap.define("qx.event.handler.GestureCore", {
   extend : Object,
+  implement: [ qx.core.IDisposable ],
 
   statics : {
 
@@ -31,7 +31,11 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
 
     GESTURE_EVENTS : ["gesturebegin", "gesturefinish", "gesturemove", "gesturecancel"],
 
-    TAP_MAX_DISTANCE : {"touch": 40, "mouse": 50, "pen": 20}, // values are educated guesses
+    /** @type {Map} Maximum distance between a pointer-down and pointer-up event, values are configurable */
+    TAP_MAX_DISTANCE : {"touch": 40, "mouse": 5, "pen": 20}, // values are educated guesses
+
+    /** @type {Map} Maximum distance between two subsequent taps, values are configurable */
+    DOUBLETAP_MAX_DISTANCE : {"touch": 10, "mouse": 4, "pen": 10}, // values are educated guesses
 
     /** @type {Map} The direction of a swipe relative to the axis */
     SWIPE_DIRECTION :
@@ -55,7 +59,31 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
      * @type {Integer} Factor which is used for adapting the delta of the mouse wheel
      * event to the roll events,
      */
-    ROLL_FACTOR : 18
+    ROLL_FACTOR: 18,
+
+    /**
+     * @type {Integer} Factor which is used for adapting the delta of the touchpad gesture
+     * event to the roll events,
+     */
+    TOUCHPAD_ROLL_FACTOR: 1,
+
+    /**
+     * @type {Integer} Minimum number of wheel events to receive during the
+     * TOUCHPAD_WHEEL_EVENTS_PERIOD to detect a touchpad.
+     */
+    TOUCHPAD_WHEEL_EVENTS_THRESHOLD: 10,
+
+    /**
+     * @type {Integer} Period (in ms) during which the wheel events are counted in order
+     * to detect a touchpad.
+     */
+    TOUCHPAD_WHEEL_EVENTS_PERIOD: 100,
+
+    /**
+     * @type {Integer} Timeout (in ms) after which the touchpad detection is reset if no wheel
+     * events are received in the meantime.
+     */
+    TOUCHPAD_WHEEL_EVENTS_TIMEOUT: 5000
   },
 
   /**
@@ -69,6 +97,8 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
     this.__gesture = {};
     this.__lastTap = {};
     this.__stopMomentum = {};
+    this.__momentum = {};
+    this.__rollEvents = [];
     this._initObserver();
   },
 
@@ -84,20 +114,17 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
     __rollImpulseId : null,
     __stopMomentum : null,
     __initialDistance : null,
+    __momentum : null,
+    __rollEvents : null,
+    __rollEventsCountStart : 0,
+    __rollEventsCount : 0,
+    __touchPadDetectionPerformed : false,
+    __lastRollEventTime: 0,
 
     /**
      * Register pointer event listeners
      */
     _initObserver : function() {
-      // force qx.bom.Event.supportsEvent to return true for this type so we
-      // can use the native addEventListener (synthetic gesture events use the
-      // native dispatchEvent).
-      qx.event.handler.GestureCore.TYPES.forEach(function(type) {
-        if (!this.__defaultTarget["on" + type]) {
-          this.__defaultTarget["on" + type] = true;
-        }
-      }.bind(this));
-
       qx.event.handler.GestureCore.GESTURE_EVENTS.forEach(function(gestureType) {
         qxWeb(this.__defaultTarget).on(gestureType, this.checkAndFireGesture, this);
       }.bind(this));
@@ -136,7 +163,7 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
     /**
      * Checks if a gesture was made and fires the gesture event.
      *
-     * @param domEvent {Event} DOM event
+     * @param domEvent {qx.event.type.Pointer} DOM event
      * @param type {String ? null} type of the event
      * @param target {Element ? null} event target
      */
@@ -170,6 +197,15 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
       if (this.__gesture[domEvent.pointerId]) {
         this.__stopLongTapTimer(this.__gesture[domEvent.pointerId]);
         delete this.__gesture[domEvent.pointerId];
+      }
+
+      /*
+        If the dom event's target or one of its ancestors have
+        a gesture handler, we don't need to fire the gesture again
+        since it bubbles.
+       */
+      if (this._hasIntermediaryHandler(target)) {
+        return;
       }
 
       this.__gesture[domEvent.pointerId] = {
@@ -381,6 +417,10 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
         this.__stopLongTapTimer(this.__gesture[id]);
         delete this.__gesture[id];
       }
+      if (this.__momentum[id]) {
+        this.stopMomentum(this.__momentum[id]);
+        delete this.__momentum[id];
+      }
     },
 
 
@@ -407,9 +447,14 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
      */
     __handleRollImpulse : function(deltaX, deltaY, domEvent, target, time) {
       var oldTimeoutId = domEvent.timeoutId;
+      if (!time && this.__momentum[domEvent.pointerId]) {
+        // new roll impulse started, stop the old one
+        this.stopMomentum(this.__momentum[domEvent.pointerId]);
+      }
       // do nothing if we don't need to scroll
-      if ((Math.abs(deltaY) < 1 && Math.abs(deltaX) < 1) || this.__stopMomentum[oldTimeoutId]) {
+      if ((Math.abs(deltaY) < 1 && Math.abs(deltaX) < 1) || this.__stopMomentum[oldTimeoutId] || !this.getWindow()) {
         delete this.__stopMomentum[oldTimeoutId];
+        delete this.__momentum[domEvent.pointerId];
         return;
       }
 
@@ -443,6 +488,7 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
       };
       domEvent.momentum = true;
       domEvent.timeoutId = timeoutId;
+      this.__momentum[domEvent.pointerId] = timeoutId;
       this._fireEvent(domEvent, "roll", domEvent.target || target);
     },
 
@@ -526,8 +572,8 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
     __isBelowDoubleTapDistance : function(x1, y1, x2, y2, type) {
       var clazz = qx.event.handler.GestureCore;
 
-      var inX = Math.abs(x1 - x2) < clazz.TAP_MAX_DISTANCE[type];
-      var inY = Math.abs(y1 - y2) < clazz.TAP_MAX_DISTANCE[type];
+      var inX = Math.abs(x1 - x2) < clazz.DOUBLETAP_MAX_DISTANCE[type];
+      var inY = Math.abs(y1 - y2) < clazz.DOUBLETAP_MAX_DISTANCE[type];
 
       return inX && inY;
     },
@@ -566,6 +612,7 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
      * @param domEvent {Event} DOM event
      * @param type {String} type of the event
      * @param target {Element ? null} event target
+     * @return {qx.Promise?} a promise, if one or more of the event handlers returned a promise
      */
     _fireEvent : function(domEvent, type, target) {
       // The target may have been removed, e.g. menu hide on tap
@@ -583,7 +630,7 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
           pointerType: domEvent.pointerType,
           momentum : domEvent.momentum
         });
-        target.dispatchEvent(evt);
+        return target.dispatchEvent(evt);
       } else if (this.__emitter) {
         evt = new qx.event.type.dom.Custom(type, domEvent, {
           target : this.__defaultTarget,
@@ -666,17 +713,118 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
      * Fires a roll event.
      *
      * @param domEvent {Event} DOM event
+     * @param target {Element} event target
+     * @param rollFactor {Integer} the roll factor to apply
+     */
+    __fireRollEvent: function (domEvent, target, rollFactor) {
+      domEvent.delta = {
+        x: qx.util.Wheel.getDelta(domEvent, "x") * rollFactor,
+        y: qx.util.Wheel.getDelta(domEvent, "y") * rollFactor
+      };
+      domEvent.delta.axis = Math.abs(domEvent.delta.x / domEvent.delta.y) < 1 ? "y" : "x";
+      domEvent.pointerType = "wheel";
+      this._fireEvent(domEvent, "roll", domEvent.target || target);
+    },
+
+    /**
+     * Triggers the adaptative roll scrolling.
+     *
+     * @param target {Element} event target
+     */
+    __performAdaptativeRollScrolling: function (target) {
+      var rollFactor = qx.event.handler.GestureCore.ROLL_FACTOR;
+      if (qx.util.Wheel.IS_TOUCHPAD) {
+        // The domEvent was generated by a touchpad
+        rollFactor = qx.event.handler.GestureCore.TOUCHPAD_ROLL_FACTOR;
+      }
+      this.__lastRollEventTime = new Date().getTime();
+      var reLength = this.__rollEvents.length;
+      for (var i = 0; i < reLength; i++) {
+        var domEvent = this.__rollEvents[i];
+        this.__fireRollEvent(domEvent, target, rollFactor);
+      }
+      this.__rollEvents = [];
+    },
+
+    /**
+     * Ends touch pad detection process.
+     */
+    __endTouchPadDetection: function () {
+      if (this.__rollEvents.length > qx.event.handler.GestureCore.TOUCHPAD_WHEEL_EVENTS_THRESHOLD) {
+        qx.util.Wheel.IS_TOUCHPAD = true;
+      } else {
+        qx.util.Wheel.IS_TOUCHPAD = false;
+      }
+      if (qx.core.Environment.get("qx.debug.touchpad.detection")) {
+        qx.log.Logger.debug(this, "IS_TOUCHPAD : " + qx.util.Wheel.IS_TOUCHPAD);
+      }
+      this.__touchPadDetectionPerformed = true;
+    },
+
+    /**
+     * Is touchpad detection enabled ? Default implementation activates it only for Mac OS after Sierra (>= 10.12).
+     * @return {boolean} true if touchpad detection should occur.
+     * @internal
+     */
+    _isTouchPadDetectionEnabled: function () {
+      return qx.core.Environment.get("os.name") == "osx" && qx.core.Environment.get("os.version") >= 10.12;
+    },
+
+    /**
+     * Fires a roll event after determining the roll factor to apply. Mac OS Sierra (10.12+)
+     * introduces a lot more wheel events fired from the trackpad, so the roll factor to be applied
+     * has to be reduced in order to make the scrolling less sensitive.
+     *
+     * @param domEvent {Event} DOM event
      * @param type {String} The type of the dom event
      * @param target {Element} event target
      */
     _fireRoll : function(domEvent, type, target) {
+      var now;
+      var detectionTimeout;
       if (domEvent.type === qx.core.Environment.get("event.mousewheel").type) {
-        domEvent.delta = {
-          x: qx.util.Wheel.getDelta(domEvent, "x") * qx.event.handler.GestureCore.ROLL_FACTOR,
-          y: qx.util.Wheel.getDelta(domEvent, "y") * qx.event.handler.GestureCore.ROLL_FACTOR
-        };
-        domEvent.delta.axis = Math.abs(domEvent.delta.x / domEvent.delta.y) < 1 ? "y" : "x";
-        domEvent.pointerType = "wheel";
+        if (this._isTouchPadDetectionEnabled()) {
+          now = new Date().getTime();
+          detectionTimeout = qx.event.handler.GestureCore.TOUCHPAD_WHEEL_EVENTS_TIMEOUT;
+          if (this.__lastRollEventTime > 0 && now - this.__lastRollEventTime > detectionTimeout) {
+            // The detection timeout was reached. A new detection step should occur.
+            this.__touchPadDetectionPerformed = false;
+            this.__rollEvents = [];
+            this.__lastRollEventTime = 0;
+          }
+          if (!this.__touchPadDetectionPerformed) {
+            // We are into a detection session. We count the events so that we can decide if
+            // they were fired by a real mouse wheel or a touchpad. Just swallow them until the
+            // detection period is over.
+            if (this.__rollEvents.length === 0) {
+              // detection starts
+              this.__rollEventsCountStart = now;
+              qx.event.Timer.once(function () {
+                if (!this.__touchPadDetectionPerformed) {
+                  // There were not enough events during the TOUCHPAD_WHEEL_EVENTS_PERIOD to actually
+                  // trigger a scrolling. Trigger it manually.
+                  this.__endTouchPadDetection();
+                  this.__performAdaptativeRollScrolling(target);
+                }
+              }, this, qx.event.handler.GestureCore.TOUCHPAD_WHEEL_EVENTS_PERIOD + 50)
+            }
+            this.__rollEvents.push(domEvent);
+            this.__rollEventsCount++;
+            if (now - this.__rollEventsCountStart > qx.event.handler.GestureCore.TOUCHPAD_WHEEL_EVENTS_PERIOD) {
+              this.__endTouchPadDetection();
+            }
+          }
+          if (this.__touchPadDetectionPerformed) {
+            if (this.__rollEvents.length === 0) {
+              this.__rollEvents.push(domEvent);
+            }
+            // Detection is done. We can now decide the roll factor to apply to the delta.
+            // Default to a real mouse wheel event as opposed to a touchpad one.
+            this.__performAdaptativeRollScrolling(target);
+          }
+        } else {
+          this.__fireRollEvent(domEvent, target, qx.event.handler.GestureCore.ROLL_FACTOR);
+        }
       } else {
         var gesture = this.__gesture[domEvent.pointerId];
         domEvent.delta = {
@@ -684,9 +832,8 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
           y: -gesture.velocityY,
           axis : Math.abs(gesture.velocityX / gesture.velocityY) < 1 ? "y" : "x"
         };
+        this._fireEvent(domEvent, "roll", domEvent.target || target);
       }
-
-      this._fireEvent(domEvent, "roll", domEvent.target || target);
     },
 
 
@@ -747,22 +894,6 @@ qx.Bootstrap.define("qx.event.handler.GestureCore", {
         gesture.longTapTimer = null;
       }
     },
-
-    /**
-     * Checks if the distance between the x/y coordinates of touchstart/mousedown and touchmove/mousemove event
-     * exceeds TAP_MAX_DISTANCE and returns the result.
-     *
-     * @param event {Event} The event from the browser.
-     * @return {Boolean} true if distance is below TAP_MAX_DISTANCE.
-     */
-    isBelowTapMaxDistance: function(event) {
-      var deltaCoordinates = this._calcDelta(event);
-      var clazz = qx.event.handler.GestureCore;
-
-      return (Math.abs(deltaCoordinates.x) <= clazz.TAP_MAX_DISTANCE &&
-              Math.abs(deltaCoordinates.y) <= clazz.TAP_MAX_DISTANCE);
-    },
-
 
     /**
      * Dispose the current instance

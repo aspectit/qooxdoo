@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -79,7 +78,7 @@ qx.Bootstrap.define("qx.bom.client.Xml",
 
 
     /**
-     * Checks availablity of the getElementsByTagNameNS XML DOM method.
+     * Checks availability of the getElementsByTagNameNS XML DOM method.
      *
      * @internal
      * @return {Boolean} <code>true</code> if getElementsByTagNameNS is available

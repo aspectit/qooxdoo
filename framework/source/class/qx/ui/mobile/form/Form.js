@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -63,12 +62,6 @@ qx.Class.define("qx.ui.mobile.form.Form",
      * Contains all invalid items.
      */
     __invalidItems : null,
-
-
-    // overridden
-    _createResetter : function() {
-      return new qx.ui.mobile.form.Resetter();
-    },
 
 
     /**

@@ -8,8 +8,7 @@
      2013-2014 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -81,8 +80,11 @@ qx.Bootstrap.define("qx.module.MatchMedia", {
       } else {
         this.removeClass(className);
       }
-    },
+    }
+  },
 
+  members :
+  {
     /**
      * Listens for media query updates and applies/removes the css class.
      *
@@ -107,12 +109,6 @@ qx.Bootstrap.define("qx.module.MatchMedia", {
 
 
   defer: function (statics) {
-    qxWeb.$attachStatic({
-      matchMedia: statics.matchMedia,
-      addSizeClasses: statics.addSizeClasses
-    });
-    qxWeb.$attach({
-      mediaQueryToClass: statics.mediaQueryToClass
-    });
+    qxWeb.$attachAll(this);
   }
 });

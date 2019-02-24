@@ -8,8 +8,7 @@
      2013 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -76,6 +75,17 @@ qx.Bootstrap.define("qx.ui.website.Accordion", {
     extend: qx.ui.website.Tabs,
 
     statics: {
+        /**
+         * *button*
+         *
+         * Template used by {@link qx.ui.website.Tabs#addButton} to create a new button.
+         *
+         * Default value: <pre><li><button>{{{content}}}</button></li></pre>
+         */
+        _templates: {
+          button: "<li><button>{{{content}}}</button></li>"
+        },
+
 
         /**
          * Factory method which converts the current collection into a collection of

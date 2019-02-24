@@ -8,8 +8,7 @@
      2004-2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -29,6 +28,7 @@
 qx.Bootstrap.define("qx.event.handler.TouchCore", {
 
   extend : Object,
+  implement: [ qx.core.IDisposable ],
 
   statics :
   {
@@ -196,7 +196,7 @@ qx.Bootstrap.define("qx.event.handler.TouchCore", {
 
 
     /**
-     * Calculates the delta of the touch position relative to its position when <code>touchstart/code> event occured.
+     * Calculates the delta of the touch position relative to its position when <code>touchstart/code> event occurred.
      * @param touches {Array} an array with the current active touches, provided by <code>touchmove/code> event.
      * @return {Array} an array containing objects with the calculated delta as <code>x</code>,
      * <code>y</code> and the identifier of the corresponding touch.
@@ -211,7 +211,7 @@ qx.Bootstrap.define("qx.event.handler.TouchCore", {
 
 
     /**
-     * Calculates the delta of one single touch position relative to its position when <code>touchstart/code> event occured.
+     * Calculates the delta of one single touch position relative to its position when <code>touchstart/code> event occurred.
      * @param touch {Event} the current active touch, provided by <code>touchmove/code> event.
      * @return {Map} a map containing deltaX as <code>x</code>, deltaY as <code>y</code>, the direction of the movement as <code>axis</code> and the touch identifier as <code>identifier</code>.
      */
@@ -298,7 +298,7 @@ qx.Bootstrap.define("qx.event.handler.TouchCore", {
         }
       }
 
-      if (type == "touchend" || type == "touchcancel" && domEvent.changedTouches[0]) {
+      if ((type == "touchend" || type == "touchcancel") && domEvent.changedTouches[0]) {
         delete this.__touchStartPosition[domEvent.changedTouches[0].identifier];
       }
     },
@@ -367,8 +367,14 @@ qx.Bootstrap.define("qx.event.handler.TouchCore", {
         if (target && target.nodeType == 3) {
           target = target.parentNode;
         }
-      } else if(qx.core.Environment.get("event.mspointer")) {
+      } else if(qx.core.Environment.get("engine.name") == "mshtml" &&
+                qx.core.Environment.get("browser.documentmode") < 11) {
         // Fix for IE10 and pointer-events:none
+        //
+        // Changed the condition above to match exactly those browsers
+        // for which the fix was intended
+        // See: https://github.com/qooxdoo/qooxdoo/issues/9481
+        //
         var targetForIE = this.__evaluateTarget(domEvent);
         if(targetForIE) {
           target = targetForIE;

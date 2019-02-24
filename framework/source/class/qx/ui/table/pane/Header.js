@@ -8,8 +8,7 @@
      2006 STZ-IDA, Germany, http://www.stz-ida.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -188,7 +187,7 @@ qx.Class.define("qx.ui.table.pane.Header",
      * Shows the feedback shown while a column is moved by the user.
      *
      * @param col {Integer} the model index of the column to show the move feedback for.
-     * @param x {Integer} the x position the left side of the feeback should have
+     * @param x {Integer} the x position the left side of the feedback should have
      *      (in pixels, relative to the left side of the header).
      */
     showColumnMoveFeedback : function(col, x)

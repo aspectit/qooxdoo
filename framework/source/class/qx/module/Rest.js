@@ -8,8 +8,7 @@
      2013 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -33,12 +32,6 @@ qx.Bootstrap.define("qx.module.Rest", {
      *  with the properties <code>method</code> and <code>url</code>.
      *  <code>check</code> is optional. Also see {@link qx.bom.rest.Resource#map}.
      *
-     * For example:
-     *
-     * <pre class="javascript">
-     * { get: {method: "GET", url: "/photos/{id}", check: { id: /\d+/ } }
-     * </pre>
-     *
      * @attachStatic {qxWeb, rest.resource}
      * @return {qx.bom.rest.Resource} The resource object.
      */
@@ -48,10 +41,6 @@ qx.Bootstrap.define("qx.module.Rest", {
   },
 
   defer : function(statics) {
-    qxWeb.$attachStatic({
-      "rest" : {
-        "resource" : statics.resource
-      }
-    });
+    qxWeb.$attachAll(this, "rest");
   }
 });

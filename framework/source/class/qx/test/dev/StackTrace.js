@@ -8,8 +8,7 @@
      2007-2010 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
 ************************************************************************ */
@@ -74,7 +73,7 @@ qx.Class.define("qx.test.dev.StackTrace",
       var ex = new Error("Just a test");
       var stack = qx.dev.StackTrace.getStackTraceFromError(ex);
       for (var i=0, l=stack.length; i<l; i++) {
-        this.assertMatch(stack[i], /((?:test\.dev\.StackTrace)|(?:dev\.unit)|(?:testrunner\.js)|(?:tests\.js))/);
+        this.assertMatch(stack[i], /((?:test\.dev\.StackTrace)|(?:dev\.unit)|(?:testrunner\.js)|(?:tests\.js)|(?:qooxdoo-adapter\.js))/);
       }
     },
 
@@ -84,7 +83,7 @@ qx.Class.define("qx.test.dev.StackTrace",
       var converter = function(fileName) {
         this.assertString(fileName);
         return "FOO";
-      }
+      };
 
       qx.dev.StackTrace.FILENAME_TO_CLASSNAME = qx.lang.Function.bind(converter, this);
       var ex = new Error("Just a test");
@@ -103,7 +102,7 @@ qx.Class.define("qx.test.dev.StackTrace",
           trace[i] = "BAR " + trace[i];
         }
         return trace;
-      }
+      };
 
       qx.dev.StackTrace.FORMAT_STACKTRACE = qx.lang.Function.bind(formatter, this);
       var ex = new Error("Just a test");

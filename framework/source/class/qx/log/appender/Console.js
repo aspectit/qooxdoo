@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -29,6 +28,8 @@
  * * Clearing the console using a button.
  * * Display of offset (time after loading) of each message
  * * Supports keyboard shortcuts F7 or Ctrl+D to toggle the visibility
+ * 
+ * Note this class must be disposed of after use
  *
  * @require(qx.event.handler.Window)
  * @require(qx.event.handler.Keyboard)
@@ -342,7 +343,7 @@ qx.Class.define("qx.log.appender.Console",
         this.__cmd.value = "";
       }
 
-      // History managment
+      // History management
       if (iden == "Up" || iden == "Down")
       {
         this.__lastCommand += iden == "Up" ? -1 : 1;

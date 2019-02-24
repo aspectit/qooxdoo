@@ -9,8 +9,7 @@
      2006 Derrell Lipman
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -28,6 +27,7 @@
 qx.Class.define("qx.io.remote.transport.XmlHttp",
 {
   extend : qx.io.remote.transport.Abstract,
+  implement: [ qx.core.IDisposable ],
 
 
   /*
@@ -49,7 +49,7 @@ qx.Class.define("qx.io.remote.transport.XmlHttp",
       asynchronous          : true,
       crossDomain           : false,
       fileUpload            : false,
-      programaticFormFields : false,
+      programmaticFormFields : false,
       responseTypes         : [ "text/plain", "text/javascript", "application/json", "application/xml", "text/html" ]
     },
 
@@ -96,6 +96,30 @@ qx.Class.define("qx.io.remote.transport.XmlHttp",
      */
     isSupported : function() {
       return !!this.createRequestObject();
+    },
+    
+    
+    /** The timeout for Xhr requests */
+    __timeout: 0,
+    
+    
+    /**
+     * Sets the timeout for requests
+     * @deprecated {6.0} This method is deprecated from the start because synchronous I/O itself is deprecated
+     *  in the W3C spec {@link https://xhr.spec.whatwg.org/} and timeouts are indicative of synchronous I/O and/or
+     *  other server issues.  However, this API is still supported by many browsers and this API is useful
+     *  for code which has not made the transition to asynchronous I/O   
+     */
+    setTimeout: function(timeout) {
+      this.__timeout = timeout;
+    },
+    
+    
+    /**
+     * Returns the timeout for requests
+     */
+    getTimeout: function() {
+      return this.__timeout;
     }
   },
 
@@ -112,7 +136,7 @@ qx.Class.define("qx.io.remote.transport.XmlHttp",
      * If true and the responseType property is set to "application/json", getResponseContent() will
      * return a Javascript map containing the JSON contents, i. e. the result qx.lang.Json.parse().
      * If false, the raw string data will be returned and the parsing must be done manually.
-     * This is usefull for special JSON dialects / extensions which are not supported by
+     * This is useful for special JSON dialects / extensions which are not supported by
      * qx.lang.Json.
      */
     parseJson :
@@ -308,21 +332,18 @@ qx.Class.define("qx.io.remote.transport.XmlHttp",
         return;
       }
 
+      // Apply timeout
+      var timeout = qx.io.remote.transport.XmlHttp.getTimeout();
+      if (timeout && vAsynchronous) {
+        vRequest.timeout = timeout;
+      }
+
       // --------------------------------------
       //   Applying request header
       // --------------------------------------
-      // Add a Referer header
-
-      // The Java backend uses the referer header, and Firefox doesn't send one by
-      // default (see here:
-      // http://www.mercurytide.co.uk/whitepapers/issues-working-with-ajax/ ). Even when
-      // not using a backend that evaluates the referrer, it's still useful to have it
-      // set correctly, e.g. when looking at server log files.
-      if (!(qx.core.Environment.get("engine.name") == "webkit"))
-      {
-        // avoid "Refused to set unsafe header Referer" in Safari and other Webkit-based browsers
-        vRequest.setRequestHeader('Referer', window.location.href);
-      }
+      // Removed adding a referer header as this is not allowed anymore on most
+      // browsers
+      // See issue https://github.com/qooxdoo/qooxdoo/issues/9298
 
       var vRequestHeaders = this.getRequestHeaders();
 
@@ -372,7 +393,7 @@ qx.Class.define("qx.io.remote.transport.XmlHttp",
       }
 
       // --------------------------------------
-      //   Readystate for sync reqeusts
+      //   Readystate for sync requests
       // --------------------------------------
       if (!vAsynchronous) {
         this._onreadystatechange();

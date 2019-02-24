@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -230,7 +229,7 @@ qx.Class.define("qx.ui.form.RepeatButton",
      * <li>Removes "abandoned" and adds "pressed" state (if "abandoned" state is set)</li>
      * </ul>
      *
-     * @param e {Event} Pointer event
+     * @param e {qx.event.type.Pointer} Pointer event
      */
     _onPointerOver : function(e)
     {
@@ -256,7 +255,7 @@ qx.Class.define("qx.ui.form.RepeatButton",
      * <li>Adds "abandoned" and removes "pressed" state (if "pressed" state is set)</li>
      * </ul>
      *
-     * @param e {Event} Pointer event
+     * @param e {qx.event.type.Pointer} Pointer event
      */
     _onPointerOut : function(e)
     {

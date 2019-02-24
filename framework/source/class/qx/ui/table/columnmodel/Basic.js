@@ -8,8 +8,7 @@
      2006 STZ-IDA, Germany, http://www.stz-ida.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -198,7 +197,7 @@ qx.Class.define("qx.ui.table.columnmodel.Basic",
 
       this.__colToXPosMap = null;
 
-      // If any columns are initialy hidden, hide them now. Make it an
+      // If any columns are initially hidden, hide them now. Make it an
       // internal change so that events are not generated.
       this.__internalChange = true;
       for (var hidden=0; hidden<initiallyHiddenColumns.length; hidden++)
@@ -397,6 +396,9 @@ qx.Class.define("qx.ui.table.columnmodel.Basic",
       }
 
       var oldFactory = this.__columnDataArr[col].editorFactory;
+      if (oldFactory === factory) {
+        return;
+      }
       if (oldFactory !== this.__editorFactory) {
         oldFactory.dispose();
       }

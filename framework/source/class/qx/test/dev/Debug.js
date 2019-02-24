@@ -8,8 +8,7 @@
      2007-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
 ************************************************************************ */
@@ -37,7 +36,7 @@ qx.Class.define("qx.test.dev.Debug",
           return false;
         }
         return true;
-      }
+      };
 
       var o = new qx.core.Object();
       // no need to call startDisposeProfiling - the Testrunner did that already

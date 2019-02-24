@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -392,7 +391,7 @@ qx.Bootstrap.define("qx.util.ColorUtil",
       var red = parseInt(RegExp.$1, 10);
       var green = parseInt(RegExp.$2, 10);
       var blue = parseInt(RegExp.$3, 10);
-      var alpha = parseInt(RegExp.$4, 10);
+      var alpha = parseFloat(RegExp.$4, 10);
 
       if (red === 0 && green === 0 & blue === 0 && alpha === 0) {
         return [-1, -1, -1];

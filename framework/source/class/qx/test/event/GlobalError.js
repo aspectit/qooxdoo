@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -68,7 +67,7 @@ qx.Class.define("qx.test.event.GlobalError",
 
       var fail = function() {
         throw new Error("fail");
-      }
+      };
 
       var wrappedFail = this.errorHandler.observeMethod(fail);
       this.assertFalse(this.called);
@@ -95,7 +94,7 @@ qx.Class.define("qx.test.event.GlobalError",
       var fcn = function(a,b,c) {
         var args = [a, b, c];
         return args;
-      }
+      };
 
       var wrapped = this.errorHandler.observeMethod(fcn);
       this.assertJsonEquals(
@@ -111,7 +110,7 @@ qx.Class.define("qx.test.event.GlobalError",
 
       var fail = function() {
         throw new Error("fail");
-      }
+      };
 
       var wrappedFail = this.errorHandler.observeMethod(fail);
 
@@ -129,14 +128,14 @@ qx.Class.define("qx.test.event.GlobalError",
 
       var fail = function() {
         throw new Error("fail");
-      }
+      };
 
       var self = null;
       var handler = function(ex) {
         self = this;
-      }
+      };
 
-      this.errorHandler.setErrorHandler(handler, this)
+      this.errorHandler.setErrorHandler(handler, this);
       var wrappedFail = this.errorHandler.observeMethod(fail);
 
       wrappedFail();
@@ -174,7 +173,7 @@ qx.Class.define("qx.test.event.GlobalError",
         this.assertInteger(ex.getLineNumber());
 
         // this.debug(ex.toString() + " at " + ex.getUri() + ":" + ex.getLineNumber());
-      }, this); }
+      }, this); };
 
       this.errorHandler.setErrorHandler(handler, this);
 
@@ -235,7 +234,7 @@ qx.Class.define("qx.test.event.GlobalError",
         originalMsg = msg;
         originalUri = uri;
         originalLineNumber = lineNumber;
-      }
+      };
 
       var handler = function(ex) { this.resume(function()
       {
@@ -248,7 +247,7 @@ qx.Class.define("qx.test.event.GlobalError",
         this.assertEquals(originalLineNumber, ex.getLineNumber());
 
         // this.debug(ex.toString() + " at " + ex.getUri() + ":" + ex.getLineNumber());
-      }, this); }
+      }, this); };
 
       this.errorHandler.setErrorHandler(handler, this);
 

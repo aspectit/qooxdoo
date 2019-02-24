@@ -8,8 +8,7 @@
      2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -51,6 +50,8 @@ qx.Class.define("qx.ui.form.core.AbstractVirtualBox",
     this.addListener("resize", this._onResize, this);
 
     this._createChildControl("dropdown");
+
+    this.bind('allowGrowDropDown', this.getChildControl('dropdown'), 'allowGrowDropDown');
 
     if (model != null) {
       this.initModel(model);
@@ -175,12 +176,25 @@ qx.Class.define("qx.ui.form.core.AbstractVirtualBox",
       apply : "_applyMaxListHeight",
       nullable: true,
       init : 200
+    },
+
+
+    /**
+     * Allow the drop-down to grow wider than its parent.
+     */
+    allowGrowDropDown :
+    {
+      init : false,
+      nullable : false,
+      check : "Boolean",
+      event : "changeAllowGrowDropDown"
     }
   },
 
 
   members :
   {
+    /** @type {qx.data.Array} The initial model array of this virtual box. */
     __defaultModel : null,
 
     /**

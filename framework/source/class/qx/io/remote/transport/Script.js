@@ -10,8 +10,7 @@
      2006 STZ-IDA, Germany, http://www.stz-ida.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -26,10 +25,14 @@
  * Transports requests to a server using dynamic script tags.
  *
  * This class should not be used directly by client programmers.
+ * 
+ * NOTE: Instances of this class must be disposed of after use
+ *
  */
 qx.Class.define("qx.io.remote.transport.Script",
 {
   extend : qx.io.remote.transport.Abstract,
+  implement: [ qx.core.IDisposable ],
 
 
 
@@ -111,7 +114,7 @@ qx.Class.define("qx.io.remote.transport.Script",
       asynchronous          : true,
       crossDomain           : true,
       fileUpload            : false,
-      programaticFormFields : false,
+      programmaticFormFields : false,
       responseTypes         : [ "text/plain", "text/javascript", "application/json" ]
     },
 

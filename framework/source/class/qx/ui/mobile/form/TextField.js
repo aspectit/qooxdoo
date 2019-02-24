@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -41,6 +40,12 @@ qx.Class.define("qx.ui.mobile.form.TextField",
     this.base(arguments);
 
     this.addListener("keypress", this._onKeyPress, this);
+
+    if (qx.core.Environment.get("os.name") == "ios") {
+      // IOS does not blur input fields automatically if a parent DOM element
+      // was set invisible, so blur manually on disappear
+      this.addListener("disappear", this.blur, this);
+    }
   },
 
   /*
@@ -84,5 +89,9 @@ qx.Class.define("qx.ui.mobile.form.TextField",
 
   destruct : function() {
     this.removeListener("keypress", this._onKeyPress, this);
+
+    if (qx.core.Environment.get("os.name") == "ios") {
+      this.removeListener("disappear", this.blur, this);
+    }
   }
 });

@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -37,24 +36,6 @@ qx.Class.define("qx.test.lang.Function",
       } catch(e) {
         window.JUHU = null;
       }
-    },
-
-
-    testGetCaller : function()
-    {
-      var self = this;
-      var fcn = arguments.callee;
-
-      function f1(caller) {
-        self.assertIdentical(caller, qx.lang.Function.getCaller(arguments), "Wrong caller.");
-      }
-
-      function f2() {
-        f1(f2);
-      }
-
-      f2();
-      f1(fcn);
     },
 
 
@@ -101,7 +82,7 @@ qx.Class.define("qx.test.lang.Function",
 
       var bound = qx.lang.Function.bind(callback, obj);
       this.assertException(function() {
-        bound()
+        bound();
       }, qx.core.AssertionError);
     },
 
@@ -110,8 +91,8 @@ qx.Class.define("qx.test.lang.Function",
     {
       var undef;
       var callback = function(undef, arg) {
-        this.assertTrue(arg)
-      }
+        this.assertTrue(arg);
+      };
       var bound = qx.lang.Function.bind(callback, this, undef, true);
       bound();
     },
@@ -125,7 +106,7 @@ qx.Class.define("qx.test.lang.Function",
 
       var onError = function() { this.resume(function() {
         qx.event.GlobalError.setErrorHandler(null, null);
-      })};
+      });};
       qx.event.GlobalError.setErrorHandler(onError, this);
 
       var delayed = qx.lang.Function.create(fail, {

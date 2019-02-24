@@ -8,8 +8,7 @@
      2006-2010 1&1 Internet AG, Germany, http://www.1and1.org
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -117,7 +116,7 @@ qx.Class.define("qx.log.appender.RhinoConsole", {
   {
     if (typeof(java) !== "undefined" && typeof(java.lang) !== "undefined") {
       qx.log.appender.RhinoConsole.__OUT = java.lang.System.out;
-      qx.log.appender.RhinoConsole.__ERR = java.lang.System.err
+      qx.log.appender.RhinoConsole.__ERR = java.lang.System.err;
     }
   }
 

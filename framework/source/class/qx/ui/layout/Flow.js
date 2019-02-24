@@ -7,8 +7,7 @@
      2008 Dihedrals.com, http://www.dihedrals.com
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -228,7 +227,7 @@ qx.Class.define("qx.ui.layout.Flow",
       // Necessary to be able to calculate the lines for the flow layout.
       // Otherwise the layout calculates the needed width and height by using
       // only one line of items which is leading to the wrong height. This
-      // wrong height does e.g. surpress scrolling since the scroll pane does
+      // wrong height does e.g. suppress scrolling since the scroll pane does
       // not know about the correct needed height.
       if (widget) {
         widget.setAllowShrinkY(false);

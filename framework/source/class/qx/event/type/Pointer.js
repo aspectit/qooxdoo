@@ -8,8 +8,7 @@
      2014 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -62,7 +61,7 @@ qx.Class.define("qx.event.type.Pointer",
     getDocumentLeft : function() {
       var x = this.base(arguments);
       // iOS 6 does not copy pageX over to the fake pointer event
-      if (x == 0 && this.getPointerType() == "touch") {
+      if (x == 0 && this.getPointerType() == "touch" && this._native._original !== undefined) {
         x = Math.round(this._native._original.changedTouches[0].pageX) || 0;
       }
       return x;
@@ -73,7 +72,7 @@ qx.Class.define("qx.event.type.Pointer",
     getDocumentTop : function() {
       var y = this.base(arguments);
       // iOS 6 does not copy pageY over to the fake pointer event
-      if (y == 0 && this.getPointerType() == "touch") {
+      if (y == 0 && this.getPointerType() == "touch" && this._native._original !== undefined) {
         y = Math.round(this._native._original.changedTouches[0].pageY) || 0;
       }
       return y;

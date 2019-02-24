@@ -8,8 +8,7 @@
      2004-2010 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -176,7 +175,7 @@ qx.Mixin.define("qx.ui.list.core.MWidgetController",
      */
     bindProperty : function(sourcePath, targetProperty, options, targetWidget, index)
     {
-      var type = targetWidget.getUserData("cell.type")
+      var type = targetWidget.getUserData("cell.type");
       var bindPath = this.__getBindPath(index, sourcePath, type);
 
       if (options) {
@@ -203,7 +202,7 @@ qx.Mixin.define("qx.ui.list.core.MWidgetController",
      */
     bindPropertyReverse : function(targetPath, sourceProperty, options, sourceWidget, index)
     {
-      var type = sourceWidget.getUserData("cell.type")
+      var type = sourceWidget.getUserData("cell.type");
       var bindPath = this.__getBindPath(index, targetPath, type);
 
       var id = sourceWidget.bind(sourceProperty, this._list, bindPath, options);
@@ -308,7 +307,7 @@ qx.Mixin.define("qx.ui.list.core.MWidgetController",
         }
       }
 
-      if (qx.lang.Array.contains(this.__boundItems, item)) {
+      if (this.__boundItems.includes(item)) {
         qx.lang.Array.remove(this.__boundItems, item);
       }
     },
@@ -347,11 +346,11 @@ qx.Mixin.define("qx.ui.list.core.MWidgetController",
     {
       var bindings = this.__getBindings(widget);
 
-      if (!qx.lang.Array.contains(bindings, id)) {
+      if (!bindings.includes(id)) {
         bindings.push(id);
       }
 
-      if (!qx.lang.Array.contains(this.__boundItems, widget)) {
+      if (!this.__boundItems.includes(widget)) {
         this.__boundItems.push(widget);
       }
     },

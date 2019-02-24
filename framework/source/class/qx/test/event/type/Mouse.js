@@ -8,8 +8,7 @@
      2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -38,7 +37,7 @@ qx.Class.define("qx.test.event.type.Mouse",
         screenY: 400,
         wheelDelta: 20,
         detail: 20
-      }
+      };
 
       var event = new qx.event.type.MouseWheel().init(domEvent, document.body, document.body, true, true);
 

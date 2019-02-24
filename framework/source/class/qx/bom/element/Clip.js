@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -104,7 +103,7 @@ qx.Bootstrap.define("qx.bom.element.Clip",
         clip = clip.trim();
 
         // Do not use "global" here. This will break Firefox because of
-        // an issue that the lastIndex will not be resetted on separate calls.
+        // an issue that the lastIndex will not be reset on separate calls.
         if (/\((.*)\)/.test(clip))
         {
           var result = RegExp.$1;

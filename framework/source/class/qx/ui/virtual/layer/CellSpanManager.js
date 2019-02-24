@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -83,7 +82,7 @@ qx.Class.define("qx.ui.virtual.layer.CellSpanManager",
         firstColumn: column,
         lastColumn: column + columnSpan - 1,
         id: id
-      }
+      };
       this._invalidateSortCache();
     },
 
@@ -120,7 +119,7 @@ qx.Class.define("qx.ui.virtual.layer.CellSpanManager",
       if (this._sorted[key]) {
         return this._sorted[key];
       }
-      var sorted = this._sorted[key] = qx.lang.Object.getValues(this._cells);
+      var sorted = this._sorted[key] = Object.values(this._cells);
       sorted.sort(function(a, b) {
         return a[key] < b[key] ? -1 : 1;
       });
@@ -376,7 +375,7 @@ qx.Class.define("qx.ui.virtual.layer.CellSpanManager",
       {
         bounds.push(this._getSingleCellBounds(
           cells[i], firstVisibleRow, firstVisibleColumn)
-        )
+        );
       }
       return bounds;
     },

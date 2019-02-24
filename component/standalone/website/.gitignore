@@ -1,9 +1,8 @@
 /api/script
 /api/index.new.html
-/inspector/
-/simulator/
 /test/script/
 /script/
 /cache
 /deps.dot
 /.sass-cache/
+*.es5

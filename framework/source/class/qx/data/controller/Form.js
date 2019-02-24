@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -46,7 +45,8 @@
 qx.Class.define("qx.data.controller.Form",
 {
   extend : qx.core.Object,
-
+  implement: [ qx.core.IDisposable ],
+  
   /**
    * @param model {qx.core.Object | null} The model to bind the target to. The
    *   given object will be set as {@link #model} property.
@@ -109,7 +109,7 @@ qx.Class.define("qx.data.controller.Form",
     /**
      * The form controller uses for setting up the bindings the fundamental
      * binding layer, the {@link qx.data.SingleValueBinding}. To achieve a
-     * binding in both directions, two bindings are neede. With this method,
+     * binding in both directions, two bindings are needed. With this method,
      * you have the opportunity to set the options used for the bindings.
      *
      * @param name {String} The name of the form item for which the options
@@ -203,10 +203,10 @@ qx.Class.define("qx.data.controller.Form",
 
 
     /**
-     * Responsible for synching the data from entered in the form to the model.
+     * Responsible for syncing the data from entered in the form to the model.
      * Please keep in mind that this method only works if you create the form
      * with <code>selfUpdate</code> set to true. Otherwise, this method will
-     * do nothing because updates will be synched automatically on every
+     * do nothing because updates will be synced automatically on every
      * change.
      */
     updateModel: function(){
@@ -259,7 +259,7 @@ qx.Class.define("qx.data.controller.Form",
       }
 
       // first, get rid off all bindings (avoids wrong data population)
-      if (this.__objectController != null) {
+      if (this.__objectController != null && this.getTarget() != null) {
         var items = this.getTarget().getItems();
         for (var name in items) {
           var item = items[name];
@@ -277,6 +277,11 @@ qx.Class.define("qx.data.controller.Form",
       // do nothing is no target is set
       if (this.getTarget() == null) {
         return;
+      }
+      else {
+        // if form was validated with errors and model changes
+        // the errors should be cleared see #8977
+        this.getTarget().getValidationManager().reset();
       }
 
       // model and target are available
@@ -319,7 +324,7 @@ qx.Class.define("qx.data.controller.Form",
         // ignore not working items
         } catch (ex) {
           if (qx.core.Environment.get("qx.debug")) {
-            this.warn("Could not bind property " + name + " of " + this.getModel());
+            this.warn("Could not bind property " + name + " of " + this.getModel() + ":\n" + ex.stack);
           }
         }
       }

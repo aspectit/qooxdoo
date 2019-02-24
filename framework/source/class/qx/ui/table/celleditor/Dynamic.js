@@ -8,8 +8,7 @@
      2006 Christian Boulanger
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -117,7 +116,7 @@ qx.Class.define("qx.ui.table.celleditor.Dynamic",
       this.__cellEditorFactory = cellEditorFactoryFunction(cellInfo);
       var cellEditor = this.__cellEditorFactory.createCellEditor(cellInfo);
 
-      // save the cell info to the editor (needed for getting teh value)
+      // save the cell info to the editor (needed for getting the value)
       this.__infos[cellEditor.toHashCode()] = cellInfo;
 
       return cellEditor;

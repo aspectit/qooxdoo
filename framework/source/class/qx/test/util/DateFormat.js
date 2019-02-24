@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -20,6 +19,8 @@
 qx.Class.define("qx.test.util.DateFormat",
 {
   extend : qx.dev.unit.TestCase,
+
+  include: qx.dev.unit.MRequirements,
 
   members :
   {
@@ -52,6 +53,10 @@ qx.Class.define("qx.test.util.DateFormat",
     {'date' : new Date(2012, 4, 24, 11, 49, 57, 123), 'result' : {}}
 
   ],
+
+    tearDown : function() {
+      qx.locale.Manager.getInstance().resetLocale();
+    },
 
     __fillNumber : function(number, minSize)
     {
@@ -119,6 +124,13 @@ qx.Class.define("qx.test.util.DateFormat",
 
     testInvalidDate : function()
     {
+      // Note:
+      //   * Edge parses even invalid dates and calculates
+      //     from the "overflowing" days and months the
+      //     next "logical" date. In the example below
+      //     the date parsed is "2011-12-02".
+      this.require(["noEdge"]);
+
       var invalidDate = new Date("2011-11-32");
       var dateFmt = new qx.util.format.DateFormat();
       this.assertNull(dateFmt.format(invalidDate));
@@ -132,6 +144,8 @@ qx.Class.define("qx.test.util.DateFormat",
           parsedDate;
 
       dateFormat = new qx.util.format.DateFormat("EEEE d MMMM yyyy ww");
+
+      qx.locale.Manager.getInstance().setLocale("en_US");
 
       testDate = (new Date(2014, 0, 1)).getTime();
       parsedDate = dateFormat.parse("Wednesday 1 January 2014 01");
@@ -803,9 +817,13 @@ qx.Class.define("qx.test.util.DateFormat",
   testChangingLocales : function()
   {
     var manager = qx.locale.Manager.getInstance();
+    manager.resetLocale();
+    var initialLocale = manager.getLocale();
+
     manager.setLocale('en_US');
 
     var df = new qx.util.format.DateFormat("EEEE yyyy-mm-dd");
+    var dfinitial = new qx.util.format.DateFormat("EEEE yyyy-mm-dd", initialLocale);
     var dfFR = new qx.util.format.DateFormat("EEEE yyyy-mm-dd","fr_FR");
     var dfDE = new qx.util.format.DateFormat("EEEE yyyy-mm-dd","de_DE");
     var dfUS = new qx.util.format.DateFormat("EEEE yyyy-mm-dd","en_US");
@@ -821,7 +839,7 @@ qx.Class.define("qx.test.util.DateFormat",
     this.assertEquals(df.format(d),dfDE.format(d));
 
     manager.resetLocale();
-    this.assertEquals(df.format(d),dfUS.format(d));
+    this.assertEquals(df.format(d),dfinitial.format(d));
 
     manager.setLocale('fr_FR');
     this.assertEquals(df.format(d),dfFR.format(d));
@@ -835,10 +853,15 @@ qx.Class.define("qx.test.util.DateFormat",
     dfFR.resetLocale();
 
     df.dispose();
+    dfinitial.dispose();
     dfFR.dispose();
     dfDE.dispose();
     dfUS.dispose();
 
+  },
+  
+  hasNoEdge: function() {
+    return !(qx.core.Environment.get("browser.name") == "edge");
   }
 
   }

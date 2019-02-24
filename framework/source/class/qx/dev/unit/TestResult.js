@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -99,8 +98,8 @@ qx.Class.define("qx.dev.unit.TestResult",
     /**
      * Run a test function using a given test result
      *
-     * @param testResult {TestResult} The test result to use to run the test
-     * @param test {TestSuite|TestFunction} The test
+     * @param testResult {qx.dev.unit.TestResult} The test result to use to run the test
+     * @param test {qx.dev.unit.TestSuite|qx.dev.unit.TestFunction} The test
      * @param testFunction {var} The test function
      */
     run : function(testResult, test, testFunction) {
@@ -124,7 +123,7 @@ qx.Class.define("qx.dev.unit.TestResult",
     /**
      * Run the test
      *
-     * @param test {TestSuite|TestFunction} The test
+     * @param test {qx.dev.unit.TestSuite|qx.dev.unit.TestFunction} The test
      * @param testFunction {Function} The test function
      * @param self {Object?} The context in which to run the test function
      * @param resume {Boolean?} Resume a currently waiting test
@@ -177,32 +176,58 @@ qx.Class.define("qx.dev.unit.TestResult",
         }
         catch(ex)
         {
-          try {
-            this.tearDown(test);
-          }
-          catch(except) {
-            /* Any exceptions here are likely caused by setUp having failed
-               previously, so we'll ignore them. */
-          }
 
-          if (ex.classname == "qx.dev.unit.RequirementError") {
-            this._createError("skip", [ex], test);
-            this.fireDataEvent("endTest", test);
-          }
-          else {
-            if (ex instanceof qx.type.BaseError &&
-              ex.message == qx.type.BaseError.DEFAULTMESSAGE)
-            {
-              ex.message = "setUp failed";
+          if (ex instanceof qx.dev.unit.AsyncWrapper)
+          {
+
+            if (this._timeout[test.getFullName()]) {
+              // Do nothing if there's already a timeout for this test
+              return;
+            }
+
+            if (ex.getDelay()) {
+              var that = this;
+              var defaultTimeoutFunction = function() {
+                throw new qx.core.AssertionError(
+                  "Asynchronous Test Error in setUp",
+                  "Timeout reached before resume() was called."
+                );
+              };
+              var timeoutFunc = (ex.getDeferredFunction() ? ex.getDeferredFunction() : defaultTimeoutFunction);
+              var context = (ex.getContext() ? ex.getContext() : window);
+              this._timeout[test.getFullName()] = qx.event.Timer.once(function() {
+                this.run(test, timeoutFunc, context);
+              }, that, ex.getDelay());
+              this.fireDataEvent("wait", test);
+            }
+            return undefined;
+          } else {
+
+            try {
+              this.tearDown(test);
+            }
+            catch (except) {
+              /* Any exceptions here are likely caused by setUp having failed
+               previously, so we'll ignore them. */
+            }
+
+            if (ex.classname == "qx.dev.unit.RequirementError") {
+              this._createError("skip", [ex], test);
+              this.fireDataEvent("endTest", test);
             }
             else {
-              ex.message = "setUp failed: " + ex.message;
+              if (ex instanceof qx.type.BaseError && ex.message == qx.type.BaseError.DEFAULTMESSAGE) {
+                ex.message = "setUp failed";
+              }
+              else {
+                ex.message = "setUp failed: " + ex.message;
+              }
+              this._createError("error", [ex], test);
+              this.fireDataEvent("endTest", test);
             }
-            this._createError("error", [ex], test);
-            this.fireDataEvent("endTest", test);
-          }
 
-          return undefined;
+            return undefined;
+          }
         }
       }
 
@@ -293,7 +318,7 @@ qx.Class.define("qx.dev.unit.TestResult",
      *
      * @param eventName {String} Name of the event
      * @param exceptions {Error[]} The exception(s), which caused the test to fail
-     * @param test {TestSuite|TestFunction} The test
+     * @param test {qx.dev.unit.TestSuite|qx.dev.unit.TestFunction} The test
      */
     _createError : function(eventName, exceptions, test)
     {
@@ -335,7 +360,7 @@ qx.Class.define("qx.dev.unit.TestResult",
             testFunction._addedListeners.push([target, listenerId]);
           }
           return listenerId;
-        }
+        };
       }
     },
 
@@ -375,6 +400,7 @@ qx.Class.define("qx.dev.unit.TestResult",
       if (testClass[specificTearDown]) {
         testClass[specificTearDown]();
       }
+      testClass.doAutoDispose();
 
       if (qx.core.Environment.get("qx.debug.dispose")
         && qx.dev.Debug.disposeProfilingActive)

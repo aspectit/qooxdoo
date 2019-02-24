@@ -7,8 +7,7 @@
      2008 Dihedrals.com, http://www.dihedrals.com
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -104,7 +103,7 @@ qx.Class.define("qx.ui.layout.LineSizeIterator",
         width: lineWidth,
         children: lineChildren,
         gapsBefore : gapsBefore
-      }
+      };
     },
 
 
@@ -116,7 +115,7 @@ qx.Class.define("qx.ui.layout.LineSizeIterator",
      */
     __computeGapBeforeChild : function(childIndex)
     {
-      var isFirstInLine = childIndex == this.__childIndex
+      var isFirstInLine = childIndex == this.__childIndex;
       if (isFirstInLine) {
         return this.__children[childIndex].getMarginLeft();
       } else {
@@ -124,7 +123,7 @@ qx.Class.define("qx.ui.layout.LineSizeIterator",
           this.__children[childIndex-1].getMarginRight(),
           this.__children[childIndex].getMarginLeft(),
           this.__spacing
-        )
+        );
       }
     },
 
@@ -138,4 +137,4 @@ qx.Class.define("qx.ui.layout.LineSizeIterator",
       return this.__hasMoreLines;
     }
   }
-})
+});

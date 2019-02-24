@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -142,7 +141,7 @@ qx.Class.define("qx.ui.root.Inline",
           }
 
           // check for implicit height. Set the height explicit to prevent that
-          // the element grows indefinetely
+          // the element grows indefinitely
           if (elementDimensions.height >= 1 &&
               qx.bom.element.Style.get(this.__elem, "height", 3) == "") {
             qx.bom.element.Style.set(this.__elem, "height", elementDimensions.height + "px");
@@ -172,8 +171,8 @@ qx.Class.define("qx.ui.root.Inline",
       // Make relative
       rootEl.style.position = "relative";
 
-      // Store "weak" reference to the widget in the DOM element.
-      root.setAttribute("$$widget", this.toHashCode());
+      // Store reference to the widget in the DOM element.
+      root.connectWidget(this);
 
       // fire event asynchronously, otherwise the browser will fire the event
       // too early and no listener will be informed since they're not added

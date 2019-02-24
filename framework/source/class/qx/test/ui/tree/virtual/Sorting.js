@@ -8,8 +8,7 @@
      2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -51,7 +50,7 @@ qx.Class.define("qx.test.ui.tree.virtual.Sorting",
 
       var delegate = {
         sorter : sorter
-      }
+      };
       this.tree.setDelegate(delegate);
       this.flush();
 
@@ -79,7 +78,7 @@ qx.Class.define("qx.test.ui.tree.virtual.Sorting",
 
       var delegate = {
         sorter : sorter
-      }
+      };
       this.tree.setDelegate(delegate);
       this.flush();
 
@@ -112,7 +111,7 @@ qx.Class.define("qx.test.ui.tree.virtual.Sorting",
         filter : function(child) {
           return child.getName() == "Node 2" ? false : true;
         }
-      }
+      };
       this.tree.setDelegate(delegate);
       this.flush();
 
@@ -181,7 +180,7 @@ qx.Class.define("qx.test.ui.tree.virtual.Sorting",
 
       var prefix = "";
       for (var i = 0; i < level; i++) {
-        prefix += "-"
+        prefix += "-";
       }
       console.log(prefix + ">", model.getName());
 

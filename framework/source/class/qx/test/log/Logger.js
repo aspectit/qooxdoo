@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -83,6 +82,9 @@ qx.Class.define("qx.test.log.Logger",
     },
 
 
+    /**
+     * @ignore(test.DisposableObject)
+     */
     testContextObject : function() {
       var appender = new qx.log.appender.RingBuffer();
 
@@ -90,17 +92,28 @@ qx.Class.define("qx.test.log.Logger",
       qx.log.Logger.clear();
       qx.log.Logger.register(appender);
 
+      qx.Class.define("test.DisposableObject", {
+        extend: qx.core.Object,
+        implement: qx.core.IDisposable
+      });
+
       var obj = new qx.core.Object();
+      var dispObj = new test.DisposableObject();
       qx.log.Logger.debug(qx.core.Object, "m1");
       qx.log.Logger.debug(obj, "m2");
       qx.log.Logger.debug(qxWeb(), "m3");
+      qx.log.Logger.debug(dispObj, "m4");
+
 
       var events = appender.getAllLogEvents();
       this.assertEquals(qx.core.Object, events[0].clazz);
-      this.assertEquals(obj.toHashCode(), events[1].object);
+      this.assertEquals(qx.core.Object, events[1].clazz);
       this.assertEquals(qxWeb, events[2].clazz);
+      this.assertEquals(dispObj.toHashCode(), events[3].object);
 
       qx.log.Logger.unregister(appender);
+      dispObj.dispose();
+      qx.Class.undefine("test.DisposableObject");
     },
 
 

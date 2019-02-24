@@ -8,8 +8,7 @@
      2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -28,9 +27,6 @@ qx.Bootstrap.define("qx.module.util.String", {
     /**
      * Converts a hyphenated string (separated by '-') to camel case.
      *
-     * Example:
-     * <pre class='javascript'>q.string.camelCase("I-like-cookies"); //returns "ILikeCookies"</pre>
-     *
      * @attachStatic {qxWeb, string.camelCase}
      * @param str {String} hyphenated string
      * @return {String} camelcase string
@@ -42,9 +38,6 @@ qx.Bootstrap.define("qx.module.util.String", {
 
     /**
      * Converts a camelcased string to a hyphenated (separated by '-') string.
-     *
-     * Example:
-     * <pre class='javascript'>q.string.hyphenate("weLikeCookies"); //returns "we-like-cookies"</pre>
      *
      * @attachStatic {qxWeb, string.hyphenate}
      * @param str {String} camelcased string
@@ -86,7 +79,9 @@ qx.Bootstrap.define("qx.module.util.String", {
      * @param substr {String} the substring to look for
      * @return {Boolean} whether the string starts with the given substring
      */
-    startsWith : qx.lang.String.startsWith,
+    startsWith : function (fullstr, substr) {
+      return fullstr.startsWith(substr);
+    },
 
 
     /**
@@ -98,7 +93,9 @@ qx.Bootstrap.define("qx.module.util.String", {
      * @param substr {String} the substring to look for
      * @return {Boolean} whether the string ends with the given substring
      */
-    endsWith : qx.lang.String.endsWith,
+    endsWith : function (fullstr, substr) {
+      return fullstr.endsWith(substr);
+    },
 
 
     /**
@@ -114,8 +111,6 @@ qx.Bootstrap.define("qx.module.util.String", {
 
     /**
      * Escapes the characters in a <code>String</code> using HTML entities.
-     *
-     * For example: <tt>"bread" & "butter"</tt> => <tt>&amp;quot;bread&amp;quot; &amp;amp; &amp;quot;butter&amp;quot;</tt>.
      * Supports all known HTML 4.0 entities, including funky accents.
      *
      * @attachStatic {qxWeb, string.escapeHtml}
@@ -128,17 +123,6 @@ qx.Bootstrap.define("qx.module.util.String", {
 
 
   defer : function(statics) {
-    qxWeb.$attachStatic({
-      string : {
-        camelCase : statics.camelCase,
-        hyphenate : statics.hyphenate,
-        firstUp : statics.firstUp,
-        firstLow : statics.firstLow,
-        startsWith : statics.startsWith,
-        endsWith : statics.endsWith,
-        escapeRegexpChars : statics.escapeRegexpChars,
-        escapeHtml : statics.escapeHtml
-      }
-    });
+    qxWeb.$attachAll(this, "string");
   }
 });

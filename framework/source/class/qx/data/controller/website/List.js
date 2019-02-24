@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -21,8 +20,8 @@
  *
  * *General idea*
  * The list controller is responsible for synchronizing data given as model
- * to a DOM element. As definition for a single item, tempaltes are used. More
- * details on tempaltes can be found in {@link qx.bom.Template}.
+ * to a DOM element. As definition for a single item, templates are used. More
+ * details on templates can be found in {@link qx.bom.Template}.
  *
  * *Features*
  *
@@ -100,7 +99,7 @@ qx.Class.define("qx.data.controller.website.List",
 
 
     /**
-     * The delegate for the list conotroller which supports almost all methods
+     * The delegate for the list controller which supports almost all methods
      * documented in {@link qx.data.controller.IControllerDelegate} except
      * <code>bindItem</code>.
      */
@@ -172,7 +171,7 @@ qx.Class.define("qx.data.controller.website.List",
 
 
     /**
-     * Responsible for removing all items from the targe element.
+     * Responsible for removing all items from the target element.
      */
     __emptyTarget : function() {
       var target = this.getTarget();
@@ -204,7 +203,7 @@ qx.Class.define("qx.data.controller.website.List",
       }
       var templateId = this.getTemplateId();
 
-      // only do something if everyhing is given
+      // only do something if everything is given
       if (target == null || data == null || templateId == null) {
         return;
       }
@@ -227,7 +226,7 @@ qx.Class.define("qx.data.controller.website.List",
 
         // special case for printing the content of the array
         if (typeof entry != "object") {
-          entry = {"." : data[i]}
+          entry = {"." : data[i]};
         }
 
         // create the DOM object
@@ -243,7 +242,7 @@ qx.Class.define("qx.data.controller.website.List",
           this.assertNotNull(template);
         }
 
-        // configutre item
+        // configure item
         if (configureItem) {
           configureItem(template);
         }

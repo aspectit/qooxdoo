@@ -8,8 +8,7 @@
      2007-2010 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -49,6 +48,13 @@ qx.Class.define("qx.test.bom.Font",
 
       var styles = this.__font.getStyles();
       this.assertEquals("bold", styles.fontWeight, "Wrong style value for 'bold' property!");
+    },
+    
+    testWeight : function()
+    {
+      this.__font.setWeight("400");
+      var styles = this.__font.getStyles();
+      this.assertEquals("400", styles.fontWeight, "something went wrong settng the 'font weight'");
     },
 
 

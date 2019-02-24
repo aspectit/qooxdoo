@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -95,7 +94,7 @@ qx.Class.define("qx.test.ui.form.Field",
 
       textfield.focus();
       textfield.selectAllText();
-      textfield.clearTextSelection()
+      textfield.clearTextSelection();
 
       this.flush();
 
@@ -120,7 +119,7 @@ qx.Class.define("qx.test.ui.form.Field",
       var self = this;
       this.wait(1000, function() {
         textfield.selectAllText();
-        textfield.clearTextSelection()
+        textfield.clearTextSelection();
         self.assertEquals("", textfield.getTextSelection());
         textfield.destroy();
       });
@@ -199,9 +198,9 @@ qx.Class.define("qx.test.ui.form.Field",
           f.dispose();
           this.assertCalledTwice(statusChangeSpy);
         }, this);
-      }, this, 2500);
+      }, this, 4000);
 
-      this.wait(5000);
+      this.wait(8000);
     }
   }
 });

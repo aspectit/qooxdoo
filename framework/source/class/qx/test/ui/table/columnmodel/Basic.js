@@ -8,8 +8,7 @@
      2004-2010 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -36,7 +35,7 @@ qx.Class.define("qx.test.ui.table.columnmodel.Basic",
     {
       var rowData = [];
       var nextId = 0;
-      var strings = ["a", "b", "c", "d"]
+      var strings = ["a", "b", "c", "d"];
       for (var row = 0; row < rowCount; row++) {
         var date = new Date(row * row * row);
         var number = row % 2 == 0 ? row / 2 : NaN;
@@ -54,7 +53,7 @@ qx.Class.define("qx.test.ui.table.columnmodel.Basic",
      if (qx.core.Environment.get("qx.debug"))
      {
        this.assertException(function(){
-         tcm.setColumnWidth(6, 10)
+         tcm.setColumnWidth(6, 10);
        }, qx.core.AssertionError, "Column not found in table model", "Invalid column width.");
      }
 
@@ -73,7 +72,7 @@ qx.Class.define("qx.test.ui.table.columnmodel.Basic",
      {
        this.assertException(function()
        {
-         tcm.getColumnWidth(6, 10)
+         tcm.getColumnWidth(6, 10);
        }, qx.core.AssertionError, "Column not found in table model", "Invalid column width.");
      }
 
@@ -94,7 +93,7 @@ qx.Class.define("qx.test.ui.table.columnmodel.Basic",
      {
        this.assertException(function()
        {
-         tcm.setHeaderCellRenderer(6, new qx.ui.table.headerrenderer.Default)
+         tcm.setHeaderCellRenderer(6, new qx.ui.table.headerrenderer.Default);
        }, qx.core.AssertionError, "Column not found in table model", "Invalid column width.");
      }
 
@@ -112,7 +111,7 @@ qx.Class.define("qx.test.ui.table.columnmodel.Basic",
      {
        this.assertException(function()
        {
-         tcm.getHeaderCellRenderer(6)
+         tcm.getHeaderCellRenderer(6);
        }, qx.core.AssertionError, "Column not found in table model", "Invalid column width.");
      }
 
@@ -131,7 +130,7 @@ qx.Class.define("qx.test.ui.table.columnmodel.Basic",
      {
        this.assertException(function()
        {
-         tcm.setDataCellRenderer(6, qx.ui.table.cellrenderer.Default)
+         tcm.setDataCellRenderer(6, qx.ui.table.cellrenderer.Default);
        }, qx.core.AssertionError, "Column not found in table model", "Invalid column width.");
      }
 
@@ -150,7 +149,7 @@ qx.Class.define("qx.test.ui.table.columnmodel.Basic",
      {
        this.assertException(function()
        {
-         tcm.getDataCellRenderer(6)
+         tcm.getDataCellRenderer(6);
        }, qx.core.AssertionError, "Column not found in table model", "Invalid column width.");
      }
 
@@ -169,7 +168,7 @@ qx.Class.define("qx.test.ui.table.columnmodel.Basic",
      {
        this.assertException(function()
        {
-         tcm.setCellEditorFactory(6, qx.ui.table.celleditor.SelectBox)
+         tcm.setCellEditorFactory(6, qx.ui.table.celleditor.SelectBox);
        }, qx.core.AssertionError, "Column not found in table model", "Invalid column width.");
      }
 
@@ -188,7 +187,7 @@ qx.Class.define("qx.test.ui.table.columnmodel.Basic",
      {
        this.assertException(function()
        {
-         tcm.getCellEditorFactory(6)
+         tcm.getCellEditorFactory(6);
        }, qx.core.AssertionError, "Column not found in table model", "Invalid column width.");
      }
 

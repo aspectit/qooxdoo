@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -144,13 +143,13 @@ qx.Class.define("qx.ui.form.AbstractSelectBox",
 
           control.addListener("changeSelection", this._onListChangeSelection, this);
           control.addListener("pointerdown", this._onListPointerDown, this);
+          control.getChildControl("pane").addListener("tap", this.close, this);
           break;
 
         case "popup":
-          control = new qx.ui.popup.Popup(new qx.ui.layout.VBox);
+          control = new qx.ui.popup.Popup(new qx.ui.layout.VBox());
           control.setAutoHide(false);
           control.setKeepActive(true);
-          control.addListener("tap", this.close, this);
           control.add(this.getChildControl("list"));
 
           control.addListener("changeVisibility", this._onPopupChangeVisibility, this);
@@ -243,7 +242,7 @@ qx.Class.define("qx.ui.form.AbstractSelectBox",
      * The formatter removes all HTML tags and converts all HTML entities
      * to string characters when the rich property is <code>true</code>.
      *
-     * @param item {ListItem} The list item to format.
+     * @param item {qx.ui.form.ListItem} The list item to format.
      * @return {String} The formatted text.
      */
     _defaultFormat : function(item)

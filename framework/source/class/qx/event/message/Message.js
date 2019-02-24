@@ -8,8 +8,7 @@
      2007 Christian Boulanger
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -84,7 +83,16 @@ qx.Class.define("qx.event.message.Message",
      */
     sender :
     {
-      check       : "Object"
+      check       : "Object",
+      nullable    : true
     }
+  },
+
+  destruct : function()
+  {
+    this.setData(null);
+    this.setSender(null);
   }
 });
+
+

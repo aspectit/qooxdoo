@@ -10,8 +10,7 @@
 #    2006-2010 1&1 Internet AG, Germany, http://www.1und1.de
 #
 #  License:
-#    LGPL: http://www.gnu.org/licenses/lgpl.html
-#    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+#    MIT: https://opensource.org/licenses/MIT
 #    See the LICENSE file in the project's top-level directory for details.
 #
 #  Authors:
@@ -135,16 +134,23 @@ def extractDelimiter(tree):
 def extractNumber(tree):
     data = {}
 
-    decimalSeparatorNode = tree.find("numbers/symbols/decimal")
+    decimalSeparatorNode = tree.find("numbers/symbols[@numberSystem='latn']/decimal")
+    if decimalSeparatorNode == None:
+        decimalSeparatorNode = tree.find("numbers/symbols/decimal")
+
     if decimalSeparatorNode != None:
         data['cldr_number_decimal_separator'] = decimalSeparatorNode.text
 
     groupSeparator = ","
-    groupSeparatorNode = tree.find("numbers/symbols/group")
+    groupSeparatorNode = tree.find("numbers/symbols[@numberSystem='latn']/group")
+    if groupSeparatorNode == None:
+        groupSeparatorNode = tree.find("numbers/symbols/group")
     if groupSeparatorNode != None:
         data['cldr_number_group_separator'] = groupSeparatorNode.text
 
-    percentFormatNode = tree.find("numbers/percentFormats/percentFormatLength/percentFormat/pattern")
+    percentFormatNode = tree.find("numbers/percentFormats[@numberSystem='latn']/percentFormatLength/percentFormat/pattern")
+    if percentFormatNode == None:
+        percentFormatNode = tree.find("numbers/percentFormats/percentFormatLength/percentFormat/pattern")
     if percentFormatNode != None:
         data['cldr_number_percent_format'] = percentFormatNode.text
 

@@ -8,8 +8,7 @@
      2004-2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -41,7 +40,7 @@ qx.Mixin.define("qx.dev.unit.MRequirementsBasic", {
      * See the manual for further details:
      * <a href="http://manual.qooxdoo.org/current/pages/development/frame_apps_testrunner.html#defining-test-requirements">Defining Test Requirements</a>
      *
-     * @throws {RequirementError} if any requirement check returned
+     * @throws {qx.dev.unit.RequirementError} if any requirement check returned
      *   <code>false</code>
      * @throws {Error} if no valid check was found for a feature.
      *

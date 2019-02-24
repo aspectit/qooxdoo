@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -94,6 +93,7 @@ qx.Class.define("qx.ui.core.scroll.ScrollPane",
     {
       check : "qx.lang.Type.isNumber(value)&&value>=0&&value<=this.getScrollMaxX()",
       apply : "_applyScrollX",
+      transform: "_transformScrollX",
       event : "scrollX",
       init  : 0
     },
@@ -103,6 +103,7 @@ qx.Class.define("qx.ui.core.scroll.ScrollPane",
     {
       check : "qx.lang.Type.isNumber(value)&&value>=0&&value<=this.getScrollMaxY()",
       apply : "_applyScrollY",
+      transform: "_transformScrollY",
       event : "scrollY",
       init  : 0
     }
@@ -500,10 +501,30 @@ qx.Class.define("qx.ui.core.scroll.ScrollPane",
       this.getContentElement().scrollToX(value);
     },
 
+    /**
+     * Transform property
+     *
+     * @param value {Number} Value to transform
+     * @return {Number} Rounded value
+     */
+    _transformScrollX: function(value) {
+      return Math.round(value);
+    },
+    
 
     // property apply
     _applyScrollY : function(value) {
       this.getContentElement().scrollToY(value);
+    },
+
+    /**
+     * Transform property
+     *
+     * @param value {Number} Value to transform
+     * @return {Number} Rounded value
+     */
+    _transformScrollY: function(value) {
+      return Math.round(value);
     }
   }
 });

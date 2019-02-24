@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -34,8 +33,6 @@
 
 /**
  * Cross browser abstractions to work with input elements.
- *
- * @require(qx.lang.Array#contains)
  */
 qx.Bootstrap.define("qx.bom.Input",
 {
@@ -126,7 +123,6 @@ qx.Bootstrap.define("qx.bom.Input",
     {
       var tag = element.nodeName.toLowerCase();
       var type = element.type;
-      var Array = qx.lang.Array;
       var Type = qx.lang.Type;
 
       if (typeof value === "number") {
@@ -136,7 +132,7 @@ qx.Bootstrap.define("qx.bom.Input",
       if ((type === "checkbox" || type === "radio"))
       {
         if (Type.isArray(value)) {
-          element.checked = Array.contains(value, element.value);
+          element.checked = value.includes(element.value);
         } else {
           element.checked = element.value == value;
         }
@@ -156,7 +152,7 @@ qx.Bootstrap.define("qx.bom.Input",
           }
 
           subel.selected = isArray ?
-             Array.contains(value, subval) : value == subval;
+            value.includes(subval) : value == subval;
         }
 
         if (isArray && value.length == 0) {
@@ -220,7 +216,7 @@ qx.Bootstrap.define("qx.bom.Input",
 
           if (option.selected)
           {
-            // Get the specifc value for the option
+            // Get the specific value for the option
             value = clazz.getValue(option);
 
             // We don't need an array for one selects

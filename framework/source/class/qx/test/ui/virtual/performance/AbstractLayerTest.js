@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -144,8 +143,8 @@ qx.Class.define("qx.test.ui.virtual.performance.AbstractLayerTest",
         var duration = new Date() - start;
         times.push(duration);
       }
-      times.sort(function(a, b) { return a < b ? -1 : 1});
-      var avg = Math.round(qx.lang.Array.sum(times.slice(1, -1)) / (times.length-2))
+      times.sort(function(a, b) { return a < b ? -1 : 1;});
+      var avg = Math.round(qx.lang.Array.sum(times.slice(1, -1)) / (times.length-2));
       //this.warn(";" + name + "; avg(" + avg + "ms); " + times.join("ms; ") + "ms;");
       this.warn(";" + name + ";avg:" + avg + ";" + times.join(";"));
 

@@ -8,8 +8,7 @@
      2004-2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -28,6 +27,13 @@ qx.Class.define("qx.test.lang.normalize.Array",
 
   members :
   {
+    testShims: function() {
+      var testArray = ["entry1", "entry2"];
+      for (var index in testArray) {
+        this.assertTrue(index == 0 || index == 1);
+      }
+    },
+    
     testIndexOf : function()
     {
       var obj = {};
@@ -132,6 +138,56 @@ qx.Class.define("qx.test.lang.normalize.Array",
       }));
     },
 
+    testFind : function() {
+      var arr = [1, 2, 3, 4];
+      arr[10] = 11;
+
+      var values = [];
+      var indexes = [];
+      var result = arr.find(function(element, index, array) {
+        values[index] = element;
+        indexes.push(index);
+        this.assertEquals(arr, array);
+      }, this);
+
+      this.assertUndefined(result);
+      this.assertArrayEquals(arr, values);
+      this.assertArrayEquals([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], indexes);
+
+      this.assertEquals(arr.find(function(element) {
+        return element == 3;
+      }), 3);
+
+      this.assertUndefined(arr.find(function(element, index) {
+        return index == 6;
+      }));
+    },
+
+    testFindIndex : function() {
+      var arr = [1, 2, 3, 4];
+      arr[10] = 11;
+
+      var values = [];
+      var indexes = [];
+      var result = arr.findIndex(function(element, index, array) {
+        values[index] = element;
+        indexes.push(index);
+        this.assertEquals(arr, array);
+      }, this);
+
+      this.assertEquals(result, -1);
+      this.assertArrayEquals(arr, values);
+      this.assertArrayEquals([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], indexes);
+
+      this.assertEquals(arr.findIndex(function(element) {
+        return element == 3;
+      }), 2);
+
+      this.assertEquals(arr.findIndex(function(element, index) {
+        return element == 6;
+      }), -1);
+    },
+
     testEvery : function() {
       var arr = [1, 2, 3, 4];
       arr[10] = 11;
@@ -178,6 +234,20 @@ qx.Class.define("qx.test.lang.normalize.Array",
       this.assertArrayEquals([0, 3,4,1,2], [[1,2], [3,4]].reduceRight(
         function(a, b) {return a.concat(b);}, [0]
       ));
+    },
+
+    testIncludes : function() {
+      var arr = ['one', 'two', 'three'];
+      this.assertTrue(arr.includes("one"), "includes does not work!");
+      this.assertTrue(arr.includes("two"), "includes does not work!");
+      this.assertTrue(arr.includes("three"), "includes does not work!");
+      this.assertFalse(arr.includes("four"), "includes does not work!");
+
+      arr = [NaN];
+      this.assertTrue(arr.includes(NaN), "includes does not work!");
+
+      arr = [];
+      this.assertFalse(arr.includes("one"), "includes does not work!");
     }
   }
 });

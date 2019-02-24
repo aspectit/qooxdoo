@@ -10,8 +10,7 @@
 #    2006-2010 1&1 Internet AG, Germany, http://www.1und1.de
 #
 #  License:
-#    LGPL: http://www.gnu.org/licenses/lgpl.html
-#    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+#    MIT: https://opensource.org/licenses/MIT
 #    See the LICENSE file in the project's top-level directory for details.
 #
 #  Authors:
@@ -105,12 +104,12 @@ class Manifest(object):
     @classmethod
     def schema_v1_0(self):
         patterns = {
-            "semver": r"^trunk$|master$|^\d+\.\d+(\.\d+)?(-[0-9]+-?)?([-a-zA-Z+][-a-zA-Z0-9.:-]*)?$",
+            # semver validation, see https://github.com/sindresorhus/semver-regex/blob/master/index.js
+            "semver": r"^v?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[\da-z\-]+(?:\.[\da-z\-]+)*)?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?$",
             "url": r"^https?://([a-z0-9\.-]+)\.([a-z\.]{2,6})[/\w\.-]*\/?$",
             "url_and_placeholder": r"^https?://([a-z0-9\.-]+)\.([a-z\.]{2,6})[/\w.%{}-]*(#[/\w.%{}-]*)?\/?$",
             "url_archive_or_sf": r"^(https?://svn.code.sf.net/p/qooxdoo-contrib/code/trunk/qooxdoo-contrib/.*|(https?|ftp)://.*(tar(\.gz|\.bz2)?|tgz|zip))$",
             "name_and_github_uid": r"^.*\([\w.-]+\)$",
-            "checksum": "^[a-f0-9]{40}$"  # has to be SHA-1
         }
 
         return {
@@ -122,7 +121,7 @@ class Manifest(object):
                 "info": {
                     "type": "object",
                     "required": ["name", "description", "homepage", "license",
-                                 "authors", "version", "qooxdoo-versions"],
+                                 "authors", "version", "qooxdoo-versions", "category"],
                     "properties": {
                         "name": {
                             "type": "string",
@@ -173,10 +172,6 @@ class Manifest(object):
                         "download": {
                             "type": "string",
                             "pattern": patterns["url_archive_or_sf"]
-                        },
-                        "checksum": {
-                            "type": "string",
-                            "pattern": patterns["checksum"]
                         },
                         "version": {
                             "type": "string",

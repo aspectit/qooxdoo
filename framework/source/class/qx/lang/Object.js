@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -96,23 +95,14 @@ qx.Bootstrap.define("qx.lang.Object",
     /**
      * Get the values of a map as array
      *
+     * @deprecated {6.0} Please use Object instance values method instead
+     *
      * @param map {Object} the map
      * @return {Array} array of the values of the map
      */
     getValues : function(map)
     {
-      if (qx.core.Environment.get("qx.debug")) {
-        qx.core.Assert && qx.core.Assert.assertMap(map, "Invalid argument 'map'");
-      }
-
-      var arr = [];
-      var keys = Object.keys(map);
-
-      for (var i=0, l=keys.length; i<l; i++) {
-        arr.push(map[keys[i]]);
-      }
-
-      return arr;
+      return Object.values(map); 
     },
 
 

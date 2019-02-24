@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -140,6 +139,31 @@ qx.Bootstrap.define("qx.bom.client.Event",
     },
 
     /**
+     * Returns the event type used in pointer layer to create mouse events.
+     *
+     * @return {String} Either <code>MouseEvents</code> or <code>UIEvents</code>
+     */
+    getMouseCreateEvent : function() {
+      /* For instance, in IE9, the pageX property of synthetic MouseEvents is
+      always 0 and cannot be overridden, so plain UIEvents have to be used with
+      mouse event properties added accordingly. */
+      try {
+        var e = document.createEvent("MouseEvents");
+        var orig = e.pageX;
+
+        e.initMouseEvent("click", false, false, window, 0, 0, 0, orig+1, 0,
+            false, false, false, false, 0, null);
+
+        if(e.pageX !== orig) {
+          return "MouseEvents";
+        }
+        return "UIEvents";
+      } catch(ex) {
+        return "UIEvents";
+      }
+    },
+
+    /**
      * Checks if the MouseWheel event is available and on which target.
      *
      * @param win {Window ? null} An optional window instance to check.
@@ -171,17 +195,36 @@ qx.Bootstrap.define("qx.bom.client.Event",
       };
 
       return {type: type, target: target};
+    },
+    
+    /**
+     * Detects if the engine/browser supports auxclick events
+     * 
+     * See https://github.com/qooxdoo/qooxdoo/issues/9268 
+     *
+     * @return {Boolean} <code>true</code> if auxclick events are supported.
+     */
+    getAuxclickEvent : function() {
+      var hasAuxclick = false;
+      try {
+        hasAuxclick = ("onauxclick" in document.documentElement);
+      }
+      catch(ex) {};
+      
+      return (hasAuxclick ? true : false);
     }
   },
 
   defer : function(statics) {
     qx.core.Environment.add("event.touch", statics.getTouch);
     qx.core.Environment.add("event.mouseevent", statics.getMouseEvent);
+    qx.core.Environment.add("event.mousecreateevent", statics.getMouseCreateEvent);
     qx.core.Environment.add("event.dispatchevent", statics.getDispatchEvent);
     qx.core.Environment.add("event.customevent", statics.getCustomEvent);
     qx.core.Environment.add("event.mspointer", statics.getMsPointer);
     qx.core.Environment.add("event.help", statics.getHelp);
     qx.core.Environment.add("event.hashchange", statics.getHashChange);
     qx.core.Environment.add("event.mousewheel", statics.getMouseWheel);
+    qx.core.Environment.add("event.auxclick", statics.getAuxclickEvent);
   }
 });

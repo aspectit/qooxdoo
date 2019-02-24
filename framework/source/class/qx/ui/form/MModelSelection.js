@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -72,17 +71,14 @@ qx.Mixin.define("qx.ui.form.MModelSelection",
         if (model !== null) {
           modelSelection.push(model);
         }
-      };
+      }
 
-      // only change the selection if you are sure that its correct [BUG #3748]
-      if (modelSelection.length === data.length) {
-        try {
-          this.setModelSelection(modelSelection);
-        } catch (e) {
-          throw new Error(
-            "Could not set the model selection. Maybe your models are not unique? " + e
-          );
-        }
+      try {
+        this.setModelSelection(modelSelection);
+      } catch (e) {
+        throw new Error(
+          "Could not set the model selection. Maybe your models are not unique? " + e
+        );
       }
     },
 

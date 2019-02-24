@@ -8,8 +8,7 @@
      2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -382,7 +381,7 @@ qx.Class.define("qx.ui.core.selection.Abstract",
      * @return {Object[]} List of items.
      */
     getSelection : function() {
-      return qx.lang.Object.getValues(this.__selection);
+      return Object.values(this.__selection);
     },
 
 
@@ -395,7 +394,7 @@ qx.Class.define("qx.ui.core.selection.Abstract",
     getSortedSelection : function()
     {
       var children = this.getSelectables();
-      var sel = qx.lang.Object.getValues(this.__selection);
+      var sel = Object.values(this.__selection);
 
       sel.sort(function(a, b) {
         return children.indexOf(a) - children.indexOf(b);
@@ -1855,7 +1854,7 @@ qx.Class.define("qx.ui.core.selection.Abstract",
     /**
      * Applies the default selection. The default item is the first item.
      *
-     * @param force {Boolean} Whether the default selection sould forced.
+     * @param force {Boolean} Whether the default selection should be forced.
      *
      * @return {var} The selected item.
      */

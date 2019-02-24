@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -18,7 +17,7 @@
 ************************************************************************ */
 
 /**
- * This mixin offers the bacis property features which include generic
+ * This mixin offers the basic property features which include generic
  * setter, getter and resetter.
  */
 qx.Mixin.define("qx.core.MProperty",
@@ -33,7 +32,8 @@ qx.Mixin.define("qx.core.MProperty",
      *
      * @param data {Map | String} a map of property values. The key is the name of the property.
      * @param value {var?} the value, only used when <code>data</code> is a string.
-     * @return {Object} this instance.
+     * @return {Object} Returns this instance if <code>data</code> is a map
+     *   or a non-generated setter is called; otherwise returns <code>value</code>.
      * @throws {Error} if a property defined does not exist
      */
     set : function(data, value)
@@ -125,6 +125,28 @@ qx.Mixin.define("qx.core.MProperty",
 
 
       this[resetter[prop]]();
+    },
+
+    /**
+     * Checks if the property is initialized, i.e. has a defined init value or
+     * has got a value by a setter method.
+     *
+     * @param prop {String} Name of the property
+     * @return {Boolean} If the property is initialized
+     * @throws {Error} If the property defined does not exist
+     */
+    isPropertyInitialized : function(prop)
+    {
+      if (qx.core.Environment.get("qx.debug")) {
+        qx.core.Assert.assertString(prop);
+
+        if (!this["get" + qx.Bootstrap.firstUp(prop)]) {
+          throw new Error("No such property: " + prop);
+        }
+      }
+
+      return this["$$user_" + prop] !== undefined ||
+        this["$$init_" + prop] !== undefined;
     }
   }
 });

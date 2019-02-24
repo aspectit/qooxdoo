@@ -45,8 +45,6 @@ Testing
 
    development/unit_testing
    development/frame_apps_testrunner
-   development/simulator
-   development/simulator_locators
 
 
 Code Organisation
@@ -105,7 +103,9 @@ Miscellaneous
    :maxdepth: 2
 
    development/image_clipping_and_combining
+   development/icon_fonts
    development/reporting_bugs
    development/aspects_template
    development/internet_explorer_specific_settings
+   development/using_non_qx_libs
 

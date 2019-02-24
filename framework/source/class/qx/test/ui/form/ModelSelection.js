@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -77,8 +76,8 @@ qx.Class.define("qx.test.ui.form.ModelSelection",
       // check the set selection again
       widget.setModelSelection([2, 3]);
       this.assertEquals(2, widget.getSelection().length);
-      this.assertTrue(qx.lang.Array.contains(widget.getSelection(), children[1]));
-      this.assertTrue(qx.lang.Array.contains(widget.getSelection(), children[2]));
+      this.assertTrue(widget.getSelection().includes(children[1]));
+      this.assertTrue(widget.getSelection().includes(children[2]));
     },
 
 
@@ -141,7 +140,7 @@ qx.Class.define("qx.test.ui.form.ModelSelection",
       t0.add(t1);
       t1.add(t2);
       // keep one folder closed because the behavior could change if the
-      // forlders should be openend
+      // folders should be opened
       t1.setOpen(true);
       return tree;
     },

@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -68,7 +67,7 @@ qx.Class.define("qx.util.Validate",
     number : function(errorMessage) {
       return function(value) {
         qx.util.Validate.checkNumber(value, null, errorMessage);
-      }
+      };
     },
 
 
@@ -107,7 +106,7 @@ qx.Class.define("qx.util.Validate",
     email : function(errorMessage) {
       return function(value) {
         qx.util.Validate.checkEmail(value, null, errorMessage);
-      }
+      };
     },
 
 
@@ -129,7 +128,7 @@ qx.Class.define("qx.util.Validate",
       errorMessage = errorMessage ||
         qx.locale.Manager.tr("'%1' is not an email address.", (value || ""));
 
-      var reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,})$/;
+      var reg = /^([A-Za-z0-9_\-.+])+@([A-Za-z0-9_\-.])+\.([A-Za-z]{2,})$/;
       if (reg.test(value) === false) {
         throw new qx.core.ValidationError("Validation Error",errorMessage);
       }
@@ -145,7 +144,7 @@ qx.Class.define("qx.util.Validate",
     string : function(errorMessage) {
       return function(value) {
         qx.util.Validate.checkString(value, null, errorMessage);
-      }
+      };
     },
 
 
@@ -181,7 +180,7 @@ qx.Class.define("qx.util.Validate",
     url : function(errorMessage) {
       return function(value) {
         qx.util.Validate.checkUrl(value, null, errorMessage);
-      }
+      };
     },
 
 
@@ -218,7 +217,7 @@ qx.Class.define("qx.util.Validate",
     color : function(errorMessage) {
       return function(value) {
         qx.util.Validate.checkColor(value, null, errorMessage);
-      }
+      };
     },
 
 
@@ -270,7 +269,7 @@ qx.Class.define("qx.util.Validate",
         if (value < from || value > to) {
           throw new qx.core.ValidationError("Validation Error", message);
         }
-      }
+      };
     },
 
 
@@ -293,7 +292,7 @@ qx.Class.define("qx.util.Validate",
         if (array.indexOf(value) === -1) {
           throw new qx.core.ValidationError("Validation Error", message);
         }
-      }
+      };
     },
 
 
@@ -317,7 +316,7 @@ qx.Class.define("qx.util.Validate",
         if (!reg.test(value)) {
           throw new qx.core.ValidationError("Validation Error", message);
         }
-      }
+      };
     }
   }
 });

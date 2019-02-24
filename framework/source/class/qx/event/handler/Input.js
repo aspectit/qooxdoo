@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -21,7 +20,7 @@
 
 // Original behavior:
 // ================================================================
-// Normally a "change" event should occour on blur of the element
+// Normally a "change" event should occur on blur of the element
 // (http://www.w3.org/TR/DOM-Level-2-Events/events.html)
 
 // However this is not true for "file" upload fields

@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -26,6 +25,7 @@
 qx.Class.define("qx.event.Manager",
 {
   extend : Object,
+  implement: [ qx.core.IDisposable ],
 
   /*
   *****************************************************************************
@@ -51,11 +51,15 @@ qx.Class.define("qx.event.Manager",
     if (win.qx !== qx)
     {
       var self = this;
-      qx.bom.Event.addNativeListener(win, "unload", qx.event.GlobalError.observeMethod(function()
-      {
-        qx.bom.Event.removeNativeListener(win, "unload", arguments.callee);
+      var method = function () {
+        qx.bom.Event.removeNativeListener(win, "unload", method);
         self.dispose();
-      }));
+      };
+      if (qx.core.Environment.get("qx.globalErrorHandling")) {
+        qx.bom.Event.addNativeListener(win, "unload", qx.event.GlobalError.observeMethod(method));
+      } else {
+        qx.bom.Event.addNativeListener(win, "unload", method);
+      }
     }
 
     // Registry for event listeners
@@ -66,6 +70,11 @@ qx.Class.define("qx.event.Manager",
     this.__dispatchers = {};
 
     this.__handlerCache = {};
+
+    this.__clearBlackList = new qx.util.DeferredCall(function() {
+      this.__blacklist = null;
+    }, this);
+    this.__clearBlackList.$$blackListCleaner = true;
   },
 
 
@@ -91,6 +100,30 @@ qx.Class.define("qx.event.Manager",
      */
     getNextUniqueId : function() {
       return (this.__lastUnique++) + "";
+    },
+    
+    
+    /** @type {Function} global event monitor, called with parameters of target and event */
+    __globalEventMonitor: null,
+    
+    
+    /**
+     * Returns the global event monitor
+     * 
+     * @return {Function?} the global monitor function
+     */
+    getGlobalEventMonitor: function() {
+      return this.__globalEventMonitor;
+    },
+    
+    
+    /**
+     * Sets the global event monitor
+     * 
+     * @param cb {Function?} the global monitor function
+     */
+    setGlobalEventMonitor: function(cb) {
+      this.__globalEventMonitor = cb;
     }
   },
 
@@ -115,6 +148,9 @@ qx.Class.define("qx.event.Manager",
     __handlerCache : null,
     __window : null,
     __windowId : null,
+
+    __blacklist : null,
+    __clearBlackList : null,
 
 
     /*
@@ -430,13 +466,13 @@ qx.Class.define("qx.event.Manager",
 
         qx.core.Assert.assertObject(target, msg + "Invalid Target.");
         qx.core.Assert.assertString(type, msg + "Invalid event type.");
-        qx.core.Assert.assertFunction(listener, msg + "Invalid callback function");
+        qx.core.Assert.assertFunctionOrAsyncFunction(listener, msg + "Invalid callback function");
 
         if (capture !== undefined) {
           qx.core.Assert.assertBoolean(capture, "Invalid capture flag.");
         }
       }
-
+      
       var targetKey = target.$$hash || qx.core.ObjectRegistry.toHashCode(target);
       var targetMap = this.__listeners[targetKey];
 
@@ -608,7 +644,7 @@ qx.Class.define("qx.event.Manager",
      *         the event listener.
      * @param capture {Boolean ? false} Whether to remove the event listener of
      *         the bubbling or of the capturing phase.
-     * @return {Boolean} Whether the event was removed successfully (was existend)
+     * @return {Boolean} Whether the event was removed successfully (was existant)
      * @throws {Error} if the parameters are wrong
      */
     removeListener : function(target, type, listener, self, capture)
@@ -623,7 +659,7 @@ qx.Class.define("qx.event.Manager",
         qx.core.Assert.assertFunction(listener, msg + "Invalid callback function");
 
         if (self !== undefined) {
-          qx.core.Assert.assertObject(self, "Invalid context for callback.")
+          qx.core.Assert.assertObject(self, "Invalid context for callback.");
         }
 
         if (capture !== undefined) {
@@ -653,6 +689,7 @@ qx.Class.define("qx.event.Manager",
         if (entry.handler === listener && entry.context === self)
         {
           qx.lang.Array.removeAt(entryList, i);
+          this.__addToBlacklist(entry.unique);
 
           if (entryList.length == 0) {
             this.__unregisterAtHandler(target, type, capture);
@@ -712,6 +749,7 @@ qx.Class.define("qx.event.Manager",
         if (entry.unique === unique)
         {
           qx.lang.Array.removeAt(entryList, i);
+          this.__addToBlacklist(entry.unique);
 
           if (entryList.length == 0) {
             this.__unregisterAtHandler(target, type, capture);
@@ -729,7 +767,7 @@ qx.Class.define("qx.event.Manager",
      * Remove all event listeners, which are attached to the given event target.
      *
      * @param target {Object} The event target to remove all event listeners from.
-     * @return {Boolean} Whether the events were existend and were removed successfully.
+     * @return {Boolean} Whether the events were existant and were removed successfully.
      */
     removeAllListeners : function(target)
     {
@@ -747,6 +785,10 @@ qx.Class.define("qx.event.Manager",
         {
           // This is quite expensive, see bug #1283
           split = entryKey.split("|");
+
+          targetMap[entryKey].forEach(function(entry) {
+            this.__addToBlacklist(entry.unique);
+          }, this);
 
           type = split[0];
           capture = split[1] === "capture";
@@ -824,7 +866,7 @@ qx.Class.define("qx.event.Manager",
      * @param event {qx.event.type.Event} The event object to dispatch. The event
      *     object must be obtained using {@link qx.event.Registration#createEvent}
      *     and initialized using {@link qx.event.type.Event#init}.
-     * @return {Boolean} whether the event default was prevented or not.
+     * @return {Boolean|qx.Promise} whether the event default was prevented or not.
      *     Returns true, when the event was NOT prevented.
      * @throws {Error} if there is no dispatcher for the event
      */
@@ -834,9 +876,21 @@ qx.Class.define("qx.event.Manager",
       {
         var msg = "Could not dispatch event '" + event + "' on target '" + target.classname +"': ";
 
-        qx.core.Assert.assertNotUndefined(target, msg + "Invalid event target.")
-        qx.core.Assert.assertNotNull(target, msg + "Invalid event target.")
+        qx.core.Assert.assertNotUndefined(target, msg + "Invalid event target.");
+        qx.core.Assert.assertNotNull(target, msg + "Invalid event target.");
         qx.core.Assert.assertInstance(event, qx.event.type.Event, msg + "Invalid event object.");
+      }
+      
+      if (qx.event.Manager.__globalEventMonitor) {
+        try {
+          var preventDefault = event.getDefaultPrevented();
+          qx.event.Manager.__globalEventMonitor(target, event);
+          if (preventDefault != event.getDefaultPrevented()) {
+            qx.log.Logger.error("Unexpected change by GlobalEventMonitor, modifications to events: ");
+          }
+        }catch (ex) {
+          qx.log.Logger.error("Error in GlobalEventMonitor: " + ex);
+        }
       }
 
       // Preparations
@@ -852,12 +906,13 @@ qx.Class.define("qx.event.Manager",
         event.setTarget(target);
       }
 
-      // Interation data
+      // Interacion data
       var classes = this.__registration.getDispatchers();
       var instance;
 
       // Loop through the dispatchers
       var dispatched = false;
+      var tracker = {};
 
       for (var i=0, l=classes.length; i<l; i++)
       {
@@ -866,7 +921,7 @@ qx.Class.define("qx.event.Manager",
         // Ask if the dispatcher can handle this event
         if (instance.canDispatchEvent(target, event, type))
         {
-          instance.dispatchEvent(target, event, type);
+          qx.event.Utils.track(tracker, instance.dispatchEvent(target, event, type));
           dispatched = true;
           break;
         }
@@ -880,13 +935,15 @@ qx.Class.define("qx.event.Manager",
         return true;
       }
 
-      // check whether "preventDefault" has been called
-      var preventDefault = event.getDefaultPrevented();
-
-      // Release the event instance to the event pool
-      qx.event.Pool.getInstance().poolObject(event);
-
-      return !preventDefault;
+      return qx.event.Utils.then(tracker, function() {
+        // check whether "preventDefault" has been called
+        var preventDefault = event.getDefaultPrevented();
+  
+        // Release the event instance to the event pool
+        qx.event.Pool.getInstance().poolObject(event);
+  
+        return !preventDefault;
+      });
     },
 
 
@@ -904,6 +961,29 @@ qx.Class.define("qx.event.Manager",
       // Dispose data fields
       this.__listeners = this.__window = this.__disposeWrapper = null;
       this.__registration = this.__handlerCache = null;
+    },
+
+    /**
+     * Add event to blacklist.
+     *
+     * @param uid {number} unique event id
+     */
+    __addToBlacklist : function(uid) {
+      if (this.__blacklist === null) {
+        this.__blacklist = {};
+        this.__clearBlackList.schedule();        
+      }
+      this.__blacklist[uid] = true;
+    },
+
+    /**
+     * Check if the event with the given id has been removed and is therefore blacklisted for event handling
+     *
+     * @param uid {number} unique event id
+     * @return {boolean}
+     */
+    isBlacklisted : function(uid) {
+      return (this.__blacklist !== null && this.__blacklist[uid] === true);
     }
   }
 });

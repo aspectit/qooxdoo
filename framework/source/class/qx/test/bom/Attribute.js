@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -21,7 +20,7 @@
 ************************************************************************ */
 /**
  *
- * @asset(qx/icon/Tango/48/places/folder.png)
+ * @asset(qx/icon/${qx.icontheme}/48/places/folder.png)
  */
 
 qx.Class.define("qx.test.bom.Attribute",
@@ -30,6 +29,8 @@ qx.Class.define("qx.test.bom.Attribute",
 
   members :
   {
+    __maxLengthValues : null,
+
     setUp : function()
     {
       var div = document.createElement("div");
@@ -51,6 +52,11 @@ qx.Class.define("qx.test.bom.Attribute",
       var img = document.createElement("img");
       this._img = img;
       document.body.appendChild(img);
+
+      this.__maxLengthValues = {
+        "mshtml": 2147483647,
+        "default": -1
+      };
     },
 
 
@@ -58,6 +64,7 @@ qx.Class.define("qx.test.bom.Attribute",
       document.body.removeChild(this._el);
       document.body.removeChild(this._checkBox);
       document.body.removeChild(this._img);
+      document.body.removeChild(this._input);
     },
 
 
@@ -81,6 +88,9 @@ qx.Class.define("qx.test.bom.Attribute",
       Attribute.set(this._img, "src", imgSrc);
       this.assertEquals(imgSrc, this._img.getAttribute("src", 2));
 
+      Attribute.set(this._el, "data-foo", true);
+      this.assertEquals("true", this._el.getAttribute("data-foo"));
+
     },
 
     testSetAttributeWithUndefinedValue : function()
@@ -95,7 +105,15 @@ qx.Class.define("qx.test.bom.Attribute",
     {
       var Attribute = qx.bom.element.Attribute;
 
-      this.assertNull(Attribute.get(this._input, "maxLength"));
+      if (qx.core.Environment.get("browser.name") == "edge") {
+        this.assertEquals(Attribute.get(this._input, "maxLength"), this.__maxLengthValues.mshtml);
+      }
+      else if (qx.core.Environment.get("browser.name") == "chrome" || 
+               qx.core.Environment.get("browser.name") == "safari") {
+        this.assertEquals(Attribute.get(this._input, "maxLength"), this.__maxLengthValues["default"]);
+      } else {
+        this.assertNull(Attribute.get(this._input, "maxLength"));
+      }
       this.assertFalse(Attribute.get(this._checkBox, "checked"));
       this.assertNull(Attribute.get(this._el, "className"));
       this.assertNull(Attribute.get(this._el, "innerHTML"));
@@ -142,14 +160,26 @@ qx.Class.define("qx.test.bom.Attribute",
       Attribute.set(this._input, "maxLength", 10);
       Attribute.set(this._input, "maxLength", null);
 
-      var maxLengthValue = qx.core.Environment.select("engine.name", {
-                            "mshtml": 2147483647,
-                            "webkit": 524288,
-                            "default": -1
-                           });
+      var maxLengthValue = qx.core.Environment.select("engine.name", this.__maxLengthValues);
+
+      if (qx.core.Environment.get("browser.name") == "edge") {
+        maxLengthValue = this.__maxLengthValues.mshtml;
+      }
+      else if (qx.core.Environment.get("browser.name") == "chrome" ||
+               qx.core.Environment.get("browser.name") == "safari") {
+        maxLengthValue = this.__maxLengthValues["default"];
+      }
 
       this.assertEquals(maxLengthValue, this._input["maxLength"]);
-      this.assertNull(Attribute.get(this._input, "maxLength"));
+      if (qx.core.Environment.get("browser.name") == "edge") {
+        this.assertEquals(Attribute.get(this._input, "maxLength"), this.__maxLengthValues.mshtml);
+      }
+      else if (qx.core.Environment.get("browser.name") == "chrome" ||
+               qx.core.Environment.get("browser.name") == "safari") {
+        this.assertEquals(Attribute.get(this._input, "maxLength"), this.__maxLengthValues["default"]);
+      } else {
+        this.assertNull(Attribute.get(this._input, "maxLength"));
+      }
 
       Attribute.set(this._checkBox, "checked", true);
       Attribute.set(this._checkBox, "checked", null);
@@ -166,7 +196,15 @@ qx.Class.define("qx.test.bom.Attribute",
 
       Attribute.set(this._input, "maxLength", 10);
       Attribute.reset(this._input, "maxLength");
-      this.assertNull(Attribute.get(this._input, "maxLength"));
+      if (qx.core.Environment.get("browser.name") == "edge") {
+        this.assertEquals(Attribute.get(this._input, "maxLength"), this.__maxLengthValues.mshtml);
+      }
+      else if (qx.core.Environment.get("browser.name") == "chrome" ||
+               qx.core.Environment.get("browser.name") == "safari") {
+        this.assertEquals(Attribute.get(this._input, "maxLength"), this.__maxLengthValues["default"]);
+      } else {
+        this.assertNull(Attribute.get(this._input, "maxLength"));
+      }
 
       Attribute.set(this._checkBox, "disabled", true);
       Attribute.reset(this._checkBox, "disabled");

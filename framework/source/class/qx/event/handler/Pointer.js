@@ -8,8 +8,7 @@
      2014 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -22,11 +21,12 @@
  * Unified pointer event handler.
  * @require(qx.event.dispatch.DomBubbling)
  * @require(qx.event.type.Pointer) // load-time dependency for early native events
+ * @require(qx.event.type.dom.Pointer)
  */
 qx.Class.define("qx.event.handler.Pointer",
 {
   extend : qx.event.handler.PointerCore,
-  implement : qx.event.IEventHandler,
+  implement : [ qx.event.IEventHandler, qx.core.IDisposable ],
 
   statics : {
 
@@ -68,7 +68,6 @@ qx.Class.define("qx.event.handler.Pointer",
     this.__root = this.__window.document;
 
     qx.event.handler.PointerCore.apply(this, [this.__root]);
-    this.__root.$$pointerHandler = this;
   },
 
   members : {
@@ -119,8 +118,8 @@ qx.Class.define("qx.event.handler.Pointer",
       }
 
       // respect anonymous elements
-      while (target && target.getAttribute("qxanonymous")) {
-        target = target.parentNode
+      while (target && target.getAttribute && target.getAttribute("qxanonymous")) {
+        target = target.parentNode;
       }
 
       if (!type) {
@@ -133,33 +132,52 @@ qx.Class.define("qx.event.handler.Pointer",
       {
         qx.event.type.dom.Pointer.normalize(domEvent);
         // ensure compatibility with native events for IE8
-        domEvent.srcElement = target;
-
-        qx.event.Registration.fireEvent(
-          target,
-          type,
-          qx.event.type.Pointer,
-          [domEvent, target, null, true, true]
-        );
-
-        if (type == "pointerdown" || type == "pointerup" || type == "pointermove" || type == "pointercancel") {
-          qx.event.Registration.fireEvent(
-            this.__root,
-            qx.event.handler.PointerCore.POINTER_TO_GESTURE_MAPPING[type],
-            qx.event.type.Pointer,
-            [domEvent, target, null, false, false]
-          );
+        try {
+          domEvent.srcElement = target;
+        }catch(ex) {
+          // Nothing - cannot change properties in strict mode
         }
 
-        // Fire user action event
-        qx.event.Registration.fireEvent(this.__window, "useraction", qx.event.type.Data, [type]);
+        var tracker = {};
+        var self = this;
+        qx.event.Utils.track(tracker, function() {
+          return qx.event.Registration.fireEvent(
+              target,
+              type,
+              qx.event.type.Pointer,
+              [domEvent, target, null, true, true]
+            );
+        });
+
+        qx.event.Utils.then(tracker, function() {
+          if ((domEvent.getPointerType() !== "mouse" ||
+              domEvent.button <= qx.event.handler.PointerCore.LEFT_BUTTON) &&
+              (type == "pointerdown" || type == "pointerup" || type == "pointermove" || type == "pointercancel"))
+          {
+             return qx.event.Registration.fireEvent(
+               self.__root,
+               qx.event.handler.PointerCore.POINTER_TO_GESTURE_MAPPING[type],
+               qx.event.type.Pointer,
+               [domEvent, target, null, false, false]
+             );
+           }
+        });
+        qx.event.Utils.then(tracker, function() {
+          // Fire user action event
+          return qx.event.Registration.fireEvent(self.__window, "useraction", qx.event.type.Data, [type]);
+        });
+        return tracker.promise;
       }
     },
 
     // overridden
     _onPointerEvent : function(domEvent) {
+      if (domEvent._original && domEvent._original[this._processedFlag]) {
+        return;
+      }
+
       var type = qx.event.handler.PointerCore.MSPOINTER_TO_POINTER_MAPPING[domEvent.type] || domEvent.type;
-      this._fireEvent(domEvent, type, qx.bom.Event.getTarget(domEvent));
+      return this._fireEvent(domEvent, type, qx.bom.Event.getTarget(domEvent));
     },
 
 
@@ -174,9 +192,9 @@ qx.Class.define("qx.event.handler.Pointer",
 
 
     /**
-     * Call overriden method.
+     * Call overridden method.
      *
-     * @param method {String} Name of the overriden method.
+     * @param method {String} Name of the overridden method.
      * @param args {Array} Arguments.
      */
     __callBase: function(method, args) {

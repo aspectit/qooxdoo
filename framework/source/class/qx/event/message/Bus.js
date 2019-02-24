@@ -8,8 +8,7 @@
      2007 Christian Boulanger
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -85,7 +84,7 @@ qx.Class.define("qx.event.message.Bus",
      */
     unsubscribe : function(message, subscriber, context)
     {
-      return this.getInstance().unsubscribe(message, subscriber, context)
+      return this.getInstance().unsubscribe(message, subscriber, context);
     },
 
     /**
@@ -322,7 +321,16 @@ qx.Class.define("qx.event.message.Bus",
     dispatchByName : function(name, data)
     {
       var message = new qx.event.message.Message(name, data);
-      return this.dispatch(message);
+
+      // Dispatch the message
+      var ret = this.dispatch(message);
+
+      // We instantiated this message, so it's our responsibility to dispose it.
+      message.dispose();
+      message = null;
+
+      // Let 'em know whether this message was dispatched to any subscribers.
+      return ret;
     },
 
 

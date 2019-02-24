@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -125,8 +124,11 @@ qx.Mixin.define("qx.ui.tree.core.MWidgetController",
         this.getLabelPath(), "label", this.getLabelOptions(), item, index
       );
 
-      try
-      {
+      var bindPath = this.__getBindPath(index);
+      var bindTarget = this._tree.getLookupTable();
+      bindTarget = qx.data.SingleValueBinding.resolvePropertyChain(bindTarget, bindPath);
+
+      if (qx.util.OOUtil.hasProperty(bindTarget.constructor, this.getChildProperty())) {
         this.bindProperty(
           this.getChildProperty() + ".length", "appearance",
           {
@@ -135,7 +137,7 @@ qx.Mixin.define("qx.ui.tree.core.MWidgetController",
             }
           }, item, index
         );
-      } catch(ex) {
+      } else {
         item.setAppearance("virtual-tree-file");
       }
 
@@ -246,7 +248,7 @@ qx.Mixin.define("qx.ui.tree.core.MWidgetController",
         }
       }
 
-      if (qx.lang.Array.contains(this.__boundItems, item)) {
+      if (this.__boundItems.includes(item)) {
         qx.lang.Array.remove(this.__boundItems, item);
       }
     },
@@ -279,11 +281,11 @@ qx.Mixin.define("qx.ui.tree.core.MWidgetController",
     {
       var bindings = this.__getBindings(widget);
 
-      if (!qx.lang.Array.contains(bindings, id)) {
+      if (!bindings.includes(id)) {
         bindings.push(id);
       }
 
-      if (!qx.lang.Array.contains(this.__boundItems, widget)) {
+      if (!this.__boundItems.includes(widget)) {
         this.__boundItems.push(widget);
       }
     },

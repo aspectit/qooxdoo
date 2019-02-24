@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -64,6 +63,7 @@ qx.Class.define("qx.ui.core.EventHandler",
       mousedown : 1,
       mouseup : 1,
       click : 1,
+      auxclick : 1,
       dblclick : 1,
       contextmenu : 1,
       mousewheel : 1,
@@ -269,6 +269,17 @@ qx.Class.define("qx.ui.core.EventHandler",
       // Load listeners
       var capture = domEvent.getEventPhase() == qx.event.type.Event.CAPTURING_PHASE;
       var listeners = this.__manager.getListeners(currentWidget, type, capture);
+
+      if (domEvent.getEventPhase() == qx.event.type.Event.AT_TARGET) {
+        if (!listeners) {
+          listeners = [];
+        }
+        var otherListeners = this.__manager.getListeners(currentWidget, type, !capture);
+        if (otherListeners) {
+          listeners = listeners.concat(otherListeners);
+        }
+      }
+
       if (!listeners || listeners.length === 0) {
         return;
       }
@@ -298,23 +309,28 @@ qx.Class.define("qx.ui.core.EventHandler",
       }
 
       // Dispatch it on all listeners
-      for (var i=0, l=listeners.length; i<l; i++)
-      {
-        var context = listeners[i].context || currentWidget;
-        listeners[i].handler.call(context, widgetEvent);
-      }
+      var tracker = {};
+      qx.event.Utils.then(tracker, function() {
+        return qx.event.Utils.series(listeners, function(listener) {
+          var context = listener.context || currentWidget;
+          return listener.handler.call(context, widgetEvent);
+        });
+      });
 
       // Synchronize propagation stopped/prevent default property
-      if (widgetEvent.getPropagationStopped()) {
-        domEvent.stopPropagation();
-      }
+      qx.event.Utils.then(tracker, function() {
+        if (widgetEvent.getPropagationStopped()) {
+          domEvent.stopPropagation();
+        }
 
-      if (widgetEvent.getDefaultPrevented()) {
-        domEvent.preventDefault();
-      }
+        if (widgetEvent.getDefaultPrevented()) {
+          domEvent.preventDefault();
+        }
+      });
 
-      // Release the event instance to the event pool
-      qx.event.Pool.getInstance().poolObject(widgetEvent);
+      return qx.event.Utils.then(tracker, function() {
+        qx.event.Pool.getInstance().poolObject(widgetEvent);
+      });
     },
 
 

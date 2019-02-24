@@ -8,8 +8,7 @@
      2013 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -293,7 +292,13 @@ qx.Mixin.define("qx.ui.core.MDragDropScrolling",
         this.__dragScrollTimer.stop();
       }
 
-      var target = e.getOriginalTarget();
+      var target;
+      if (e.getOriginalTarget() instanceof qx.ui.core.Widget) {
+        target = e.getOriginalTarget();
+      }
+      else {
+        target = qx.ui.core.Widget.getWidgetByElement(e.getOriginalTarget());
+      }
       if (!target) {
         return;
       }

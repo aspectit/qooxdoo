@@ -8,8 +8,7 @@
      2004-2010 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -18,7 +17,7 @@
 ************************************************************************ */
 
 /**
- * @asset(qx/icon/Tango/16/places/folder.png)
+ * @asset(qx/icon/${qx.icontheme}/16/places/folder.png)
  */
 
 qx.Class.define("qx.test.ui.list.List",
@@ -172,7 +171,7 @@ qx.Class.define("qx.test.ui.list.List",
         filter : function(data) {
           return ((parseInt(data.slice(5, data.length), 10) - 1) % 2 == 0);
         }
-      }
+      };
       this._list.setDelegate(delegate);
       this.flush();
 
@@ -196,7 +195,7 @@ qx.Class.define("qx.test.ui.list.List",
 
       var delegate = {
         sorter : sorter
-      }
+      };
       this._list.setDelegate(delegate);
       this.flush();
 
@@ -231,7 +230,7 @@ qx.Class.define("qx.test.ui.list.List",
         filter : function(data) {
           return ((parseInt(data.slice(5, data.length), 10) - 1) % 2 == 0);
         }
-      }
+      };
       this._list.setDelegate(delegate);
       this.flush();
 
@@ -309,6 +308,91 @@ qx.Class.define("qx.test.ui.list.List",
       this._list.getSelection().removeAll();
       this.assertNull(this._list._manager.getLeadItem());
       model.dispose();
+    },
+
+
+    testVariableItemHeight : function()
+    {
+      this._list.setModel(null);
+      this.flush();
+      this._list.getPane().getRowConfig().resetItemSizes();
+      
+      var sizes = [ 16, 32, 48, 16, 32, 48, 16, 32, 48, 16, 32, 48 ];
+      var rawData = [];
+      for (var i = 0; i < sizes.length; i++) {
+        rawData[i] = {label: "Item "+sizes[i]+"px", icon: "icon/"+sizes[i]+"/places/folder.png"}
+      }      
+      
+      var model = qx.data.marshal.Json.createModel(rawData);
+
+      this._list.setVariableItemHeight(true);
+      
+      this._list.setDelegate({
+        bindItem : function(controller, item, id) {
+          controller.bindDefaultProperties(item, id);
+        }
+      });
+
+      this._list.setLabelPath("label");
+      this._list.setIconPath("icon");
+
+      this._list.setModel(model);
+      this.flush();
+
+      qx.event.Timer.once(function() {
+        this.resume(function() {
+        
+          var rowConfig = this._list.getPane().getRowConfig();
+
+          var testedWidgets = 0;
+          
+          for (var i = 0; i < rawData.length; i++) {
+            var widget = this._list._layer.getRenderedCellWidget(i,0);
+    
+            if (widget == null) {
+              // row is not rendered
+              continue;
+            }
+
+            this.assertEquals(widget.getSizeHint().height, rowConfig.getItemSize(i));
+            
+            testedWidgets++;
+          }
+          
+          this.assertTrue(testedWidgets >= 3);
+          
+          this._list.setVariableItemHeight(false);
+          
+          model.dispose();
+        });
+      }, this, 100);
+          
+      this.wait();
+    },
+
+
+    testChangeModelLengthListener : function() {
+      var model = new qx.data.Array(["a"]);
+      this._list.setModel(model);
+
+      this.assertEquals(1, model.getLength());
+
+      this.assertEventFired(this._list, "changeModelLength", function()
+      {
+        model.push("b");
+      },
+      function(ev)
+      {
+        this.assertInstance(ev, qx.event.type.Data);
+        this.assertPositiveInteger(ev.getData());
+        this.assertEquals(2, ev.getData());
+        this.assertPositiveInteger(ev.getOldData());
+        this.assertEquals(1, ev.getOldData());
+      }.bind(this));
+
+      this._list.setModel(null);
+      model.dispose();
     }
+
   }
 });

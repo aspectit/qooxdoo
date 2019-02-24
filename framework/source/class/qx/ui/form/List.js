@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -31,6 +30,7 @@ qx.Class.define("qx.ui.form.List",
   implement : [
     qx.ui.core.IMultiSelection,
     qx.ui.form.IForm,
+    qx.ui.form.IField,
     qx.ui.form.IModelSelection
   ],
   include : [
@@ -126,6 +126,20 @@ qx.Class.define("qx.ui.form.List",
     {
       refine : true,
       init : true
+    },
+
+    // overridden
+    width :
+    {
+      refine : true,
+      init : 100
+    },
+
+    // overridden
+    height :
+    {
+      refine : true,
+      init : 200
     },
 
     /**
@@ -253,18 +267,27 @@ qx.Class.define("qx.ui.form.List",
     // property apply
     _applyOrientation : function(value, old)
     {
+      var content = this.__content;
+
+      // save old layout for disposal
+      var oldLayout = content.getLayout();
+      
       // Create new layout
       var horizontal = value === "horizontal";
       var layout = horizontal ? new qx.ui.layout.HBox() : new qx.ui.layout.VBox();
 
       // Configure content
-      var content = this.__content;
       content.setLayout(layout);
       content.setAllowGrowX(!horizontal);
       content.setAllowGrowY(horizontal);
 
       // Configure spacing
       this._applySpacing(this.getSpacing());
+      
+      // dispose old layout
+      if(oldLayout) {
+        oldLayout.dispose();
+      }
     },
 
     // property apply

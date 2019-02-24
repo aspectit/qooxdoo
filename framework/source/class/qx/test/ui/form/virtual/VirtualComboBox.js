@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
 ************************************************************************ */
@@ -122,7 +121,7 @@ qx.Class.define("qx.test.ui.form.virtual.VirtualComboBox",
         sorter : function(a, b) {
           return a < b ? 1 : a > b ? -1 : 0;
         }
-      }
+      };
       this.__comboBox.setDelegate(delegate);
       this.__comboBox.setValue("item 4");
       this.flush();
@@ -154,7 +153,7 @@ qx.Class.define("qx.test.ui.form.virtual.VirtualComboBox",
           var num = parseInt(/([0-9]+)/.exec(item)[1], 10);
           return num % 2 ? true : false;
         }
-      }
+      };
       this.__comboBox.setDelegate(delegate);
       this.__comboBox.setValue("item 22");
       this.flush();
@@ -218,6 +217,13 @@ qx.Class.define("qx.test.ui.form.virtual.VirtualComboBox",
       var selection = this.__comboBox.getChildControl("dropdown").getSelection();
       selection.push(this.__comboBox.getModel().getItem(0));
       selection.removeAll();
+    },
+
+    testOpenWithUnrenderedWidget : function()
+    {
+      var cb = new qx.ui.form.VirtualComboBox();
+      cb.open();
+      this.getRoot().add(cb);
     }
   }
 

@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -223,7 +222,7 @@ qx.Bootstrap.define("qx.bom.String",
       "crarr"    : 8629, // downwards arrow with corner leftwards= carriage return, U+21B5 NEW
       "lArr"     : 8656, // leftwards double arrow, U+21D0 ISOtech
 
-      // ISO 10646 does not say that lArr is the same as the 'is implied by' arrowbut also does not have any other character for that function. So ? lArr canbe used for 'is implied by' as ISOtech suggests
+      // ISO 10646 does not say that lArr is the same as the 'is implied by' arrow but also does not have any other character for that function. So ? lArr can be used for 'is implied by' as ISOtech suggests
       "uArr"     : 8657, // upwards double arrow, U+21D1 ISOamsa
       "rArr"     : 8658, // rightwards double arrow,U+21D2 ISOtech
 

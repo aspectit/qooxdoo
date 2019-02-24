@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -71,7 +70,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[3-5]", e.getData().name);
         that.assertArrayEquals([], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -93,7 +92,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[3]", e.getData().name);
         that.assertArrayEquals([], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -102,6 +101,27 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
 
       this.assertCalledOnce(spy);
       this.assertArrayEquals(["A", "B", "C", "D"], this.array.toArray(), "Changes are not applied!");
+    },
+
+    testBubbleAfterAppend : function()
+    {
+      var that = this;
+      var model = qx.data.marshal.Json.createModel([{ a: "0" }, { a: "1"}], true);
+
+      var handler = function(e) {
+        // check the data
+        that.assertEquals("affe", e.getData().value);
+        that.assertEquals("[3].a", e.getData().name, "Indexing is wrong!");
+      };
+      var spy = this.spy(handler);
+
+      var moreModel = qx.data.marshal.Json.createModel([{ a: "2" }, { a: "3"}], true);
+      model.append(moreModel);
+
+      model.addListener("changeBubble", spy, this);
+      model.getItem(3).setA("affe");
+      this.assertCalledOnce(spy);
+      this.assertEquals(4, model.length, "Length of the model is wrong!");
     },
 
 
@@ -115,7 +135,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[2]", e.getData().name);
         that.assertArrayEquals([], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -137,7 +157,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[2]", e.getData().name);
         that.assertArrayEquals([], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -159,7 +179,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[2]", e.getData().name);
         that.assertArrayEquals([], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -181,7 +201,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[2]", e.getData().name);
         that.assertArrayEquals(["C"], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -203,7 +223,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[3]", e.getData().name);
         that.assertArrayEquals([], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -225,7 +245,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[1]", e.getData().name);
         that.assertArrayEquals(["B"], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -247,7 +267,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[0-2]", e.getData().name);
         that.assertArrayEquals(["A", "B", "C"], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -269,7 +289,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[1]", e.getData().name);
         that.assertArrayEquals(["B"], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -292,7 +312,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[0-2]", e.getData().name);
         that.assertArrayEquals(["A", "B", "C"], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -314,7 +334,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[1]", e.getData().name);
         that.assertArrayEquals(["B"], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -336,7 +356,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[0]", e.getData().name);
         that.assertArrayEquals(["A"], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -358,7 +378,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[0-2]", e.getData().name);
         that.assertArrayEquals(["A", "B", "C"], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -387,7 +407,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals(that.array, e.getData().item);
 
         changeBubbleExecutionCounter ++;
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -416,7 +436,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[2-4]", e.getData().name);
         that.assertArrayEquals(["C"], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -438,7 +458,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[1-2]", e.getData().name);
         that.assertArrayEquals(["B", "C"], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -460,7 +480,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("data[0]", e.getData().name);
         that.assertArrayEquals(["A"], e.getData().old);
         that.assertEquals(that.array, e.getData().item);
-      }
+      };
 
       var spy = this.spy(handler);
       this.testObject.addListener("changeBubble", spy, this);
@@ -487,7 +507,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("zwei", e.getData().value);
         that.assertEquals("[0].foo", e.getData().name);
         that.assertEquals("two", e.getData().old);
-      }
+      };
 
       var spy = this.spy(handler);
       model.addListener("changeBubble", spy, this);
@@ -511,7 +531,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("drei", e.getData().value);
         that.assertEquals("[0].foo", e.getData().name);
         that.assertEquals("three", e.getData().old);
-      }
+      };
 
       var spy = this.spy(handler);
       model.addListener("changeBubble", spy, this);
@@ -535,7 +555,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("eins", e.getData().value);
         that.assertEquals("[1].foo", e.getData().name);
         that.assertEquals("one", e.getData().old);
-      }
+      };
 
       var spy = this.spy(handler);
       model.addListener("changeBubble", spy, this);
@@ -561,7 +581,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("drei", e.getData().value);
         that.assertEquals("[0].foo", e.getData().name);
         that.assertEquals("three", e.getData().old);
-      }
+      };
 
       var spy = this.spy(handler);
       model.addListener("changeBubble", spy, this);
@@ -585,7 +605,7 @@ qx.Class.define("qx.test.data.DataArrayWithChangeBubble",
         that.assertEquals("eins", e.getData().value);
         that.assertEquals("[1].foo", e.getData().name);
         that.assertEquals("one", e.getData().old);
-      }
+      };
 
       var spy = this.spy(handler);
       model.addListener("changeBubble", spy, this);

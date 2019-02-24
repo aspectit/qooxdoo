@@ -8,8 +8,7 @@
      2005-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -141,6 +140,10 @@
  *       <td>{@link qx.bom.client.Css#getAppearance}</td>
  *     </tr>
  *     <tr>
+ *       <td>css.float</td><td><i>String</i> or <i>null</i></td><td><code>cssFloat</code></td>
+ *       <td>{@link qx.bom.client.Css#getFloat}</td>
+ *     </tr>
+ *     <tr>
  *       <td>css.userselect</td><td><i>String</i> or <i>null</i></td><td><code>WebkitUserSelect</code></td>
  *       <td>{@link qx.bom.client.Css#getUserSelect}</td>
  *     </tr>
@@ -227,6 +230,10 @@
  *       <td>{@link qx.bom.client.EcmaScript#getStackTrace}</td>
  *     </tr>
  *     <tr>
+ *       <td>ecmascript.mutationobserver</td><td><i>Boolean</i></td><td><code>true</code></td>
+ *       <td>{@link qx.bom.client.EcmaScript#getMutationObserver}</td>
+ *     </tr>
+ *     <tr>
  *       <td>ecmascript.array.indexof<td><i>Boolean</i></td><td><code>true</code></td>
  *       <td>{@link qx.bom.client.EcmaScript#getArrayIndexOf}</td>
  *     </tr>
@@ -249,6 +256,14 @@
  *     <tr>
  *       <td>ecmascript.array.some<td><i>Boolean</i></td><td><code>true</code></td>
  *       <td>{@link qx.bom.client.EcmaScript#getArraySome}</td>
+ *     </tr>
+ *     <tr>
+ *       <td>ecmascript.array.find<td><i>Boolean</i></td><td><code>true</code></td>
+ *       <td>{@link qx.bom.client.EcmaScript#getArrayFind}</td>
+ *     </tr>
+ *     <tr>
+ *       <td>ecmascript.array.findIndex<td><i>Boolean</i></td><td><code>true</code></td>
+ *       <td>{@link qx.bom.client.EcmaScript#getArrayFindIndex}</td>
  *     </tr>
  *     <tr>
  *       <td>ecmascript.array.every<td><i>Boolean</i></td><td><code>true</code></td>
@@ -275,12 +290,24 @@
  *       <td>{@link qx.bom.client.EcmaScript#getDateNow}</td>
  *     </tr>
  *     <tr>
+ *       <td>ecmascript.date.parse<td><i>Boolean</i></td><td><code>true</code></td>
+ *       <td>{@link qx.bom.client.EcmaScript#getDateParse}</td>
+ *     </tr>
+ *     <tr>
  *       <td>ecmascript.error.toString</td><td><i>Boolean</i></td><td><code>true</code></td>
  *       <td>{@link qx.bom.client.EcmaScript#getErrorToString}</td>
  *     </tr>
  *     <tr>
  *       <td>ecmascript.string.trim</td><td><i>Boolean</i></td><td><code>true</code></td>
  *       <td>{@link qx.bom.client.EcmaScript#getStringTrim}</td>
+ *     </tr>
+ *     <tr>
+ *       <td>ecmascript.string.startsWith</td><td><i>Boolean</i></td><td><code>true</code></td>
+ *       <td>{@link qx.bom.client.EcmaScript#getStringStartsWith}</td>
+ *     </tr>
+ *     <tr>
+ *       <td>ecmascript.string.endsWith</td><td><i>Boolean</i></td><td><code>true</code></td>
+ *       <td>{@link qx.bom.client.EcmaScript#getStringEndsWith}</td>
  *     </tr>
  *     <tr>
  *       <td colspan="4"><b>engine</b></td>
@@ -325,10 +352,18 @@
  *       <td>event.mouseevent</td><td><i>Boolean</i></td><td><code>true</code></td>
  *       <td>{@link qx.bom.client.Event#getMouseEvent}</td>
  *     </tr>
-*     <tr>
-*       <td>event.mousewheel</td><td><i>Map</i></td><td><code>{type: "wheel", target: window}</code></td>
-*       <td>{@link qx.bom.client.Event#getMouseWheel}</td>
-*     </tr>
+ *     <tr>
+ *       <td>event.mousecreateevent</td><td><i>String</i></td><td><code>UIEvents</code></td>
+ *       <td>{@link qx.bom.client.Event#getMouseCreateEvent}</td>
+ *     </tr>
+ *     <tr>
+ *       <td>event.mousewheel</td><td><i>Map</i></td><td><code>{type: "wheel", target: window}</code></td>
+ *       <td>{@link qx.bom.client.Event#getMouseWheel}</td>
+ *     </tr>
+ *     <tr>
+ *       <td>event.auxclick</td><td><i>Boolean</i></td><td><code>true</code></td>
+ *       <td>{@link qx.bom.client.Event#getAuxclickEvent}</td>
+ *     </tr>
  *
  *     <tr>
  *       <td colspan="4"><b>html</b></td>
@@ -364,6 +399,10 @@
  *     <tr>
  *       <td>html.classlist</td><td><i>Boolean</i></td><td><code>true</code></td>
  *       <td>{@link qx.bom.client.Html#getClassList}</td>
+ *     </tr>
+ *     <tr>
+ *       <td>html.fullscreen</td><td><i>Boolean</i></td><td><code>true</code></td>
+ *       <td>{@link qx.bom.client.Html#getFullScreen}</td>
  *     </tr>
  *     <tr>
  *       <td>html.geolocation</td><td><i>Boolean</i></td><td><code>true</code></td>
@@ -547,6 +586,10 @@
  *       <td>locale.variant</td><td><i>String</i></td><td><code>de</code></td>
  *       <td>{@link qx.bom.client.Locale#getVariant}</td>
  *     </tr>
+ *     <tr>
+ *       <td>locale.default</td><td><i>String</i></td><td><code>C</code></td>
+ *       <td>default locale C as in good tradition of unix {@link qx.bom.client.Locale}</td>
+ *     </tr>
 
  *     <tr>
  *       <td colspan="4"><b>os</b></td>
@@ -715,35 +758,43 @@
  *     </tr>
  *     <tr>
  *       <td>qx.globalErrorHandling</td><td><i>Boolean</i></td><td><code>true</code></td>
- *       <td><i>default:</i> <code>true</code></td>
+ *       <td><i>default:</i> <code>true</code> {@link qx.event.GlobalError}</td>
  *     </tr>
  *     <tr>
  *       <td>qx.mobile.nativescroll</td><td><i>Boolean</i></td><td><code>false</code></td>
  *       <td>{@link qx.bom.client.Scroll#getNativeScroll}</td>
  *     </tr>
  *     <tr>
+ *       <td>qx.promise.warnings</td><td><i>Boolean</i></td><td>same as <code>qx.debug</code></td>
+ *       <td>true to enable runtime warnings in promises {@link qx.Promise}</td>
+ *     </tr>
+ *     <tr>
+ *       <td>qx.promise.longStackTraces</td><td><i>Boolean</i></td><td><code>false</code></td>
+ *       <td>true to enable long stack traces in promises; this has a performance penalty but makes debugging asynchronous functions easier {@link qx.Promise}</td>
+ *     </tr>
+ *     <tr>
  *       <td>qx.optimization.basecalls</td><td><i>Boolean</i></td><td><code>true</code></td>
- *       <td>true if the corresp. <i>optimize</i> key is set in the config</td>
+ *       <td>true if the corresponding <i>optimize</i> key is set in the config</td>
  *     </tr>
  *     <tr>
  *       <td>qx.optimization.comments</td><td><i>Boolean</i></td><td><code>true</code></td>
- *       <td>true if the corresp. <i>optimize</i> key is set in the config</td>
+ *       <td>true if the corresponding <i>optimize</i> key is set in the config</td>
  *     </tr>
  *     <tr>
  *       <td>qx.optimization.privates</td><td><i>Boolean</i></td><td><code>true</code></td>
- *       <td>true if the corresp. <i>optimize</i> key is set in the config</td>
+ *       <td>true if the corresponding <i>optimize</i> key is set in the config</td>
  *     </tr>
  *     <tr>
  *       <td>qx.optimization.strings</td><td><i>Boolean</i></td><td><code>true</code></td>
- *       <td>true if the corresp. <i>optimize</i> key is set in the config</td>
+ *       <td>true if the corresponding <i>optimize</i> key is set in the config</td>
  *     </tr>
  *     <tr>
  *       <td>qx.optimization.variables</td><td><i>Boolean</i></td><td><code>true</code></td>
- *       <td>true if the corresp. <i>optimize</i> key is set in the config</td>
+ *       <td>true if the corresponding <i>optimize</i> key is set in the config</td>
  *     </tr>
  *     <tr>
  *       <td>qx.optimization.variants</td><td><i>Boolean</i></td><td><code>true</code></td>
- *       <td>true if the corresp. <i>optimize</i> key is set in the config</td>
+ *       <td>true if the corresponding <i>optimize</i> key is set in the config</td>
  *     </tr>
  *     <tr>
  *       <td>qx.revision</td><td><i>String</i></td><td><code>27348</code></td>
@@ -776,6 +827,10 @@
  *     </tr>
  *     <tr>
  *       <td>module.events</td><td><i>Boolean</i></td><td><code>true</code></td>
+ *       <td><i>default:</i> <code>true</code></td>
+ *     </tr>
+ *     <tr>
+ *       <td>module.objectid</td><td><i>Boolean</i></td><td><code>true</code></td>
  *       <td><i>default:</i> <code>true</code></td>
  *     </tr>
  *     <tr>
@@ -823,6 +878,7 @@ qx.Bootstrap.define("qx.core.Environment",
       // make sure to reflect all changes to qx.debug here in the bootstrap class!
       "qx.debug": true,
       "qx.debug.ui.queue": true,
+      "qx.debug.touchpad.detection": false,
       "qx.aspects": false,
       "qx.dynlocale": true,
       "qx.dyntheme": true,
@@ -841,7 +897,12 @@ qx.Bootstrap.define("qx.core.Environment",
       "module.logger": true,
       "module.property": true,
       "module.events": true,
-      "qx.nativeScrollBars": false
+      "module.objectid": true,
+      "qx.nativeScrollBars": false,
+      "qx.automaticMemoryManagement": true,
+      "qx.promise": true,
+      "qx.promise.warnings": true,
+      "qx.promise.longStackTraces": true
     },
 
     /**
@@ -1002,7 +1063,7 @@ qx.Bootstrap.define("qx.core.Environment",
     selectAsync : function(key, values, self) {
       this.getAsync(key, function(result) {
         var value = this.__pickFromValues(key, values);
-        value.call(self, result)
+        value.call(self, result);
       }, this);
     },
 

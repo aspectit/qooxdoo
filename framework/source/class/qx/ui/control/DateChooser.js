@@ -8,8 +8,7 @@
      2006 STZ-IDA, Germany, http://www.stz-ida.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -159,7 +158,7 @@ qx.Class.define("qx.ui.control.DateChooser",
       init   : "datechooser"
     },
 
-    // overrridden
+    // overridden
     width :
     {
       refine : true,
@@ -337,7 +336,7 @@ qx.Class.define("qx.ui.control.DateChooser",
           break;
 
         case "date-pane":
-          var controlLayout = new qx.ui.layout.Grid()
+          var controlLayout = new qx.ui.layout.Grid();
           control = new qx.ui.container.Composite(controlLayout);
 
           for (var i = 0; i < 8; i++) {

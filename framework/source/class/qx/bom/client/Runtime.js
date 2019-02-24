@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -45,7 +44,7 @@ qx.Bootstrap.define("qx.bom.client.Runtime",
       var name = "";
 
        // check for the Rhino runtime
-      if (typeof environment !== "undefined") {
+      if (typeof Packages === "object" && Object.prototype.toString.call(Packages) === "[object JavaPackage]") {
         name = "rhino";
       // check for the Node.js runtime
       } else if (typeof process !== "undefined") {

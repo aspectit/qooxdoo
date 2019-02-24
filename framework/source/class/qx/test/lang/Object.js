@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -68,13 +67,13 @@ qx.Class.define("qx.test.lang.Object",
         a: undefined,
         b: null,
         c: 1
-      }
+      };
       this.assertArrayEquals(
         ["a", "b", "c"].sort(),
         Object.keys(object).sort()
       );
 
-      var object = {}
+      var object = {};
       this.assertArrayEquals(
         [],
         Object.keys(object)
@@ -106,13 +105,13 @@ qx.Class.define("qx.test.lang.Object",
         a: undefined,
         b: null,
         c: 1
-      }
+      };
       this.assertArrayEquals(
         [undefined, null, 1].sort(),
         qx.lang.Object.getValues(object).sort()
       );
 
-      var object = {}
+      var object = {};
       this.assertArrayEquals(
         [],
         qx.lang.Object.getValues(object)

@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -145,7 +144,7 @@ qx.Class.define("qx.ui.virtual.core.Pane",
     /**
      * Get the axis object, which defines the row numbers and the row sizes.
      *
-     * @return {Axis} The row configuration.
+     * @return {qx.ui.virtual.core.Axis} The row configuration.
      */
     getRowConfig : function() {
       return this.__rowConfig;
@@ -155,7 +154,7 @@ qx.Class.define("qx.ui.virtual.core.Pane",
     /**
      * Get the axis object, which defines the column numbers and the column sizes.
      *
-     * @return {Axis} The column configuration.
+     * @return {qx.ui.virtual.core.Axis} The column configuration.
      */
     getColumnConfig : function() {
       return this.__columnConfig;
@@ -182,7 +181,7 @@ qx.Class.define("qx.ui.virtual.core.Pane",
     /**
      * Add a layer to the layer container.
      *
-     * @param layer {ILayer} The layer to add.
+     * @param layer {qx.ui.virtual.core.ILayer} The layer to add.
      */
     addLayer : function(layer)
     {
@@ -199,7 +198,7 @@ qx.Class.define("qx.ui.virtual.core.Pane",
     /**
      * Get a list of all layers.
      *
-     * @return {ILayer[]} List of the pane's layers.
+     * @return {qx.ui.virtual.core.ILayer[]} List of the pane's layers.
      */
     getLayers : function() {
       return this.__layers;
@@ -209,7 +208,7 @@ qx.Class.define("qx.ui.virtual.core.Pane",
     /**
      * Get a list of all visible layers.
      *
-     * @return {ILayer[]} List of the pane's visible layers.
+     * @return {qx.ui.virtual.core.ILayer[]} List of the pane's visible layers.
      */
     getVisibleLayers : function()
     {
@@ -348,7 +347,7 @@ qx.Class.define("qx.ui.virtual.core.Pane",
       return {
         width: this.__columnConfig.getTotalSize(),
         height: this.__rowConfig.getTotalSize()
-      }
+      };
     },
 
 
@@ -545,7 +544,7 @@ qx.Class.define("qx.ui.virtual.core.Pane",
       )
       {
         var left = Math.min(this.__scrollLeft, maxLeft);
-        var right = Math.min(rightAvailable, maxRight)
+        var right = Math.min(rightAvailable, maxRight);
         this._setLayerWindow(
           layers,
           this.__scrollLeft - left,
@@ -592,7 +591,7 @@ qx.Class.define("qx.ui.virtual.core.Pane",
       )
       {
         var above = Math.min(this.__scrollTop, maxAbove);
-        var below = Math.min(belowAvailable, maxBelow)
+        var below = Math.min(belowAvailable, maxBelow);
         this._setLayerWindow(
           layers,
           this.__scrollLeft,
@@ -674,6 +673,27 @@ qx.Class.define("qx.ui.virtual.core.Pane",
        this.__handlePointerCellEvent(e, "cellDbltap");
     },
 
+    /**
+     * Fixed scrollbar position whenever it is out of range
+     * it can happen when removing an item from the list reducing
+     * the max value for scrollY #8976
+     */
+    _checkScrollBounds: function() {
+      var maxx = this.getScrollMaxX();
+      var maxy = this.getScrollMaxY();
+      if (this.__scrollLeft < 0) {
+        this.__scrollLeft = 0;
+      }
+      else if (this.__scrollLeft > maxx) {
+        this.__scrollLeft = maxx;
+      }
+      if (this.__scrollTop < 0) {
+        this.__scrollTop = 0;
+      }
+      else if (this.__scrollTop > maxy) {
+        this.__scrollTop = maxy;
+      }
+    },
 
     /**
      * Converts a pointer event into a cell event and fires the cell event if the
@@ -713,8 +733,10 @@ qx.Class.define("qx.ui.virtual.core.Pane",
     syncWidget : function(jobs)
     {
       if (this.__jobs._fullUpdate) {
+        this._checkScrollBounds();
         this._fullUpdate();
       } else if (this.__jobs._updateScrollPosition) {
+        this._checkScrollBounds();
         this._updateScrollPosition();
       }
       this.__jobs = {};
@@ -727,7 +749,7 @@ qx.Class.define("qx.ui.virtual.core.Pane",
      * layer container is adjusted to respect the pane's scroll top and scroll
      * left values.
      *
-     * @param layers {ILayer[]} List of layers to update.
+     * @param layers {qx.ui.virtual.core.ILayer[]} List of layers to update.
      * @param left {Integer} Maximum left pixel coordinate of the layers.
      * @param top {Integer} Maximum top pixel coordinate of the layers.
      * @param minWidth {Integer} The minimum end coordinate of the layers will
@@ -780,7 +802,7 @@ qx.Class.define("qx.ui.virtual.core.Pane",
         bottom: layerBottom,
         left: layerLeft,
         right: layerRight
-      }
+      };
 
       this.__layerContainer.setUserBounds(
         (this.getPaddingLeft() || 0) + (this.__layerWindow.left - this.__scrollLeft),
@@ -940,7 +962,7 @@ qx.Class.define("qx.ui.virtual.core.Pane",
           this.__scrollLeft, this.__scrollTop,
           bounds.width, bounds.height,
           false
-        )
+        );
       }
 
       this.__checkPaneResize();

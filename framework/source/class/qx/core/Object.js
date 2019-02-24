@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -40,6 +39,7 @@ qx.Class.define("qx.core.Object",
     "module.logger" : qx.core.MLogging,
     "module.events" : qx.core.MEvent,
     "module.property" : qx.core.MProperty,
+    "module.objectid" : qx.core.MObjectId,
     "qx.debug" : qx.core.MAssert
   }),
 
@@ -54,7 +54,11 @@ qx.Class.define("qx.core.Object",
    * Create a new instance
    */
   construct : function() {
-    qx.core.ObjectRegistry.register(this);
+    	if (!qx.core.Environment.get("qx.automaticMemoryManagement") || qx.Class.hasInterface(this.constructor, qx.core.IDisposable)) {
+    		qx.core.ObjectRegistry.register(this);
+    	} else {
+    		qx.core.ObjectRegistry.toHashCode(this);
+    	}
   },
 
 
@@ -117,8 +121,8 @@ qx.Class.define("qx.core.Object",
     /**
      * Call the same method of the super class.
      *
-     * @param args {arguments} the arguments variable of the calling method
-     * @param varargs {var} variable number of arguments passed to the overwritten function
+     * @param args {IArguments} the arguments variable of the calling method
+     * @param varargs {var?} variable number of arguments passed to the overwritten function
      * @return {var} the return value of the method of the base class.
      */
     base : function(args, varargs)
@@ -257,6 +261,17 @@ qx.Class.define("qx.core.Object",
 
 
     /**
+     * Returns true if the object is being disposed, ie this.dispose() has started but 
+     * not finished
+     *
+     * @return {Boolean} Whether the object is being disposed
+     */
+    isDisposing : function() {
+      return this.$$disposing || false;
+    },
+
+
+    /**
      * Dispose this object
      *
      */
@@ -269,6 +284,7 @@ qx.Class.define("qx.core.Object",
 
       // Mark as disposed (directly, not at end, to omit recursions)
       this.$$disposed = true;
+      this.$$disposing = true;
       this.$$instance = null;
       this.$$allowconstruct = null;
 
@@ -308,6 +324,8 @@ qx.Class.define("qx.core.Object",
         clazz = clazz.superclass;
       }
 
+      this.$$disposing = false;
+      
       // Additional checks
       if (qx.core.Environment.get("qx.debug"))
       {

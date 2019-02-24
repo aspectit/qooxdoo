@@ -10,8 +10,7 @@
 #    2006-2010 1&1 Internet AG, Germany, http://www.1und1.de
 #
 #  License:
-#    LGPL: http://www.gnu.org/licenses/lgpl.html
-#    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+#    MIT: https://opensource.org/licenses/MIT
 #    See the LICENSE file in the project's top-level directory for details.
 #
 #  Authors:
@@ -37,7 +36,7 @@ from generator.runtime.InterruptRegistry import InterruptRegistry
 # - Config section -------------------------------------------------------------
 
 # for the '_all_' job, skip jobs that require manual intervention
-_ALL_SKIP_JOBS = set('migration watch watch-scss source-server source-server-reload simulation-run'.split())
+_ALL_SKIP_JOBS = set('migration watch watch-scss source-server source-server-reload'.split())
 
 # - Config end -----------------------------------------------------------------
 

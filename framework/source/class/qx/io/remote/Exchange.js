@@ -10,8 +10,7 @@
      2006 STZ-IDA, Germany, http://www.stz-ida.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -26,6 +25,8 @@
  * Transport layer to control which transport class (XmlHttp, Iframe or Script)
  * can be used.
  *
+ * NOTE: Instances of this class must be disposed of after use
+ *
  * @use(qx.io.remote.transport.Iframe)
  * @use(qx.io.remote.transport.Script)
  * @internal
@@ -33,6 +34,7 @@
 qx.Class.define("qx.io.remote.Exchange",
 {
   extend : qx.core.Object,
+  implement : [ qx.core.IDisposable ],
 
 
 
@@ -187,7 +189,7 @@ qx.Class.define("qx.io.remote.Exchange",
      */
     canHandle : function(vImpl, vNeeds, vResponseType)
     {
-      if (!qx.lang.Array.contains(vImpl.handles.responseTypes, vResponseType)) {
+      if (!vImpl.handles.responseTypes.includes(vResponseType)) {
         return false;
       }
 
@@ -404,7 +406,7 @@ qx.Class.define("qx.io.remote.Exchange",
           var url = window.location.href;
 
           // Are we on a local page obtained via file: protocol?
-          if (qx.lang.String.startsWith(url.toLowerCase(), "file:"))
+          if (url.toLowerCase().startsWith("file:"))
           {
             // Yup. Can't issue remote requests from here.
             return ("Unknown status code. " +
@@ -632,11 +634,11 @@ qx.Class.define("qx.io.remote.Exchange",
         vNeeds.fileUpload = true;
       }
 
-      // See if there are any programtic form fields requested
+      // See if there are any programmatic form fields requested
       for (var field in vRequest.getFormFields())
       {
         // There are.
-        vNeeds.programaticFormFields = true;
+        vNeeds.programmaticFormFields = true;
 
         // No need to search further
         break;

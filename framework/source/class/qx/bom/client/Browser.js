@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -20,30 +19,19 @@
 
    This class contains code from:
 
+   * Unify Project
+
+     Homepage:
+       http://unify-project.org
+
      Copyright:
-       2009 Deutsche Telekom AG, Germany, http://telekom.com
+       2009-2010 Deutsche Telekom AG, Germany, http://telekom.com
 
      License:
-       LGPL: http://www.gnu.org/licenses/lgpl.html
-       EPL: http://www.eclipse.org/org/documents/epl-v10.php
+       MIT: http://www.opensource.org/licenses/mit-license.php
 
      Authors:
        * Sebastian Werner (wpbasti)
-
-   ======================================================================
-
-   This class contains code from:
-
-     Copyright:
-       2011 Pocket Widget S.L., Spain, http://www.pocketwidget.com
-
-     License:
-       LGPL: http://www.gnu.org/licenses/lgpl.html
-       EPL: http://www.eclipse.org/org/documents/epl-v10.php
-
-     Authors:
-       * Javier Martinez Villacampa
-
 
 ************************************************************************ */
 
@@ -78,7 +66,10 @@ qx.Bootstrap.define("qx.bom.client.Browser",
       var engine = qx.bom.client.Engine.getName();
       if (engine === "webkit")
       {
-        if (name === "android")
+        if (agent.match(/Edge\/\d+\.\d+/)) {
+          name = "edge";
+        }
+        else if (name === "android")
         {
           // Fix Chrome name (for instance wrongly defined in user agent on Android 1.6)
           name = "mobile chrome";
@@ -116,12 +107,6 @@ qx.Bootstrap.define("qx.bom.client.Browser",
           name = "operamobile";
         } else if (name === "opera mini") {
           name = "operamini";
-        }
-      }
-      else if (engine === "gecko")
-      {
-        if (agent.indexOf("Maple") !== -1) {
-            name = "maple";
         }
       }
 
@@ -162,23 +147,14 @@ qx.Bootstrap.define("qx.bom.client.Browser",
         }
       }
 
-      if (qx.bom.client.Browser.getName() == "maple")
-      {
-        // Fix version detection for Samsung Smart TVs Maple browser from 2010 and 2011 models
-        reg = new RegExp("(Maple )([0-9]+\.[0-9]+\.[0-9]*)");
-        match = agent.match(reg);
-        if (!match) {
-          return "";
-        }
-
-        version = match[2];
-      }
-
       if (qx.bom.client.Engine.getName() == "webkit" ||
           qx.bom.client.Browser.getName() == "opera")
       {
         if (agent.match(/OPR(\/| )([0-9]+\.[0-9])/)) {
           version = RegExp.$2;
+        }
+        if (agent.match(/Edge\/([\d+\.*]+)/)) {
+          version = RegExp.$1;
         }
       }
 

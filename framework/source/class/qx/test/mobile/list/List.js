@@ -8,8 +8,7 @@
      2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -20,7 +19,7 @@
 ************************************************************************ */
 /**
  *
- * @asset(qx/icon/Tango/48/places/folder.png)
+ * @asset(qx/icon/${qx.icontheme}/48/places/folder.png)
  */
 
 qx.Class.define("qx.test.mobile.list.List",
@@ -49,7 +48,7 @@ qx.Class.define("qx.test.mobile.list.List",
      * Returns the subtitle text on the given list, of the element item identified by elementIndex.
      */
     getSubtitleElement : function(list, elementIndex) {
-      return list.getContentElement().childNodes[elementIndex].childNodes[1].childNodes[1]
+      return list.getContentElement().childNodes[elementIndex].childNodes[1].childNodes[1];
     },
 
 
@@ -179,12 +178,12 @@ qx.Class.define("qx.test.mobile.list.List",
 
       var titleText = this.getTitleElement(list,0).innerHTML;;
       var subtitleText = this.getSubtitleElement(list,0).innerHTML;
-      var imageSrc = this.getImageElement(list,0).src
+      var imageSrc = this.getImageElement(list,0).src;
 
       // VERIFY
       this.assertEquals(newTitleText, titleText);
       this.assertEquals(newSubtitleText, subtitleText);
-      this.assertNotEquals("-1", imageSrc.indexOf(newImageSrc))
+      this.assertNotEquals("-1", imageSrc.indexOf(newImageSrc));
 
       this.__cleanUp(list);
     },

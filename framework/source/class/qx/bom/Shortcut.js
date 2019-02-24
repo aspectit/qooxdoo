@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -21,10 +20,14 @@
 
 /**
  * Shortcuts can be used to globally define keyboard shortcuts.
+ * 
+ * NOTE: Instances of this class must be disposed of after use
+ *
  */
 qx.Class.define("qx.bom.Shortcut",
 {
   extend : qx.core.Object,
+  implement: [ qx.core.IDisposable ],
 
 
 
@@ -39,7 +42,7 @@ qx.Class.define("qx.bom.Shortcut",
    *
    * @param shortcut {String} shortcuts can be composed of optional modifier
    *    keys Control, Alt, Shift, Meta and a non modifier key.
-   *    If no non modifier key is specified, the second paramater is evaluated.
+   *    If no non modifier key is specified, the second parameter is evaluated.
    *    The key must be separated by a <code>+</code> or <code>-</code> character.
    *    Examples: Alt+F1, Control+C, Control+Alt+Delete
    */

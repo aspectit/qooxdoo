@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -172,14 +171,14 @@ qx.Bootstrap.define("qx.io.ImageLoader",
      * Loads the given image. Supports a callback which is
      * executed when the image is loaded.
      *
-     * This method works asychronous.
+     * This method works asynchronous.
      *
      * @param source {String} Image source to load
-     * @param callback {Function} Callback function to execute
+     * @param callback {Function?} Callback function to execute
      *   The first parameter of the callback is the given source url, the
      *   second parameter is the data entry which contains additional
      *   information about the image.
-     * @param context {Object} Context in which the given callback should be executed
+     * @param context {Object?} Context in which the given callback should be executed
      */
     load : function(source, callback, context)
     {
@@ -218,7 +217,7 @@ qx.Bootstrap.define("qx.io.ImageLoader",
         }
 
         // Create image element
-        var el = new Image();
+        var el = document.createElement('img');
 
         // Create common callback routine
         var boundCallback = qx.lang.Function.listener(this.__onload, this, el, source);
@@ -273,6 +272,18 @@ qx.Bootstrap.define("qx.io.ImageLoader",
 
 
     /**
+     * Calls a method based on qx.globalErrorHandling
+     */
+    __onload: function () {
+      var callback = qx.core.Environment.select("qx.globalErrorHandling", {
+        "true": qx.event.GlobalError.observeMethod(this.__onLoadHandler),
+        "false": this.__onLoadHandler
+      });
+      callback.apply(this, arguments);
+    },
+
+
+    /**
      * Internal event listener for all load/error events.
      *
      * @signature function(event, element, source)
@@ -281,34 +292,45 @@ qx.Bootstrap.define("qx.io.ImageLoader",
      * @param element {Element} DOM element which represents the image
      * @param source {String} The image source loaded
      */
-    __onload : qx.event.GlobalError.observeMethod(function(event, element, source)
-    {
+    __onLoadHandler: function (event, element, source) {
       // Shorthand
       var entry = this.__data[source];
 
-      var isImageAvailable = function(imgElem) {
+      // [BUG #9149]: When loading a SVG IE11 won't have
+      // the width/height of the element set, unless
+      // it is inserted into the DOM.
+      if(qx.bom.client.Engine.getName() == "mshtml" &&
+          parseFloat(qx.bom.client.Engine.getVersion()) === 11)
+      {
+        document.body.appendChild(element);
+      }
+
+      var isImageAvailable = function (imgElem) {
         return (imgElem && imgElem.height !== 0);
       };
 
       // [BUG #7497]: IE11 doesn't properly emit an error event
       // when loading fails so augment success check
-      if (event.type === "load" && isImageAvailable(element))
-      {
+      if (event.type === "load" && isImageAvailable(element)) {
         // Store dimensions
         entry.loaded = true;
-        entry.width = this.__getWidth(element);
-        entry.height = this.__getHeight(element);
+        entry.width = element.width;
+        entry.height = element.height;
 
         // try to determine the image format
         var result = this.__knownImageTypesRegExp.exec(source);
-        if (result != null)
-        {
+        if (result != null) {
           entry.format = result[1];
         }
       }
-      else
-      {
+      else {
         entry.failed = true;
+      }
+
+      if(qx.bom.client.Engine.getName() == "mshtml" &&
+          parseFloat(qx.bom.client.Engine.getVersion()) === 11)
+      {
+        document.body.removeChild(element);
       }
 
       // Cleanup listeners
@@ -323,36 +345,11 @@ qx.Bootstrap.define("qx.io.ImageLoader",
       delete entry.element;
 
       // Execute callbacks
-      for (var i=0, l=callbacks.length; i<l; i+=2) {
-        callbacks[i].call(callbacks[i+1], source, entry);
+      for (var i = 0, l = callbacks.length; i < l; i += 2) {
+        callbacks[i].call(callbacks[i + 1], source, entry);
       }
-    }),
-
-
-    /**
-     * Returns the natural width of the given image element.
-     *
-     * @param element {Element} DOM element which represents the image
-     * @return {Integer} Image width
-     */
-    __getWidth : function(element)
-    {
-      return qx.core.Environment.get("html.image.naturaldimensions") ?
-        element.naturalWidth : element.width;
     },
 
-
-    /**
-     * Returns the natural height of the given image element.
-     *
-     * @param element {Element} DOM element which represents the image
-     * @return {Integer} Image height
-     */
-    __getHeight : function(element)
-    {
-      return qx.core.Environment.get("html.image.naturaldimensions") ?
-        element.naturalHeight : element.height;
-    },
 
     /**
      * Dispose stored images.

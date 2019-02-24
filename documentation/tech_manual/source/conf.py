@@ -38,22 +38,22 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'qooxdoo'
-copyright = u'2013, qooxdoo developers'
+copyright = u'2013-2015, qooxdoo developers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '4.1'
+version = '6.0.0-alpha'
 # The full version, including alpha/beta/rc tags.
-release = '4.1'
+release = '6.0.0-alpha'
 
 # qooxdoo Source Text Macros
 # use e.g. as "%{version}" anywhere in .rst files
-vMajor = "4"
-vMinor = "1"
-vPatch = ""
+vMajor = "6"
+vMinor = "0"
+vPatch = "0-alpha"
 qxmacros = {
     "version"  : vMajor + '.' + vMinor + (('.' + vPatch) if vPatch else '')
    ,"versionL" : vMajor + '.' + vMinor + '.x' # latest in this line
@@ -234,7 +234,7 @@ qxcomponents = 'all'
 def setup(app):
     app.connect('source-read', qxmacro_resolve)
     app.add_config_value('qxcomponents', 'all', 'env')
-    
+
 ##
 # qooxdoo macro extension
 import string

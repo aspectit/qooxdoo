@@ -8,8 +8,7 @@ Copyright:
   2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
 License:
-  LGPL: http://www.gnu.org/licenses/lgpl.html
-  EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
   See the LICENSE file in the project's top-level directory for details.
 
 Authors:
@@ -52,7 +51,7 @@ qx.Class.define("qx.test.io.part.ClosurePart",
 
 
     tearDown : function() {
-      qx.Part.$$instance = null;
+      qx.Part.$$instance = undefined;
       qx.Part.TIMEOUT = this.__timeout;
     },
 
@@ -80,7 +79,7 @@ qx.Class.define("qx.test.io.part.ClosurePart",
           ["file1-closure"],
           qx.test.PART_FILES
         );
-      })});
+      });});
 
       this.wait();
     },
@@ -106,7 +105,7 @@ qx.Class.define("qx.test.io.part.ClosurePart",
           ["file1-closure", "file2-closure"],
           qx.test.PART_FILES
         );
-      })});
+      });});
 
       this.wait();
     },
@@ -130,7 +129,7 @@ qx.Class.define("qx.test.io.part.ClosurePart",
           ["p1", "p2"],
           qx.test.Part.LOAD_ORDER
         );
-      })});
+      });});
 
       this.wait();
     },
@@ -156,7 +155,7 @@ qx.Class.define("qx.test.io.part.ClosurePart",
           ["p1", "p2"],
           qx.test.Part.LOAD_ORDER
         );
-      })});
+      });});
 
       this.wait();
     },
@@ -181,7 +180,7 @@ qx.Class.define("qx.test.io.part.ClosurePart",
           ["p1", "p2", "p3"],
           qx.test.Part.LOAD_ORDER
         );
-      })});
+      });});
 
       this.wait();
     },
@@ -209,7 +208,7 @@ qx.Class.define("qx.test.io.part.ClosurePart",
           ["p1", "p2"],
           qx.test.Part.LOAD_ORDER
         );
-      })});
+      });});
 
       this.wait();
     },
@@ -228,7 +227,7 @@ qx.Class.define("qx.test.io.part.ClosurePart",
       {
         self.assertEquals("error", readyState);
         self.assertJsonEquals([], qx.test.Part.LOAD_ORDER);
-      })});
+      });});
 
       this.wait();
     },
@@ -249,7 +248,7 @@ qx.Class.define("qx.test.io.part.ClosurePart",
 
       part.load(function(readyState) { self.resume(function() {
         self.assertEquals("complete", readyState);
-      })});
+      });});
       this.wait();
     },
 
@@ -272,7 +271,7 @@ qx.Class.define("qx.test.io.part.ClosurePart",
             ["p1"],
             qx.test.Part.LOAD_ORDER
           );
-        })});
+        });});
       }, 100);
 
       part.preload();
@@ -281,7 +280,7 @@ qx.Class.define("qx.test.io.part.ClosurePart",
         self.resume(function() {
           self.fail("load called twice!");
         });
-      }
+      };
 
       this.wait();
     }

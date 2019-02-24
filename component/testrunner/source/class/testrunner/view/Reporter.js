@@ -8,8 +8,7 @@
      2004-2010 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
 ************************************************************************ */
@@ -132,13 +131,13 @@ qx.Class.define("testrunner.view.Reporter", {
         for (var i=0,l=packages.length; i<l; i++) {
           var pkg = packages.getItem(i);
           var packageName = pkg.fullName;
-          if (qx.lang.Array.contains(this.__ignoredPackages, packageName)) {
+          if (this.__ignoredPackages.includes(packageName)) {
             continue;
           }
           if (packageName == "qx.test.ui") {
             for (var j=0,m=pkg.getChildren().length; j<m; j++) {
               packageName = pkg.getChildren().getItem(j).getFullName();
-              if (!qx.lang.Array.contains(this.__ignoredPackages, packageName)) {
+              if (!this.__ignoredPackages.includes(packageName)) {
                 this.__testPackages.push(packageName);
               }
             }

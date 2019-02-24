@@ -8,9 +8,8 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
-     See the LICENSE file in the project's left-level directory for details.
+     MIT: https://opensource.org/licenses/MIT
+     See the LICENSE file in the project's top-level directory for details.
 
    Authors:
      * Sebastian Werner (wpbasti)
@@ -76,6 +75,12 @@ qx.Class.define("qx.ui.core.scroll.AbstractScrollArea",
       this._setLayout(grid);
     }
 
+    // since the scroll container disregards the min size of the scrollbars
+    // we have to set the min size of the scroll area to ensure that the
+    // scrollbars always have an usable size.
+    var size = qx.ui.core.scroll.AbstractScrollArea.DEFAULT_SCROLLBAR_WIDTH * 2 + 14;
+    this.set({minHeight: size, minWidth: size});
+
     // Roll listener for scrolling
     this._addRollHandling();
   },
@@ -85,7 +90,7 @@ qx.Class.define("qx.ui.core.scroll.AbstractScrollArea",
     /** Fired as soon as the scroll animation in X direction ends. */
     scrollAnimationXEnd: 'qx.event.type.Event',
 
-    /** Fired as soon as the scroll animation in X direction ends. */
+    /** Fired as soon as the scroll animation in Y direction ends. */
     scrollAnimationYEnd: 'qx.event.type.Event'
   },
 
@@ -104,22 +109,6 @@ qx.Class.define("qx.ui.core.scroll.AbstractScrollArea",
     {
       refine : true,
       init : "scrollarea"
-    },
-
-
-    // overridden
-    width :
-    {
-      refine : true,
-      init : 100
-    },
-
-
-    // overridden
-    height :
-    {
-      refine : true,
-      init : 200
     },
 
 
@@ -268,9 +257,10 @@ qx.Class.define("qx.ui.core.scroll.AbstractScrollArea",
     */
 
     /**
-     * Returns the boundaries of the pane.
+     * Returns the dimensions of the pane.
      *
-     * @return {Map} The pane boundaries.
+     * @return {Map|null} The pane dimension in pixel. Contains
+     *    the keys <code>width</code> and <code>height</code>.
      */
     getPaneSize : function() {
       return this.getChildControl("pane").getInnerSize();

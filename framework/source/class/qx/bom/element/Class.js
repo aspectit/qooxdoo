@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -67,7 +66,10 @@ qx.Bootstrap.define("qx.bom.element.Class",
     add :{
       "native" : function(element, name)
       {
-        element.classList.add(name);
+        if (name.length > 0) {
+          element.classList.add(name);
+        }
+
         return name;
       },
 
@@ -94,7 +96,9 @@ qx.Bootstrap.define("qx.bom.element.Class",
       "native" : function(element, classes)
       {
         for (var i=0; i<classes.length; i++) {
-          element.classList.add(classes[i]);
+          if (classes[i].length > 0) {
+            element.classList.add(classes[i]);
+          }
         }
         return element.className;
       },

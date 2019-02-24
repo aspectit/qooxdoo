@@ -9,8 +9,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -337,7 +336,7 @@ qx.Class.define("qx.ui.virtual.cell.Cell",
       if (!value) {
         this._storeStyle(name, null);
       } else {
-        var font = qx.theme.manager.Font.getInstance().resolve(value)
+        var font = qx.theme.manager.Font.getInstance().resolve(value);
         this._storeStyle(name, qx.bom.element.Style.compile(font.getStyles()));
       }
     },
@@ -361,7 +360,7 @@ qx.Class.define("qx.ui.virtual.cell.Cell",
       }
 
       if (value === null) {
-        this._storeStyle(name, null)
+        this._storeStyle(name, null);
       } else {
         var cssKey = qx.bom.Style.getCssName(name);
         this._storeStyle(name, cssKey + ":" + value + "px");
@@ -488,7 +487,7 @@ qx.Class.define("qx.ui.virtual.cell.Cell",
      */
     __computeCssClassForStates : function()
     {
-      var styleString = qx.lang.Object.getValues(this.__themeStyles).join(";");
+      var styleString = Object.values(this.__themeStyles).join(";");
       this.__stylesheet.computeClassForStyles(this.__statesKey, styleString);
     },
 
@@ -529,7 +528,7 @@ qx.Class.define("qx.ui.virtual.cell.Cell",
 
     // overridden
     getStyles: function(value, states) {
-      return qx.lang.Object.getValues(this.__userStyles).join(";");
+      return Object.values(this.__userStyles).join(";");
     },
 
 

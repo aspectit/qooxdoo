@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -395,7 +394,7 @@ qx.Class.define("qx.ui.core.LayoutItem",
      * Get the computed location and dimension as computed by
      * the layout manager.
      *
-     * @return {Map} The location and dimensions in pixel
+     * @return {Map|null} The location and dimensions in pixel
      *    (if the layout is valid). Contains the keys
      *    <code>width</code>, <code>height</code>, <code>left</code> and
      *    <code>top</code>.
@@ -440,6 +439,11 @@ qx.Class.define("qx.ui.core.LayoutItem",
      */
     renderLayout : function(left, top, width, height)
     {
+      // do not render if the layout item is already disposed
+      if (this.isDisposed()) {
+        return null;
+      }
+
       if (qx.core.Environment.get("qx.debug"))
       {
         var msg = "Something went wrong with the layout of " + this.toString() + "!";

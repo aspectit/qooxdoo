@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -103,7 +102,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
     /** Fired during a touch at the screen. */
     touchmove : "qx.event.type.Touch",
 
-    /** Fired if a touch at the screen is cancled. */
+    /** Fired if a touch at the screen is canceled. */
     touchcancel : "qx.event.type.Touch",
 
     /** Fired when a finger taps on the screen. */
@@ -248,7 +247,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
 
 
     /**
-     * The name attribute of the container element. Usefull when you want to find
+     * The name attribute of the container element. Useful when you want to find
      * an element by its name attribute.
      */
     name :
@@ -310,7 +309,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
     /**
      * Whether the widget can be activated or not. When the widget is activated
      * a css class <code>active</code> is automatically added to the widget, which
-     * can indicate the acitvation status.
+     * can indicate the activation status.
      */
     activatable :
     {
@@ -446,14 +445,14 @@ qx.Class.define("qx.ui.mobile.core.Widget",
      */
     getCurrentId : function()
     {
-      return qx.ui.mobile.core.Widget.__idCounter
+      return qx.ui.mobile.core.Widget.__idCounter;
     },
 
 
     /**
      * Registers a widget with its id for internal widget handling.
      *
-     * @param widget {Widget} The widget to register
+     * @param widget {qx.ui.core.Widget} The widget to register
      *
      * @internal
      */
@@ -485,7 +484,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
      * Returns the widget with the given id.
      *
      * @param id {String} The id of the widget
-     * @return {Widget} The widget with the given id
+     * @return {qx.ui.core.Widget} The widget with the given id
      */
     getWidgetById : function(id) {
       return qx.ui.mobile.core.Widget.__registry[id];
@@ -560,7 +559,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
       qx.ui.mobile.core.Widget.ATTRIBUTE_MAPPING[property] = {
         attribute : attribute,
         values : values
-      }
+      };
     },
 
 
@@ -597,7 +596,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
       qx.ui.mobile.core.Widget.STYLE_MAPPING[property] = {
         style : style,
         values : values
-      }
+      };
     },
 
 
@@ -781,7 +780,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
     /**
      * Adds a new child widget.
      *
-     * @param child {Widget} the widget to add.
+     * @param child {qx.ui.core.Widget} the widget to add.
      * @param layoutProperties {Map?null} Optional layout data for widget.
      */
     _add : function(child, layoutProperties)
@@ -789,7 +788,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
       if (qx.core.Environment.get("qx.debug"))
       {
         if (child.getLayoutParent() === this) {
-          throw new Error("The widget is already added this widget. Please remove it first.")
+          throw new Error("The widget is already added this widget. Please remove it first.");
         }
       }
 
@@ -805,8 +804,10 @@ qx.Class.define("qx.ui.mobile.core.Widget",
     /**
      * Add a child widget at the specified index
      *
-     * @param child {Widget} widget to add
-     * @param index {Integer} Index, at which the widget will be inserted
+     * @param child {qx.ui.core.Widget} widget to add
+     * @param index {Integer} Index, at which the widget will be inserted. If no
+     *   widget exists at the given index, the new widget gets appended to the
+     *   current list of children.
      * @param options {Map?null} Optional layout data for widget.
      */
     _addAt : function(child, index, options)
@@ -829,8 +830,8 @@ qx.Class.define("qx.ui.mobile.core.Widget",
     /**
      * Add a widget before another already inserted widget
      *
-     * @param child {Widget} widget to add
-     * @param beforeWidget {Widget} widget before the new widget will be inserted.
+     * @param child {qx.ui.core.Widget} widget to add
+     * @param beforeWidget {qx.ui.core.Widget} widget before the new widget will be inserted.
      * @param layoutProperties {Map?null} Optional layout data for widget.
      */
     _addBefore : function(child, beforeWidget, layoutProperties)
@@ -838,7 +839,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
       if (qx.core.Environment.get("qx.debug"))
       {
         if (child.getLayoutParent() === this) {
-          throw new Error("The widget is already added this widget. Please remove it first.")
+          throw new Error("The widget is already added this widget. Please remove it first.");
         }
 
         this.assertInArray(beforeWidget, this._getChildren(), "The 'before' widget is not a child of this widget!");
@@ -860,8 +861,8 @@ qx.Class.define("qx.ui.mobile.core.Widget",
     /**
      * Add a widget after another already inserted widget.
      *
-     * @param child {Widget} The widget to add.
-     * @param afterWidget {Widget} Widget, after which the new widget will be inserted.
+     * @param child {qx.ui.core.Widget} The widget to add.
+     * @param afterWidget {qx.ui.core.Widget} Widget, after which the new widget will be inserted.
      * @param layoutProperties {Map?null} Optional layout data for widget.
      */
     _addAfter : function(child, afterWidget, layoutProperties)
@@ -869,7 +870,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
       if (qx.core.Environment.get("qx.debug"))
       {
         if (child.getLayoutParent() === this) {
-          throw new Error("The child is already added to this widget. Please remove it first.")
+          throw new Error("The child is already added to this widget. Please remove it first.");
         }
 
         this.assertInArray(afterWidget, this._getChildren(), "The 'after' widget is not a child of this widget!");
@@ -903,7 +904,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
     /**
      * Removes a given child from the widget.
      *
-     * @param child {Widget} The widget to remove.
+     * @param child {qx.ui.core.Widget} The widget to remove.
      */
     _remove : function(child)
     {
@@ -947,7 +948,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
      * Returns the index position of the given widget if it is
      * a child widget. Otherwise it returns <code>-1</code>.
      *
-     * @param child {Widget} the widget to query for
+     * @param child {qx.ui.core.Widget} the widget to query for
      * @return {Integer} The index position or <code>-1</code> when
      *   the given widget is no child of this layout.
      */
@@ -987,7 +988,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
     /**
      * Internal method. Removes a given child widget and the corresponding DOM element.
      *
-     * @param child {Widget} The widget to remove
+     * @param child {qx.ui.core.Widget} The widget to remove
      *
      * @internal
      */
@@ -1005,7 +1006,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
     /**
      * Returns the parent widget of this widget.
      *
-     * @return {Widget} The parent of the widget
+     * @return {qx.ui.core.Widget} The parent of the widget
      */
     getLayoutParent : function()
     {
@@ -1016,7 +1017,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
     /**
      * Returns the children of the widget.
      *
-     * @return {Widget[]} The children of the widget
+     * @return {qx.ui.core.Widget[]} The children of the widget
      */
     _getChildren : function() {
       return this.__children;
@@ -1075,7 +1076,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
     /**
      * Initializes the layout of the given child widget.
      *
-     * @param child {Widget} The child widget
+     * @param child {qx.ui.core.Widget} The child widget
      * @param layoutProperties {Map?null} Optional layout data for widget
      */
     _initializeChildLayout : function(child, layoutProperties)
@@ -1233,7 +1234,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
      */
     _setAttribute : function(attribute, value)
     {
-      var mapping = qx.ui.mobile.core.Widget.ATTRIBUTE_MAPPING[attribute]
+      var mapping = qx.ui.mobile.core.Widget.ATTRIBUTE_MAPPING[attribute];
       if (mapping)
       {
         attribute = mapping.attribute || attribute;
@@ -1295,7 +1296,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
      */
     _setStyle : function(style, value)
     {
-      var mapping = qx.ui.mobile.core.Widget.STYLE_MAPPING[style]
+      var mapping = qx.ui.mobile.core.Widget.STYLE_MAPPING[style];
       if (mapping)
       {
         style = mapping.style || style;
@@ -1553,7 +1554,7 @@ qx.Class.define("qx.ui.mobile.core.Widget",
     /**
      * Sets the container DOM element of the widget.
      *
-     * @param element {Element} The container DOM element of the widet
+     * @param element {Element} The container DOM element of the widget
      */
     _setContainerElement : function(element)
     {

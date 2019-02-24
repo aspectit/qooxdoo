@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -131,6 +130,7 @@ qx.Bootstrap.define("qx.bom.Label",
     {
       var styles = {};
 
+      styles.overflow = "hidden";
       if (html)
       {
         styles.whiteSpace = "normal";
@@ -142,7 +142,6 @@ qx.Bootstrap.define("qx.bom.Label",
       }
       else
       {
-        styles.overflow = "hidden";
         styles.whiteSpace = "nowrap";
         styles[qx.core.Environment.get("css.textoverflow")] = "ellipsis";
       }
@@ -181,7 +180,8 @@ qx.Bootstrap.define("qx.bom.Label",
       {
         el.useHtml = true;
       }
-      else if (!qx.core.Environment.get("css.textoverflow") &&
+
+      if (!qx.core.Environment.get("css.textoverflow") &&
         qx.core.Environment.get("html.xul"))
       {
         // Gecko as of Firefox 2.x and 3.0 does not support ellipsis

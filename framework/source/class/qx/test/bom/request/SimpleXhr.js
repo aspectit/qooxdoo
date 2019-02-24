@@ -8,8 +8,7 @@
      2013 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -281,6 +280,84 @@ qx.Class.define("qx.test.bom.request.SimpleXhr",
       this.assertCalledWith(stubbedTransport.send, qx.lang.Json.stringify(obj));
     },
 
+    "test: send() POST w/ FormData": function() {
+      var req = this.req,
+        method = "POST",
+        url = "http://example.org",
+        stubbedTransport = {};
+
+      if (!window.FormData) {
+        this.skip("FormData API not supported");
+      }
+
+      if (!req.setMethod) {
+        this.skip("POST requests not supported by this transport");
+      }
+
+      var formData = new FormData();
+      formData.append("foo", "bar");
+      formData.append("baz", "qux");
+
+      req.setUrl(url);
+      req.setMethod(method);
+      req.setRequestData(formData);
+      stubbedTransport = this.stubTransportMethods(["open", "setRequestHeader", "send"]);
+      req.send();
+
+      this.assertCalledWith(stubbedTransport.send, formData);
+    },
+
+
+    "test: send() POST w/ Blob": function() {
+      var req = this.req,
+        method = "POST",
+        url = "http://example.org",
+        stubbedTransport = {};
+
+      if (!window.Blob) {
+        this.skip("Blob API not supported");
+      }
+
+      if (!req.setMethod) {
+        this.skip("POST requests not supported by this transport");
+      }
+
+      var blob = new window.Blob(['abc123'], {type: 'text/plain'});
+
+      req.setUrl(url);
+      req.setMethod(method);
+      req.setRequestData(blob);
+      stubbedTransport = this.stubTransportMethods(["open", "setRequestHeader", "send"]);
+      req.send();
+
+      this.assertCalledWith(stubbedTransport.send, blob);
+    },
+
+    "test: send() POST w/ ArrayBuffer": function() {
+      var req = this.req,
+        method = "POST",
+        url = "http://example.org",
+        stubbedTransport = {};
+
+      if (!window.ArrayBuffer) {
+        this.skip("ArrayBuffer API not supported");
+      }
+
+      if (!req.setMethod) {
+        this.skip("POST requests not supported by this transport");
+      }
+
+      var arrayBuffer = new window.ArrayBuffer(512);
+
+      req.setUrl(url);
+      req.setMethod(method);
+      req.setRequestData(arrayBuffer);
+      stubbedTransport = this.stubTransportMethods(["open", "setRequestHeader", "send"]);
+      req.send();
+
+      this.assertCalledWith(stubbedTransport.send, arrayBuffer);
+    },
+
     //
     // abort()
     //
@@ -312,11 +389,11 @@ qx.Class.define("qx.test.bom.request.SimpleXhr",
           listener = function() {},
           ctx = this;
 
-      this.stub(stubbedTransport._emitter, "once");
+      this.stub(req, "once");
       req._transport = stubbedTransport;
 
       req.addListenerOnce(name, listener, ctx);
-      this.assertCalledWith(stubbedTransport._emitter.once, name, listener, ctx);
+      this.assertCalledWith(req.once, name, listener, ctx);
     },
 
     //
@@ -332,7 +409,7 @@ qx.Class.define("qx.test.bom.request.SimpleXhr",
           stubbedTransport = req._createTransport();
 
       // prep transport
-      this.stub(stubbedTransport, "_emit");
+      this.stub(req, "emit");
       this.stub(stubbedTransport, "getResponseHeader").returns(contentType);
       req._transport = req._registerTransportListener(stubbedTransport);
       req._transport.readyState = qx.bom.request.Xhr.DONE;
@@ -342,7 +419,7 @@ qx.Class.define("qx.test.bom.request.SimpleXhr",
       req._transport.onreadystatechange();
 
       this.assertArrayEquals(obj.animals, req.getResponse().animals);
-      this.assertCalledWith(stubbedTransport._emit, "success");
+      this.assertCalledWith(req.emit, "success");
     },
 
     "test: _onReadyStateDone() fail w/ response": function() {
@@ -353,7 +430,7 @@ qx.Class.define("qx.test.bom.request.SimpleXhr",
           stubbedTransport = req._createTransport();
 
       // prep transport
-      this.stub(stubbedTransport, "_emit");
+      this.stub(req, "emit");
       this.stub(stubbedTransport, "getResponseHeader").returns(contentType);
       req._transport = req._registerTransportListener(stubbedTransport);
       req._transport.readyState = qx.bom.request.Xhr.DONE;
@@ -363,7 +440,7 @@ qx.Class.define("qx.test.bom.request.SimpleXhr",
       req._transport.onreadystatechange();
 
       this.assertArrayEquals(obj.animals, req.getResponse().animals);
-      this.assertCalledWith(stubbedTransport._emit, "fail");
+      this.assertCalledWith(req.emit, "fail");
     },
 
     "test: _onReadyStateDone() fail w/o response": function() {
@@ -372,7 +449,7 @@ qx.Class.define("qx.test.bom.request.SimpleXhr",
           stubbedTransport = req._createTransport();
 
       // prep transport
-      this.stub(stubbedTransport, "_emit");
+      this.stub(req, "emit");
       this.stub(stubbedTransport, "getResponseHeader").returns(contentType);
       req._transport = req._registerTransportListener(stubbedTransport);
       req._transport.readyState = qx.bom.request.Xhr.DONE;
@@ -381,7 +458,7 @@ qx.Class.define("qx.test.bom.request.SimpleXhr",
       req._transport.onreadystatechange();
 
       this.assertEquals("", req.getResponse());
-      this.assertCalledWith(stubbedTransport._emit, "fail");
+      this.assertCalledWith(req.emit, "fail");
     },
 
     //
@@ -393,12 +470,12 @@ qx.Class.define("qx.test.bom.request.SimpleXhr",
           stubbedTransport = req._createTransport();
 
       // prep transport
-      this.stub(stubbedTransport, "_emit");
+      this.stub(req, "emit");
       req._transport = req._registerTransportListener(stubbedTransport);
 
       req._transport.onloadend();
 
-      this.assertCalledWith(stubbedTransport._emit, "loadEnd");
+      this.assertCalledWith(req.emit, "loadEnd");
     },
 
     //
@@ -410,12 +487,12 @@ qx.Class.define("qx.test.bom.request.SimpleXhr",
           stubbedTransport = req._createTransport();
 
       // prep transport
-      this.stub(stubbedTransport, "_emit");
+      this.stub(req, "emit");
       req._transport = req._registerTransportListener(stubbedTransport);
 
       req._transport.onabort();
 
-      this.assertCalledWith(stubbedTransport._emit, "abort");
+      this.assertCalledWith(req.emit, "abort");
     },
 
     //
@@ -427,13 +504,13 @@ qx.Class.define("qx.test.bom.request.SimpleXhr",
           stubbedTransport = req._createTransport();
 
       // prep transport
-      this.stub(stubbedTransport, "_emit");
+      this.stub(req, "emit");
       req._transport = req._registerTransportListener(stubbedTransport);
 
       req._transport.ontimeout();
 
-      this.assertCalledWith(stubbedTransport._emit, "timeout");
-      this.assertEquals(2, stubbedTransport._emit.callCount); // + _emit("fail")
+      this.assertCalledWith(req.emit, "timeout");
+      this.assertEquals(2, req.emit.callCount); // + emit("fail")
     },
 
     //
@@ -445,13 +522,42 @@ qx.Class.define("qx.test.bom.request.SimpleXhr",
           stubbedTransport = req._createTransport();
 
       // prep transport
-      this.stub(stubbedTransport, "_emit");
+      this.stub(req, "emit");
       req._transport = req._registerTransportListener(stubbedTransport);
 
       req._transport.onerror();
 
-      this.assertCalledWith(stubbedTransport._emit, "error");
-      this.assertEquals(2, stubbedTransport._emit.callCount); // + _emit("fail")
+      this.assertCalledWith(req.emit, "error");
+      this.assertEquals(2, req.emit.callCount); // + emit("fail")
+    },
+
+
+    testGetResponseHeaders: function() {
+      this.useFakeServer();
+      this.getServer().autoRespond = true;
+      this.getServer().respondWith("GET", "/foo",
+        [
+          200,
+          {
+            "x-affe": "AFFE"
+          },
+          "Response Body"
+        ]);
+
+      var req = new qx.bom.request.SimpleXhr('/foo', 'GET');
+      req.on("success", function() {
+        this.resume(function() {
+          this.assertEquals("AFFE", req.getResponseHeader("x-affe"));
+          var headers = req.getAllResponseHeaders();
+          this.assertMatch(headers, /x-affe.*?AFFE/);
+        }.bind(this));
+      }.bind(this));
+
+      window.setTimeout(function() {
+        req.send();
+      }, 100);
+
+      this.wait(200);
     }
   }
 });

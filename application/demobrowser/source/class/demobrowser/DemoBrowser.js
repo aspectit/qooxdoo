@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -348,7 +347,7 @@ qx.Class.define("demobrowser.DemoBrowser",
 
       var currentTags = this._tree.getSelection()[0].getUserData("tags");
       if (currentTags) {
-        playable = playable && !qx.lang.Array.contains(currentTags, "noPlayground");
+        playable = playable && !currentTags.includes("noPlayground");
       }
 
       this.__playgroundButton.setEnabled(playable);
@@ -476,7 +475,8 @@ qx.Class.define("demobrowser.DemoBrowser",
 
         // Loading demos into IE fails most of the time because IE truncates
         // long URLs
-        if (qx.core.Environment.get("browser.name") == "ie") {
+        var browserName = qx.core.Environment.get("browser.name");
+        if (browserName == "ie" || browserName == "edge") {
           playgroundButton.exclude();
         }
 
@@ -1089,7 +1089,7 @@ qx.Class.define("demobrowser.DemoBrowser",
         }
         var currentTags = treeNode.getUserData("tags");
         if (currentTags) {
-          this.__playgroundButton.setEnabled(!qx.lang.Array.contains(currentTags, "noPlayground"));
+          this.__playgroundButton.setEnabled(!currentTags.includes("noPlayground"));
         }
       }
       else

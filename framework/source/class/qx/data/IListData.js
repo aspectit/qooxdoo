@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -27,13 +26,14 @@ qx.Interface.define("qx.data.IListData",
   events :
   {
     /**
-     * The change event which will be fired if there is a change in the data
-     * structure.The data should contain a map with three key value pairs:
+     * The change event which will be fired if there is a change in the data structure.
+     * The data contains a map with three key value pairs:
      * <li>start: The start index of the change.</li>
      * <li>end: The end index of the change.</li>
      * <li>type: The type of the change as a String. This can be 'add',
-     * 'remove' or 'order'</li>
-     * <li>item: The item which has been changed.</li>
+     * 'remove', 'order' or 'add/remove'</li>
+     * <li>added: The items which has been added (as a JavaScript array)</li>
+     * <li>removed: The items which has been removed (as a JavaScript array)</li>
      */
     "change" : "qx.event.type.Data",
 

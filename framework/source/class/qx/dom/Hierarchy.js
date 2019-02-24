@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -272,7 +271,7 @@ qx.Bootstrap.define("qx.dom.Hierarchy",
         {
           if (element1)
           {
-            if (qx.lang.Array.contains(known, element1)) {
+            if (known.includes(element1)) {
               return element1;
             }
 
@@ -282,7 +281,7 @@ qx.Bootstrap.define("qx.dom.Hierarchy",
 
           if (element2)
           {
-            if (qx.lang.Array.contains(known, element2)) {
+            if (known.includes(element2)) {
               return element2;
             }
 

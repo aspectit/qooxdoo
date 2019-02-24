@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -48,11 +47,13 @@ qx.Class.define("qx.ui.form.AbstractField",
      * Adds the CSS rules needed to style the native placeholder element.
      */
     __addPlaceholderRules : function() {
+      var engine = qx.core.Environment.get("engine.name");
+      var browser = qx.core.Environment.get("browser.name");
       var colorManager = qx.theme.manager.Color.getInstance();
       var color = colorManager.resolve("text-placeholder");
       var selector;
 
-      if (qx.core.Environment.get("engine.name") == "gecko") {
+      if (engine == "gecko") {
         // see https://developer.mozilla.org/de/docs/CSS/:-moz-placeholder for details
        if (parseFloat(qx.core.Environment.get("engine.version")) >= 19) {
           selector = "input::-moz-placeholder, textarea::-moz-placeholder";
@@ -60,11 +61,12 @@ qx.Class.define("qx.ui.form.AbstractField",
           selector = "input:-moz-placeholder, textarea:-moz-placeholder";
         }
         qx.ui.style.Stylesheet.getInstance().addRule(selector, "color: " + color + " !important");
-      } else if (qx.core.Environment.get("engine.name") == "webkit") {
+      } else if (engine == "webkit" && browser != "edge") {
         selector = "input.qx-placeholder-color::-webkit-input-placeholder, textarea.qx-placeholder-color::-webkit-input-placeholder";
         qx.ui.style.Stylesheet.getInstance().addRule(selector, "color: " + color);
-      } else if (qx.core.Environment.get("engine.name") == "mshtml") {
-        selector = "input.qx-placeholder-color:-ms-input-placeholder, textarea.qx-placeholder-color:-ms-input-placeholder";
+      } else if (engine == "mshtml" || browser == "edge") {
+        var separator = browser == "edge" ? "::" : ":";
+        selector = ["input.qx-placeholder-color", "-ms-input-placeholder, textarea.qx-placeholder-color", "-ms-input-placeholder"].join(separator);
         qx.ui.style.Stylesheet.getInstance().addRule(selector, "color: " + color + " !important");
       }
     }
@@ -101,7 +103,7 @@ qx.Class.define("qx.ui.form.AbstractField",
     } else {
       // add rules for native placeholder color
       qx.ui.form.AbstractField.__addPlaceholderRules();
-      // add a class to the input to restict the placeholder color
+      // add a class to the input to restrict the placeholder color
       this.getContentElement().addClass("qx-placeholder-color");
     }
 
@@ -228,6 +230,9 @@ qx.Class.define("qx.ui.form.AbstractField",
     /**
      * RegExp responsible for filtering the value of the textfield. the RegExp
      * gives the range of valid values.
+     * Note: The regexp specified is applied to each character in turn, 
+     * NOT to the entire string. So only regular expressions matching a 
+     * single character make sense in the context.
      * The following example only allows digits in the textfield.
      * <pre class='javascript'>field.setFilter(/[0-9]/);</pre>
      */
@@ -562,24 +567,14 @@ qx.Class.define("qx.ui.form.AbstractField",
       // check for the filter
       if (this.getFilter() != null)
       {
-        var filteredValue = "";
-        var index = value.search(this.getFilter());
-        var processedValue = value;
-        while(index >= 0)
-        {
-          filteredValue = filteredValue + (processedValue.charAt(index));
-          processedValue = processedValue.substring(index + 1, processedValue.length);
-          index = processedValue.search(this.getFilter());
-        }
-
+        var filteredValue = this._validateInput(value);
         if (filteredValue != value)
         {
-          fireEvents = false;
+          fireEvents = this.__oldInputValue !== filteredValue;
           value = filteredValue;
           this.getContentElement().setValue(value);
         }
       }
-
       // fire the events, if necessary
       if (fireEvents)
       {
@@ -639,6 +634,10 @@ qx.Class.define("qx.ui.form.AbstractField",
      */
     setValue : function(value)
     {
+      if (this.isDisposed()) {
+        return null;
+      }
+      
       // handle null values
       if (value === null) {
         // just do nothing if null is already set
@@ -684,8 +683,7 @@ qx.Class.define("qx.ui.form.AbstractField",
      * @return {String|null} The current value
      */
     getValue : function() {
-      var value = this.getContentElement().getValue();
-      return this.__nullValue ? null : value;
+      return (this.isDisposed() || this.__nullValue) ? null : this.getContentElement().getValue();
     },
 
 
@@ -938,6 +936,31 @@ qx.Class.define("qx.ui.form.AbstractField",
       }
     },
 
+    /**
+     * Validates the the input value.
+     * 
+     * @param value {Object} The value to check
+     * @returns The checked value
+     */
+    _validateInput : function(value) {
+      var filteredValue = value;
+      var filter = this.getFilter();
+
+      // If no filter is set return just the value
+      if (filter !== null) {
+        filteredValue = "";
+        var index = value.search(filter);
+        var processedValue = value;
+
+        while((index >= 0) && (processedValue.length > 0)) {
+          filteredValue = filteredValue + (processedValue.charAt(index));
+          processedValue = processedValue.substring(index + 1, processedValue.length);
+          index = processedValue.search(filter);
+        }
+      }
+
+      return filteredValue;
+    },
 
     /*
     ---------------------------------------------------------------------------
@@ -963,6 +986,20 @@ qx.Class.define("qx.ui.form.AbstractField",
         // only apply if the widget is enabled
         if (this.getEnabled()) {
           this.getContentElement().setAttribute("placeholder", value);
+
+          if (qx.core.Environment.get("browser.name") === "firefox" &&
+              parseFloat(qx.core.Environment.get("browser.version")) < 36 &&
+              this.getContentElement().getNodeName() === "textarea" &&
+              !this.getContentElement().getDomElement())
+          {
+            /* qx Bug #8870: Firefox 35 will not display a text area's
+               placeholder text if the attribute is set before the
+               element is added to the DOM. This is fixed in FF 36. */
+            this.addListenerOnce("appear", function() {
+              this.getContentElement().getDomElement().removeAttribute("placeholder");
+              this.getContentElement().getDomElement().setAttribute("placeholder", value);
+            }, this);
+          }
         }
       }
     },

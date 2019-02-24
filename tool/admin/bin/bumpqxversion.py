@@ -10,8 +10,7 @@
 #    2006-2011 1&1 Internet AG, Germany, http://www.1und1.de
 #
 #  License:
-#    LGPL: http://www.gnu.org/licenses/lgpl.html
-#    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+#    MIT: https://opensource.org/licenses/MIT
 #    See the LICENSE file in the project's top-level directory for details.
 #
 #  Authors:
@@ -94,11 +93,14 @@ def npm_version_string(vers_parts):
 #
 #
 Files = {
+    "./package.json": [
+        (r'"version"\s*:\s*"(%s)"' % qxversion_regexp, npm_version_string),
+        ],
+    "./application/demobrowser/package.json": [
+        (r'"version"\s*:\s*"(%s)"' % qxversion_regexp, npm_version_string),
+        ],
     "./application/demobrowser/source/demo/welcome.html" : [
         r'var qxversion = "(%s)"'    % qxversion_regexp,
-        ],
-    "./application/websitewidgetbrowser/Gruntfile.js": [
-        r'QOOXDOO_VERSION\s*:\s*"(%s)",' % qxversion_regexp,
         ],
     "./application/websitewidgetbrowser/package.json": [
         (r'"version"\s*:\s*"(%s)"' % qxversion_regexp, npm_version_string),
@@ -118,9 +120,6 @@ Files = {
         r'"main"\s*:\s*"qx-oo-(%s)"' % qxversion_regexp,
         r'"homepage"\s*:\s*"http://manual.qooxdoo.org/(%s)/pages/core.html"' % qxversion_regexp,
         ],
-    "./component/standalone/website/Gruntfile.js": [
-        r'QOOXDOO_VERSION\s*:\s*"(%s)",' % qxversion_regexp,
-        ],
     "./component/standalone/website/package.json": [
         (r'"version"\s*:\s*"(%s)"' % qxversion_regexp, npm_version_string),
         ],
@@ -130,7 +129,7 @@ Files = {
         (r'^\s*vMajor\s*=\s*[\'"](%s)[\'"]' % vMajor_regexp, 0),  # number will be used as an index into vers_parts
         (r'^\s*vMinor\s*=\s*[\'"](%s)[\'"]' % vMinor_regexp, 1),
         (r'^\s*vPatch\s*=\s*[\'"](%s)[\'"]' % vPatch_regexp, 2),
-        (r'^\s*git_branch\s*=\s*[\'"](%s)[\'"]' % git_branch_regexp, git_branch),
+#        (r'^\s*git_branch\s*=\s*[\'"](%s)[\'"]' % git_branch_regexp, git_branch),
         ],
     "./documentation/tech_manual/source/conf.py" : [
         r'^\s*version\s*=\s*[\'"](%s)[\'"]' % qxversion_regexp,
@@ -138,7 +137,7 @@ Files = {
         (r'^\s*vMajor\s*=\s*[\'"](%s)[\'"]' % vMajor_regexp, 0),  # number will be used as an index into vers_parts
         (r'^\s*vMinor\s*=\s*[\'"](%s)[\'"]' % vMinor_regexp, 1),
         (r'^\s*vPatch\s*=\s*[\'"](%s)[\'"]' % vPatch_regexp, 2),
-        (r'^\s*git_branch\s*=\s*[\'"](%s)[\'"]' % git_branch_regexp, git_branch),
+#        (r'^\s*git_branch\s*=\s*[\'"](%s)[\'"]' % git_branch_regexp, git_branch),
         ],
     "./framework/Manifest.json" : [
         r'"version"\s*:\s*"(%s)"'              % qxversion_regexp,
@@ -150,7 +149,7 @@ Files = {
     "./index.html"  : [
         r'var qxversion = "(%s)"'    % qxversion_regexp
         ],
-    "./readme.rst"  : [
+    "./README.md"  : [
         r'manual.qooxdoo.org/(%s)\b' % qxversion_regexp,
         r'api.qooxdoo.org/(%s)\b' % qxversion_regexp,
         r'qooxdoo.org/project/release_notes/(%s)\b' % qxversion_regexp
@@ -171,6 +170,9 @@ Files = {
         ],
     "./tool/data/generator/copyright.include.js" : [
         r'qooxdoo v(%s) \|' % qxversion_regexp,
+        ],
+    "./tool/grunt/package.json" : [
+        (r'"version"\s*:\s*"(%s)"' % qxversion_regexp, npm_version_string)
         ],
     "./version.txt" : [
         r'^(.+)$'

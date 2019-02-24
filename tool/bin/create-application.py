@@ -10,8 +10,7 @@
 #    2008 - 2010 1&1 Internet AG, Germany, http://www.1und1.de
 #
 #  License:
-#    LGPL: http://www.gnu.org/licenses/lgpl.html
-#    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+#    MIT: https://opensource.org/licenses/MIT
 #    See the LICENSE file in the project's top-level directory for details.
 #
 #  Authors:
@@ -33,11 +32,9 @@ from misc import Path
 
 
 SCRIPT_DIR    = qxenviron.scriptDir
-FRAMEWORK_DIR = os.path.normpath(os.path.join(SCRIPT_DIR, os.pardir, os.pardir))
+FRAMEWORK_DIR = os.path.normpath(os.path.join(SCRIPT_DIR, os.pardir, os.pardir).decode('utf-8'))
 SKELETON_DIR  = unicode(os.path.normpath(os.path.join(FRAMEWORK_DIR, "component", "skeleton")))
 GENERATE_PY   = unicode(os.path.normpath(os.path.join(FRAMEWORK_DIR, "tool", "data", "generator", "generate.tmpl.py")))
-PACKAGE_JSON  = unicode(os.path.normpath(os.path.join(FRAMEWORK_DIR, "tool", "grunt", "data", "package.tmpl.json")))
-GRUNTFILE     = unicode(os.path.normpath(os.path.join(FRAMEWORK_DIR, "tool", "grunt", "data", "Gruntfile.tmpl.js")))
 APP_DIRS      = [x for x in os.listdir(SKELETON_DIR) if not re.match(r'^\.',x)]
 
 R_ILLEGAL_NS_CHAR   = re.compile(r'(?u)[^\.\w]')  # allow unicode, but disallow $
@@ -46,9 +43,6 @@ R_COPY_FILE         = re.compile(r'(?m)^copy_file::\s*(.*)$')  # special files t
 R_ILLEGAL_NODE_VERS = re.compile(r'^v0\.\d\.') # require Node.js version >= 0.10.0
 QOOXDOO_VERSION     = ''  # will be filled later
 
-class TARGET:
-    GENERATOR = 1
-    GRUNT = 2
 
 def getAppInfos():
     appInfos = {}
@@ -83,24 +77,10 @@ def getQxVersion():
     return
 
 
-##
-# let package.json take effect
-# installes all NPM modules *locally* (but gets better with each run due to
-# npm module caching)
-def npm_install(skel_dir, options):
-    shellCmd = ShellCmd()
-    npm_install = 'npm install --loglevel warn'
-    console.log("Adding Node.js modules...")
-    shellCmd.execute(npm_install, skel_dir)
-    if options.type == 'contribution':
-        shellCmd.execute(npm_install, os.path.join(skel_dir, 'demo/default'))
-
 
 def copyGenericIfNoSpecific(specificFilename, genericFilepath, destFilepath, appType):
     if not os.path.isfile(os.path.join(destFilepath, specificFilename)):
       shutil.copy(genericFilepath, destFilepath)
-      if appType == "contribution":
-          shutil.copy(genericFilepath, os.path.join(destFilepath, "demo", "default"))
 
 def createApplication(options):
     out = options.out
@@ -124,8 +104,7 @@ def createApplication(options):
         listSkeletons(console, APP_INFOS)
         sys.exit(1)
 
-    is_contribution = options.type == "contribution"
-    appDir = os.path.join(outDir, "trunk") if is_contribution else outDir
+    appDir = outDir
     app_infos = APP_INFOS[options.type]
 
     # copy the template structure
@@ -133,8 +112,6 @@ def createApplication(options):
 
     # copy generic file if no more specific is available
     copyGenericIfNoSpecific("", GENERATE_PY, appDir, options.type)
-    copyGenericIfNoSpecific("package.tmpl.json", PACKAGE_JSON, appDir, options.type)
-    copyGenericIfNoSpecific("Gruntfile.tmpl.js", GRUNTFILE, appDir, options.type)
 
     # copy files
     if isinstance(app_infos['copy_file'], types.ListType):
@@ -152,9 +129,6 @@ def createApplication(options):
 
     # rename files
     rename_folders(appDir, options.namespace)
-    if options.type == "contribution":
-        rename_folders(os.path.join(appDir, "demo", "default"), options.namespace)
-
     # clean out unwanted
     cleanSkeleton(appDir)
 
@@ -235,16 +209,9 @@ def patchSkeleton(appDir, framework_dir, options):
     # collect all files to modify
     filePaths = collectTmplInOutFilePaths(appDir)
 
-    # filter Gruntfile
-    gruntfileFilePaths = [item for item in filePaths if 'Gruntfile' in item[0]]
-    filePaths          = [item for item in filePaths if not 'Gruntfile' in item[0]]
-
-    # render all but Gruntfile
-    renderTemplates(filePaths, options, relPath, absPath, TARGET.GENERATOR)
+    # render all 
+    renderTemplates(filePaths, options, relPath, absPath)
     chmodPyFiles(appDir)
-
-    # now render Gruntfile
-    renderTemplates(gruntfileFilePaths, options, relPath, absPath, TARGET.GRUNT)
 
 
 def determineAbsPathToSdk(framework_dir):
@@ -275,11 +242,6 @@ def determineRelPathToSdk(appDir, framework_dir, options):
         console.error("Relative path to qooxdoo directory is not correct: '%s'" % relPath)
         sys.exit(1)
 
-    if options.type == "contribution":
-        #relPath = os.path.join(os.pardir, os.pardir, "qooxdoo", QOOXDOO_VERSION)
-        #relPath = re.sub(r'\\', "/", relPath)
-        pass
-
     return relPath
 
 
@@ -291,17 +253,8 @@ def chmodPyFiles(appDir):
                                                |stat.S_IROTH |stat.S_IXOTH)) # 0755
 
 
-def gruntifyMacros(s):
-    def macroReplace(matchobj):
-        if matchobj.group('macro'):
-            return "<%= qx." + matchobj.group('macro') + " %>"
 
-        return
-
-    return re.sub(r'\$\{(?P<macro>[a-zA-Z0-9_\-]+)\}', macroReplace, s)
-
-
-def renderTemplates(inAndOutFilePaths, options, relPathToSdk, absPathToSdk, renderTarget):
+def renderTemplates(inAndOutFilePaths, options, relPathToSdk, absPathToSdk):
     for inFile, outFile in inAndOutFilePaths:
         console.log("Patching file '%s'" % outFile)
 
@@ -309,25 +262,15 @@ def renderTemplates(inAndOutFilePaths, options, relPathToSdk, absPathToSdk, rend
         config = Template(open(inFile).read())
         out = open(outFile, "w")
 
-        # hack for uncommon contribution dir structure
-        contribDemoRelPathToSdk = ""
-        if options.type == "contribution"  and "demo/default" in outFile:
-          contribDemoRelPathToSdk = os.path.join("../../", relPathToSdk)
-
         context = {
           "Name": options.name,
           "Namespace": options.namespace,
           "NamespacePath" : (options.namespace).replace('.', '/'),
-          "REL_QOOXDOO_PATH": contribDemoRelPathToSdk if contribDemoRelPathToSdk else relPathToSdk,
+          "REL_QOOXDOO_PATH": relPathToSdk,
           "ABS_QOOXDOO_PATH": absPathToSdk,
           "QOOXDOO_VERSION": QOOXDOO_VERSION,
           "Cache" : options.cache,
         }
-
-        if renderTarget == TARGET.GRUNT:
-            for k, v in context.iteritems():
-                if isinstance(v, (str, unicode)):
-                    context[k] = gruntifyMacros(v);
 
         out.write(config.substitute(context).encode('utf-8'))
         out.close()
@@ -428,54 +371,6 @@ def listSkeletons(console, info):
             sdesc = "%s -- %s" % ((12 - len(skeleton)) * " ", info[skeleton]["short"])
         console.info(skeleton + sdesc)
 
-##
-# checks for Node and sufficient version
-def isNodeInstalled():
-    node_version = None
-    try:
-        proc = subprocess.Popen(['node', '-v'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        node_version = proc.communicate()[0].strip()
-        if R_ILLEGAL_NODE_VERS.search(node_version):
-            console.log("Please use Node.js >= v0.10.0 if you want to use the Grunt toolchain.")
-            console.log("Your Node.js version ({0}) isn't supported.".format(node_version))
-            node_version = None
-    except OSError:
-        # console.log("Node.js isn't installed - skipping 'npm install' for Grunt toolchain...")
-        pass
-    return node_version
-
-
-##
-# if Node modules have already been downloaded, use those
-# TODO: invalidate cache on tool change
-def getCachedNodeModules(options):
-    # using dedicated cache path, so it's not deleted with 'distclean' jobs
-    cache_path = os.path.join(FRAMEWORK_DIR, "tool/cache/node")
-    package_json = os.path.join(FRAMEWORK_DIR, "tool/grunt/data/package.generalized.json")
-    modules_path = os.path.join(cache_path, "node_modules")
-    if not os.path.exists(modules_path):
-        # parent dir
-        if not os.path.exists(cache_path):
-            os.makedirs(cache_path)
-        # readme.txt
-        (open(os.path.join(cache_path,"readme.txt"), 'w') # TODO: should use os.open(..,os.O_CREAT|os.O_EXCL|os.O_RDWR) for locking
-            .write("toolchain_grunt_modules")) # suppress npm install warnings
-        # package.json
-        shutil.copy(package_json, os.path.join(cache_path,"package.json"))
-        # npm install
-        npm_install(cache_path, options)
-    return modules_path
-
-
-##
-# if Node is installed, provide the necessary modules for Grunt
-def runNpmIf(outDir, options):
-    if not isNodeInstalled():
-        return
-    modules_root = getCachedNodeModules(options)
-    shutil.copytree(modules_root, os.path.join(outDir,"node_modules"))
-    return
-
 
 def main():
     parser = optparse.OptionParser()
@@ -536,7 +431,6 @@ Example: For creating a regular GUI application \'myapp\' you could execute:
     checkNamespace(options)
     getQxVersion()
     outDir = createApplication(options)
-    runNpmIf(outDir, options)
 
     console.log("DONE")
     return

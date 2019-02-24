@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -21,6 +20,7 @@
  * @ignore(qx.AbstractCar, qx.Bmw, qx.Car, qx.ConcreteCar, qx.Defer.*)
  * @ignore(qx.DeferFoo, qx.Empty, qx.FuncName, qx.MyClass, qx.MyMixin)
  * @ignore(qx.Single1.*, qx.test.u.u.*)
+ * @ignore(qx.Insect, qx.Butterfly, qx.Firefly, qx.Grasshopper, qx.Bug)
 
  */
 
@@ -44,38 +44,34 @@ qx.Class.define("qx.test.Class",
 
     testOverridePropertyMethod : function() {
       this.require(["qx.debug"]);
-
+      
       var C = qx.Class.define(null, {
         extend : qx.core.Object,
         properties : {
           prop: {
-            check : "Boolean",
+          	init: "unset",
+            check : "String",
             inheritable: true,
             themeable: true
           }
         }
       });
-
-      var methods = [
-        "set", "get", "init", "reset", "refresh",
-        "setRuntime", "resetRuntime",
-        "is", "toggle",
-        "setThemed", "resetThemed"
-      ];
-
-      for (var i = 0; i < methods.length; i++) {
-        var name = methods[i] + "Prop";
-        var members = {};
-        members[name] = function() {};
-        this.assertException(function() {
-          // extract the class define to prevent the generator from parsing this class
-          var Clazz = qx.Class;
-          Clazz.define(null, {
-            extend : C,
-            members : members
-          });
-        }, Error, new RegExp(name), name + " went wrong!");
-      }
+      
+      var D = qx.Class.define(null, {
+      	extend: C,
+      	members: {
+      		setProp: function(value) {
+      			return this.base(arguments, value + "-set");
+      		},
+      		getProp: function() {
+      			return this.base(arguments) + "-get";
+      		}
+      	}
+      });
+      
+      var d = new D();
+      d.setProp("hello");
+      this.assertEquals("hello-set-get", d.getProp());
     },
 
 
@@ -143,7 +139,7 @@ qx.Class.define("qx.test.Class",
 
           stopEngine : function()
           {
-            var ret = arguments.callee.base.call();
+            var ret = this.base(arguments);
             return "brrr " + ret;
           },
 
@@ -180,7 +176,7 @@ qx.Class.define("qx.test.Class",
     {
       qx.Class.define("qx.AbstractCar",
       {
-        extend : Object,
+        extend : qx.core.Object,
         type : "abstract",
 
         construct : function(color) {
@@ -206,7 +202,7 @@ qx.Class.define("qx.test.Class",
         extend : qx.AbstractCar,
 
         construct : function(color) {
-          arguments.callee.base.apply(this, arguments);
+          this.base(arguments, color);
         }
       });
 
@@ -228,7 +224,7 @@ qx.Class.define("qx.test.Class",
         }
       });
 
-      // direct instanctiation should fail
+      // direct instantiation should fail
       if (this.isDebugOn())
       {
         this.assertException(function() {
@@ -299,49 +295,6 @@ qx.Class.define("qx.test.Class",
       defer.setColor("red");
       this.assertEquals("red", defer.getColor());
       defer.dispose();
-    },
-
-
-    testGetFunctionName : function()
-    {
-      var self = this;
-
-      qx.Class.define("qx.FuncName",
-      {
-        extend : qx.core.Object,
-
-        construct : function()
-        {
-          this.base(arguments);
-          self.assertEquals("construct", qx.dev.Debug.getFunctionName(arguments.callee));
-        },
-
-        members :
-        {
-          __foo : function()
-          {
-            if (self.isDebugOn()) {
-              self.assertEquals("__foo", qx.dev.Debug.getFunctionName(arguments.callee));
-            };
-          },
-
-          _bar : function() {
-            self.assertEquals("_bar", qx.dev.Debug.getFunctionName(arguments.callee));
-          },
-
-          sayFooBar : function()
-          {
-            self.assertEquals("sayFooBar", qx.dev.Debug.getFunctionName(arguments.callee));
-            this.__foo();
-            this._bar();
-          }
-        }
-      });
-
-      var funcName = new qx.FuncName();
-      funcName.sayFooBar();
-      this.assertNull(qx.dev.Debug.getFunctionName(function() {}));
-      funcName.dispose();
     },
 
 
@@ -495,6 +448,49 @@ qx.Class.define("qx.test.Class",
       o.dispose();
       qx.Class.undefine("qx.MyClass");
       qx.Class.undefine("qx.MyMixin");
+    },
+
+
+    testSubclasses : function()
+    {
+      qx.Class.define("qx.Insect",
+      {
+        extend : qx.core.Object
+      });
+
+      qx.Class.define("qx.Butterfly",
+      {
+        extend : qx.Insect
+      });
+
+      qx.Class.define("qx.Firefly",
+      {
+        extend : qx.Insect
+      });
+
+      qx.Class.define("qx.Grasshopper",
+      {
+        extend : qx.Insect
+      });
+
+      var subclasses = qx.Class.getSubclasses(qx.Insect);
+      
+      // we should find 3 subclasses of qx.Insect
+      this.assertEquals(Object.keys(subclasses).length,3);
+
+      // qx.Firefly should be a subclass of qx.Insect
+      this.assertEquals(subclasses["qx.Firefly"],qx.Firefly);
+
+      subclasses = qx.Class.getSubclasses(qx.Firefly);
+
+      // there should be no subclasses for qx.Firefly
+      this.assertEquals(Object.keys(subclasses).length,0);
+      
+      subclasses = qx.Class.getSubclasses(qx.Bug);
+
+      // there should be no class qx.Bug
+      this.assertEquals(subclasses,null);
+
     },
 
 

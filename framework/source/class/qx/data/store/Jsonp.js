@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -22,7 +21,7 @@
  *
  * The JSONP data store is a specialization of {@link qx.data.store.Json}. It
  * differs in the type of transport used ({@link qx.io.request.Jsonp}). In
- * order to fullfill requirements of the JSONP service, the method
+ * order to fulfill requirements of the JSONP service, the method
  * {@link #setCallbackParam} can be used.
  *
  * Please note that the upgrade notices described in {@link qx.data.store.Json}

@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -79,12 +78,6 @@ qx.Class.define("qx.test.io.rest.Resource",
       });
     },
 
-    __skip : function() {
-      if (qx.core.Environment.get("browser.name") == "safari" &&
-          qx.core.Environment.get("os.name") == "osx") {
-        this.require(["noSelenium"]);
-      }
-    },
 
     //
     // Configuration
@@ -600,7 +593,6 @@ qx.Class.define("qx.test.io.rest.Resource",
     },
 
     "test: poll action": function() {
-      this.__skip();
       var res = this.res,
           sandbox = this.getSandbox();
 
@@ -659,7 +651,6 @@ qx.Class.define("qx.test.io.rest.Resource",
     },
 
     "test: poll action repeatedly ends previous timer": function() {
-      this.__skip();
       var res = this.res,
           sandbox = this.getSandbox(),
           msg;
@@ -679,7 +670,6 @@ qx.Class.define("qx.test.io.rest.Resource",
     },
 
     "test: poll many actions": function() {
-      this.__skip();
       var res = this.res,
           sandbox = this.getSandbox(),
           spy,
@@ -706,7 +696,6 @@ qx.Class.define("qx.test.io.rest.Resource",
     },
 
     "test: end poll action": function() {
-      this.__skip();
       var res = this.res,
           sandbox = this.getSandbox(),
           timer;
@@ -726,7 +715,6 @@ qx.Class.define("qx.test.io.rest.Resource",
     },
 
     "test: end poll action does not end polling of other action": function() {
-      this.__skip();
       var res = this.res,
           sandbox = this.getSandbox(),
           timer,
@@ -746,7 +734,6 @@ qx.Class.define("qx.test.io.rest.Resource",
     },
 
     "test: restart poll action": function() {
-      this.__skip();
       var res = this.res,
           sandbox = this.getSandbox(),
           timer;

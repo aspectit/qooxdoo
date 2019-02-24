@@ -8,8 +8,7 @@
      2013 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -758,7 +757,7 @@ qx.Class.define("qx.test.bom.rest.Resource",
 
       // undo this line from setUp() ...
       // this.injectStub(qx.bom.request, "SimpleXhr", req);
-      // ... in order to have uniqe reqs instead of always
+      // ... in order to have unique reqs instead of always
       //     the same stubbed req from the setUp method.
       qx.bom.request.SimpleXhr.restore();
 
@@ -808,7 +807,7 @@ qx.Class.define("qx.test.bom.rest.Resource",
 
       // undo this line from setUp() ...
       // this.injectStub(qx.bom.request, "SimpleXhr", req);
-      // ... in order to have uniqe reqs instead of always
+      // ... in order to have unique reqs instead of always
       //     the same stubbed req from the setUp method.
       qx.bom.request.SimpleXhr.restore();
 
@@ -837,7 +836,7 @@ qx.Class.define("qx.test.bom.rest.Resource",
 
       // undo this line from setUp() ...
       // this.injectStub(qx.bom.request, "SimpleXhr", req);
-      // ... in order to have uniqe reqs instead of always
+      // ... in order to have unique reqs instead of always
       //     the same stubbed req from the setUp method.
       qx.bom.request.SimpleXhr.restore();
 
@@ -872,7 +871,7 @@ qx.Class.define("qx.test.bom.rest.Resource",
 
       // undo this line from setUp() ...
       // this.injectStub(qx.bom.request, "SimpleXhr", req);
-      // ... in order to have uniqe reqs instead of always
+      // ... in order to have unique reqs instead of always
       //     the same stubbed req from the setUp method.
       qx.bom.request.SimpleXhr.restore();
 
@@ -952,6 +951,27 @@ qx.Class.define("qx.test.bom.rest.Resource",
       });
     },
 
+    "test: fire started" : function() {
+
+      qx.bom.request.SimpleXhr.restore();
+
+      var res = this.res,
+          req = this.req,
+          that = this;
+
+      var listener = this.spy();
+      res.on("started", listener);
+      res.get();
+
+      window.setTimeout(function() {
+        this.resume(function() {
+          this.assertTrue(listener.calledOnce);
+        }, this);
+      }.bind(this), 200);
+
+      this.wait(500);
+    },
+
     //
     // Dispose
     //
@@ -1007,7 +1027,13 @@ qx.Class.define("qx.test.bom.rest.Resource",
       res.get();
       this.respond();
 
-      this.assertCalledOnce(req.dispose);
+      window.setTimeout(function() {
+        this.resume(function() {
+          this.assertCalledOnce(req.dispose);
+        }, this);
+      }.bind(this), 100);
+
+      this.wait(200);
     },
 
     assertSend: function(method, url) {
@@ -1036,8 +1062,8 @@ qx.Class.define("qx.test.bom.rest.Resource",
 
       req.isDone.returns(true);
       req.getResponse.returns(response);
-      req.getTransport()._emit("success");
-      req.getTransport()._emit("loadEnd");
+      req.emit("success");
+      req.emit("loadEnd");
     },
 
     // Fake response but find and manipulate matching requests *within* res
@@ -1068,8 +1094,8 @@ qx.Class.define("qx.test.bom.rest.Resource",
           reqWithin.isDone.returns(true);
           reqWithin.getResponse.returns(response);
         }
-        reqWithin.getTransport()._emit("success");
-        reqWithin.getTransport()._emit("loadEnd");
+        reqWithin.emit("success");
+        reqWithin.emit("loadEnd");
         this.res[requests].get[reqIdx] = reqWithin;
       }
     },
@@ -1077,8 +1103,8 @@ qx.Class.define("qx.test.bom.rest.Resource",
     // Fake erroneous response
     respondError: function() {
       var req = this.req;
-      req.getTransport()._emit("fail");
-      req.getTransport()._emit("loadEnd");
+      req.emit("fail");
+      req.emit("loadEnd");
     }
 
   }

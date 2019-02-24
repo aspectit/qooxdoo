@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -252,8 +251,16 @@ qx.Class.define("qx.ui.root.Abstract",
       }
 
       // Require that widget does not accept text input
-      var nodeName = target.getContentElement().getNodeName();
-      if (nodeName === "input" || nodeName === "textarea") {
+      var el = target.getContentElement();
+      var nodeName = el.getNodeName();
+      var domEl = el.getDomElement();
+      if (nodeName === "input" || nodeName === "textarea" || (domEl && domEl.contentEditable === "true")) {
+        return;
+      }
+
+      // do not prevent "space" key for natively focusable elements
+      nodeName = qx.dom.Node.getName(e.getOriginalTarget());
+      if (nodeName && ["input", "textarea", "select", "a"].indexOf(nodeName) > -1) {
         return;
       }
 

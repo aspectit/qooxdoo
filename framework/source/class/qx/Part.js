@@ -8,8 +8,7 @@
      2004-2010 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -180,7 +179,7 @@ qx.Bootstrap.define("qx.Part",
         throw new Error("Package not available: " + id);
       }
 
-      // save the colsure in the package itself
+      // save the closure in the package itself
       pkg.saveClosure(closure);
 
       // call the listeners
@@ -191,7 +190,7 @@ qx.Bootstrap.define("qx.Part",
       for (var i = 0; i < listeners.length; i++) {
         listeners[i]("complete", id);
       }
-      // get rid of all colsure package listeners for that package
+      // get rid of all closure package listeners for that package
       this.__packageClosureListeners[id] = [];
     },
 
@@ -379,7 +378,7 @@ qx.Bootstrap.define("qx.Part",
         this.__partListners[key] = [];
       }
 
-      if (typeof this.onpart == "function") {
+      if (typeof this.onpart === "function") {
         this.onpart(part);
       }
     },

@@ -8,8 +8,7 @@
      2004-2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -23,6 +22,8 @@ qx.Class.define("qx.test.bom.element.AnimationJs",
 
   members :
   {
+    __el : null,
+
     testStop : function() {
       var el = qx.dom.Element.create("div");
       var handle = qx.bom.element.AnimationJs.animate(el, {
@@ -41,13 +42,26 @@ qx.Class.define("qx.test.bom.element.AnimationJs",
       }, this);
     },
 
+    setUp : function() {
+      this.__el = qx.dom.Element.create("img");
+      qx.bom.element.Style.setStyles(this.__el, { width: "200px", height: "200px" });
+
+      document.body.appendChild(this.__el);
+    },
+
+    tearDown : function() {
+      document.body.removeChild(this.__el);
+      this.__el = null;
+    },
+
     "test animate properties which are CSS properties and element attributes" : function() {
-      var el = qx.dom.Element.create("img");
-      qx.bom.element.Style.setStyles(el, { width: "200px", height: "200px" });
 
-      document.body.appendChild(el);
+      // known to fail in chrome
+      if (qx.core.Environment.get("browser.name") == "chrome") {
+        throw new qx.dev.unit.RequirementError();
+      }
 
-      var handle = qx.bom.element.Animation.animate(el, {
+      var handle = qx.bom.element.Animation.animate(this.__el, {
         "duration": 100,
         "keyFrames": {
           0 : { "width": "200px", "height": "200px" },
@@ -57,11 +71,10 @@ qx.Class.define("qx.test.bom.element.AnimationJs",
       });
 
       this.wait(500, function() {
-        this.assertEquals("400px", qx.bom.element.Style.get(el, "width"));
-        this.assertEquals("400px", qx.bom.element.Style.get(el, "height"));
-      }, this);
+        this.assertEquals("400px", qx.bom.element.Style.get(this.__el, "width"));
+        this.assertEquals("400px", qx.bom.element.Style.get(this.__el, "height"));
 
-      document.body.removeChild(el);
+      }, this);
     }
   }
 });

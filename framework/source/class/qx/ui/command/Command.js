@@ -8,8 +8,7 @@
      2004-2014 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -22,6 +21,9 @@
  * also be used to assign an execution of a command sequence to multiple
  * widgets. It is possible to use the same Command in a MenuButton and
  * ToolBarButton for example.
+ * 
+ * NOTE: Instances of this class must be disposed of after use
+ *
  */
 qx.Class.define("qx.ui.command.Command",
 {
@@ -31,7 +33,7 @@ qx.Class.define("qx.ui.command.Command",
   /**
    * @param shortcut {String} Shortcuts can be composed of optional modifier
    *    keys Control, Alt, Shift, Meta and a non modifier key.
-   *    If no non modifier key is specified, the second paramater is evaluated.
+   *    If no non modifier key is specified, the second parameter is evaluated.
    *    The key must be separated by a <code>+</code> or <code>-</code> character.
    *    Examples: Alt+F1, Control+C, Control+Alt+Delete
    */
@@ -60,7 +62,7 @@ qx.Class.define("qx.ui.command.Command",
   properties :
   {
     /** Whether the command should be activated. If 'false' execute event
-     * wouldn't fire. This proprty will be used by command groups when
+     * wouldn't fire. This property will be used by command groups when
      * activating/deactivating all commands of the group.*/
     active :
     {
@@ -152,7 +154,7 @@ qx.Class.define("qx.ui.command.Command",
       if (value === false) {
         this._shortcut.setEnabled(false);
       } else {
-        // syncronize value with current "enabled" value of this command
+        // synchronize value with current "enabled" value of this command
         this._shortcut.setEnabled(this.getEnabled());
       }
     },
@@ -194,7 +196,10 @@ qx.Class.define("qx.ui.command.Command",
      */
     toString : function()
     {
-      return this._shortcut.toString();
+      if (this._shortcut) {
+          return this._shortcut.toString();
+      }
+      return this.base(arguments);
     }
   },
 

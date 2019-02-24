@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -25,14 +24,14 @@
 /**
  * The simple qooxdoo appearance theme.
  *
- * @asset(qx/icon/Tango/16/apps/office-calendar.png)
- * @asset(qx/icon/Tango/16/places/folder-open.png)
- * @asset(qx/icon/Tango/16/places/folder.png)
- * @asset(qx/icon/Tango/16/mimetypes/text-plain.png)
- * @asset(qx/icon/Tango/16/actions/view-refresh.png)
- * @asset(qx/icon/Tango/16/actions/window-close.png)
- * @asset(qx/icon/Tango/16/actions/dialog-cancel.png)
- * @asset(qx/icon/Tango/16/actions/dialog-ok.png)
+ * @asset(qx/icon/${qx.icontheme}/16/apps/office-calendar.png)
+ * @asset(qx/icon/${qx.icontheme}/16/places/folder-open.png)
+ * @asset(qx/icon/${qx.icontheme}/16/places/folder.png)
+ * @asset(qx/icon/${qx.icontheme}/16/mimetypes/text-plain.png)
+ * @asset(qx/icon/${qx.icontheme}/16/actions/view-refresh.png)
+ * @asset(qx/icon/${qx.icontheme}/16/actions/window-close.png)
+ * @asset(qx/icon/${qx.icontheme}/16/actions/dialog-cancel.png)
+ * @asset(qx/icon/${qx.icontheme}/16/actions/dialog-ok.png)
  */
 qx.Theme.define("qx.theme.indigo.Appearance",
 {
@@ -46,7 +45,7 @@ qx.Theme.define("qx.theme.indigo.Appearance",
       style : function() {
         return {
           paddingTop: 0
-        }
+        };
       }
     },
 
@@ -56,7 +55,7 @@ qx.Theme.define("qx.theme.indigo.Appearance",
       style : function() {
         return {
           paddingTop: 0
-        }
+        };
       }
     },
 
@@ -161,7 +160,7 @@ qx.Theme.define("qx.theme.indigo.Appearance",
       {
         return {
           paddingTop : 5
-        }
+        };
       }
     },
 
@@ -171,7 +170,7 @@ qx.Theme.define("qx.theme.indigo.Appearance",
         return {
           padding: [0, 10, 10, 10],
           backgroundColor: "light-background"
-        }
+        };
       }
     }
   }

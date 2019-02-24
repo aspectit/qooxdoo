@@ -10,8 +10,7 @@
      2006 STZ-IDA, Germany, http://www.stz-ida.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -32,11 +31,14 @@
  *
  * This class should not be used directly by client programmers.
  *
+ * NOTE: Instances of this class must be disposed of after use
+ *
  * @asset(qx/static/blank.gif)
  */
 qx.Class.define("qx.io.remote.transport.Iframe",
 {
   extend : qx.io.remote.transport.Abstract,
+  implement: [ qx.core.IDisposable ],
 
 
 
@@ -109,7 +111,7 @@ qx.Class.define("qx.io.remote.transport.Iframe",
       asynchronous          : true,
       crossDomain           : false,
       fileUpload            : true,
-      programaticFormFields : true,
+      programmaticFormFields : true,
       responseTypes         : [ "text/plain", "text/javascript", "application/json", "application/xml", "text/html" ]
     },
 

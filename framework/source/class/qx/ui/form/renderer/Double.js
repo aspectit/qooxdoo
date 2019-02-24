@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -47,8 +46,10 @@ qx.Class.define("qx.ui.form.renderer.Double",
 
     // overridden
     _onFormChange : function() {
-      this._buttonRow.destroy();
-      this._buttonRow = null;
+      if (this._buttonRow) {
+        this._buttonRow.destroy();
+        this._buttonRow = null;
+      }
       this._row = 0;
       this.base(arguments);
     },
@@ -178,7 +179,7 @@ qx.Class.define("qx.ui.form.renderer.Double",
   *****************************************************************************
   */
   destruct : function() {
-    // first, remove all buttons from the botton row because they
+    // first, remove all buttons from the bottom row because they
     // should not be disposed
     if (this._buttonRow) {
       this._buttonRow.removeAll();

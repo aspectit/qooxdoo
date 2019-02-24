@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -179,7 +178,7 @@ qx.Class.define("qx.test.locale.Locale",
       this.assertEquals("Links", qx.locale.Key.getKeyName("short", "Left", "de_DE"));
       // is the localized version
       if (qx.core.Environment.get("os.name") == "osx") {
-        // there is no strg on macs, onls ctrl
+        // there is no strg on macs, only ctrl
         this.assertEquals("Ctrl", qx.locale.Key.getKeyName("short", "Control", "de_DE"));
         this.assertEquals("Control", qx.locale.Key.getKeyName("full", "Control", "de_DE"));
       } else {
@@ -206,7 +205,7 @@ qx.Class.define("qx.test.locale.Locale",
 
       // try the reset of the locale
       manager.resetLocale();
-      this.assertEquals(null, manager.getLocale());
+      this.assertEquals(locale, manager.getLocale());
 
       // make sure we set the locale which was there before the test
       manager.setLocale(oldLocale);

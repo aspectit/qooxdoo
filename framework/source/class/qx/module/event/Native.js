@@ -8,8 +8,7 @@
      2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -86,13 +85,6 @@ qx.Bootstrap.define("qx.module.event.Native", {
 
     /**
      * Returns the target of the event.
-     * Example:
-     * <pre class="javascript">
-     *   var collection = q("div.inline");
-     *   collection.on("click", function(e) {
-     *     var clickedElement = e.getTarget();
-     *   });
-     * </pre>
      *
      * @signature function ()
      * @return {Object} Any valid native event target
@@ -103,24 +95,6 @@ qx.Bootstrap.define("qx.module.event.Native", {
     /**
      * Computes the related target from the native DOM event
      *
-     * Example:
-     * <pre class="javascript">
-     *   var collection = q("div.inline");
-     *   collection.on("mouseout", function(e) {
-     *     // when using 'mouseout' events the 'relatedTarget' is pointing to the DOM element
-     *     //  the device exited to.
-     *     // Useful for scenarios you only interested if e.g. the user moved away from a
-     *     // section at the website
-     *     var exitTarget = e.getRelatedTarget();
-     *   });
-     *
-     *   collection.on("mouseover", function(e){
-     *      // when using 'mouseover' events the 'relatedTarget' is pointing to the DOM element
-     *      // the device entered from.
-     *      var earlierElement = e.getRelatedTarget();
-     *   });
-     * </pre>
-     *
      * @signature function ()
      * @return {Element} The related target
      */
@@ -130,14 +104,6 @@ qx.Bootstrap.define("qx.module.event.Native", {
     /**
      * Computes the current target from the native DOM event. Emulates the current target
      * for all browsers without native support (like older IEs).
-     *
-     * Example:
-     * <pre class="javascript">
-     *   var collection = q("div.inline");
-     *   collection.on("mouseout", function(e) {
-     *     var current = e.getCurrentTarget();
-     *   });
-     * </pre>
      *
      * @signature function ()
      * @return {Element} The current target

@@ -8,8 +8,7 @@
      2004-2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -183,7 +182,7 @@ qx.Class.define("qx.ui.mobile.basic.Atom",
 
     /**
      * Takes care of lazily creating the layout and disposing an already
-     * present layout if neccessary.
+     * present layout if necessary.
      *
      * @param verticalLayout {Boolean} Whether icon and label should be vertically aligned.
      * @param hasNoLabel {Boolean} Whether the atom currently contains a label.

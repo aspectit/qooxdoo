@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -68,6 +67,9 @@ qx.Class.define("qx.event.type.Event",
 
   members :
   {
+  	/** {qx.Promise[]} promises returned by event handlers */
+  	_promises: null,
+  	
     /**
      * Initialize the fields of the event. The event must be initialized before
      * it can be dispatched.
@@ -109,6 +111,7 @@ qx.Class.define("qx.event.type.Event",
       this._cancelable = !!cancelable;
       this._timeStamp = (new Date()).getTime();
       this._eventPhase = null;
+      this._promises = null;
 
       return this;
     },
@@ -141,6 +144,7 @@ qx.Class.define("qx.event.type.Event",
       clone._bubbles = this._bubbles;
       clone._preventDefault = this._preventDefault;
       clone._cancelable = this._cancelable;
+      clone._promises = this._promises;
 
       return clone;
     },
@@ -202,6 +206,59 @@ qx.Class.define("qx.event.type.Event",
       }
       this._preventDefault = true;
     },
+    
+    
+    /**
+     * Adds a promise to the list of promises returned by event handlers
+     * @param promise {qx.Promise} the promise to add
+     */
+    addPromise: qx.core.Environment.select("qx.promise", {
+      "true": function(promise) {
+          if (this._promises === null) {
+            this._promises = [promise];
+          } else {
+            this._promises.push(promise);
+          }
+        },
+      "false": function() {
+        throw new Error(this.classname + ".addPromise not supported because qx.promise==false");
+      }
+    }),
+    
+    
+    /**
+     * Returns the array of promises, or null if there are no promises
+     * @return {qx.Promise[]?}
+     */
+    getPromises: qx.core.Environment.select("qx.promise", {
+      "true": function() {
+        return this._promises;
+      },
+      "false": function() {
+        throw new Error(this.classname + ".getPromises not supported because qx.promise==false");
+      }
+    }),
+    
+    
+    /**
+     * Returns a promise for this event; if the event is defaultPrevented, the promise
+     * is a rejected promise, otherwise it is fulfilled.  The promise returned will only
+     * be fulfilled when the promises added via {@link addPromise} are also fulfilled
+     */
+    promise: qx.core.Environment.select("qx.promise", {
+      "true": function() {
+        if (this.getDefaultPrevented()) {
+          return qx.Promise.reject();
+        }
+        if (this._promises === null) {
+          return qx.Promise.resolve(true);
+        }
+        return qx.Promise.all(this._promises);
+      },
+      "false": function() {
+        throw new Error(this.classname + ".promise not supported because qx.promise==false");
+      }
+    }),
 
 
     /**
@@ -394,19 +451,5 @@ qx.Class.define("qx.event.type.Event",
     setCancelable : function(cancelable) {
       this._cancelable = cancelable;
     }
-  },
-
-
-
-
-  /*
-  *****************************************************************************
-     DESTRUCTOR
-  *****************************************************************************
-  */
-
-  destruct : function() {
-    this._target = this._currentTarget = this._relatedTarget =
-      this._originalTarget = null;
   }
 });

@@ -8,9 +8,8 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
-     See the LICENSE file in the project's left-level directory for details.
+     MIT: https://opensource.org/licenses/MIT
+     See the LICENSE file in the project's top-level directory for details.
 
    Authors:
      * Sebastian Werner (wpbasti)
@@ -40,6 +39,24 @@ qx.Class.define("qx.ui.core.scroll.ScrollSlider",
 
 
   members : {
+
+    // overridden
+    _createChildControlImpl : function(id, hash)
+    {
+      var control;
+
+      switch(id)
+      {
+        case "knob":
+          control = this.base(arguments, id);
+          control.addListener("dblclick", function(e) {
+            e.stopPropagation();
+          });
+      }
+
+      return control || this.base(arguments, id);
+    },
+
     // overridden
     getSizeHint : function(compute) {
       // get the original size hint

@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -21,11 +20,15 @@
 /**
  * This class manages the timer used for deferred calls. All
  * {@link qx.util.DeferredCall} instances use the single timer from this class.
+ * 
+ * NOTE: Instances of this class must be disposed of after use
+ *
  */
 qx.Class.define("qx.util.DeferredCallManager",
 {
   extend : qx.core.Object,
   type : "singleton",
+  implement : [ qx.core.IDisposable ],
 
 
   /*
@@ -83,6 +86,18 @@ qx.Class.define("qx.util.DeferredCallManager",
       this.__hasCalls = true;
     },
 
+    /**
+     * Refresh the timeout if the current one is not active anymore.
+     * This is a very special case which can happen in unit tests using
+     * fakeTimers, which overrides the window.setTimeout function (amongst others)
+     * after restoring the sinon sandbox the timeout must be refreshed otherwise
+     * DeferredCalls would never fire.
+     */
+    refreshTimeout : function() {
+      if (this.__timeoutId !== null) {
+        this.__timeoutId = window.setTimeout(this.__timeoutWrapper, 0);
+      }
+    },
 
     /**
      * Cancel a scheduled deferred call

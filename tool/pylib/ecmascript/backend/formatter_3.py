@@ -10,8 +10,7 @@
 #    2006-2012 1&1 Internet AG, Germany, http://www.1und1.de
 #
 #  License:
-#    LGPL: http://www.gnu.org/licenses/lgpl.html
-#    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+#    MIT: https://opensource.org/licenses/MIT
 #    See the LICENSE file in the project's top-level directory for details.
 #
 #  Authors:
@@ -125,7 +124,7 @@ def prefix_keyword(id_):
             cld.format(optns, state)
     symbol(id_).format = format
 
-for sym in "var new throw while if for do with try catch switch case default".split():  # some of them might get overwritten later, or this list should be adjusted
+for sym in "var new throw while if for do with try catch finally switch case default".split():  # some of them might get overwritten later, or this list should be adjusted
     prefix_keyword(sym)
 
 def prefix_kw_optarg(id_):  # break, continue, return

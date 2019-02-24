@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -40,9 +39,24 @@ qx.Mixin.define("qx.ui.window.MDesktop",
     {
       check : "qx.ui.window.Window",
       apply : "_applyActiveWindow",
+      event : "changeActiveWindow",
       init  : null,
       nullable : true
     }
+  },
+
+
+  events:
+  {
+    /**
+     * Fired when a window was added.
+     */
+    windowAdded: "qx.event.type.Data",
+
+    /**
+     * Fired when a window was removed.
+     */
+    windowRemoved: "qx.event.type.Data"
   },
 
 
@@ -163,13 +177,17 @@ qx.Mixin.define("qx.ui.window.MDesktop",
      */
     _addWindow : function(win)
     {
-      if (!qx.lang.Array.contains(this.getWindows(), win))
+      if (!this.getWindows().includes(win))
       {
         this.getWindows().push(win);
+
+        this.fireDataEvent("windowAdded", win);
+
         win.addListener("changeActive", this._onChangeActive, this);
         win.addListener("changeModal", this._onChangeModal, this);
         win.addListener("changeVisibility", this._onChangeVisibility, this);
       }
+
       if (win.getActive()) {
         this.setActiveWindow(win);
       }
@@ -198,11 +216,18 @@ qx.Mixin.define("qx.ui.window.MDesktop",
      */
     _removeWindow : function(win)
     {
-      qx.lang.Array.remove(this.getWindows(), win);
-      win.removeListener("changeActive", this._onChangeActive, this);
-      win.removeListener("changeModal", this._onChangeModal, this);
-      win.removeListener("changeVisibility", this._onChangeVisibility, this);
-      this.getWindowManager().updateStack();
+      if (this.getWindows().includes(win))
+      {
+        qx.lang.Array.remove(this.getWindows(), win);
+
+        this.fireDataEvent("windowRemoved", win);
+
+        win.removeListener("changeActive", this._onChangeActive, this);
+        win.removeListener("changeModal", this._onChangeModal, this);
+        win.removeListener("changeVisibility", this._onChangeVisibility, this);
+
+        this.getWindowManager().updateStack();
+      }
     },
 
 

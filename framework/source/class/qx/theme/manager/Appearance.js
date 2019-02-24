@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -54,7 +53,7 @@ qx.Class.define("qx.theme.manager.Appearance",
 
   properties :
   {
-    /** currently used appearance theme */
+    /** Currently used appearance theme */
     theme :
     {
       check : "Theme",
@@ -200,9 +199,12 @@ qx.Class.define("qx.theme.manager.Appearance",
 
       // Resolve ID
       var aliasMap = this.__aliasMap;
-      var resolved = aliasMap[id];
+      if(!aliasMap[theme.name]) {
+        aliasMap[theme.name] = {};
+      }
+      var resolved = aliasMap[theme.name][id];
       if (!resolved) {
-        resolved = aliasMap[id] = this.__resolveId(id, theme, defaultId);
+        resolved = aliasMap[theme.name][id] = this.__resolveId(id, theme, defaultId);
       }
 
       // Query theme for ID
@@ -255,8 +257,8 @@ qx.Class.define("qx.theme.manager.Appearance",
 
       // Using cache if available
       var cache = this.__styleCache;
-      if (cache[unique] !== undefined) {
-        return cache[unique];
+      if (cache[theme.name] && (cache[theme.name][unique] !== undefined)) {
+        return cache[theme.name][unique];
       }
 
       // Fallback to default (empty) states map
@@ -334,19 +336,10 @@ qx.Class.define("qx.theme.manager.Appearance",
       }
 
       // Cache new entry and return
-      return cache[unique] = result || null;
+      if(!cache[theme.name]) {
+        cache[theme.name] = {};
+      }
+       return cache[theme.name][unique] = result || null;
     }
-  },
-
-
-
-  /*
-  *****************************************************************************
-     DESTRUCTOR
-  *****************************************************************************
-  */
-
-  destruct : function() {
-    this.__styleCache = this.__aliasMap = null;
   }
 });

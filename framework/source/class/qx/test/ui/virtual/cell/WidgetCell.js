@@ -8,8 +8,7 @@
      2004-2010 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -23,7 +22,7 @@
 ************************************************************************ */
 /**
  *
- * @asset(qx/icon/Tango/22/emotes/face-angel.png)
+ * @asset(qx/icon/${qx.icontheme}/22/emotes/face-angel.png)
  */
 
 qx.Class.define("qx.test.ui.virtual.cell.WidgetCell",
@@ -108,7 +107,7 @@ qx.Class.define("qx.test.ui.virtual.cell.WidgetCell",
         icon: "icon/22/emotes/face-angel.png"
       };
 
-      this.__cell.updateData(item, data)
+      this.__cell.updateData(item, data);
       this.assertEquals(data.label, item.getLabel());
       this.assertEquals(data.icon, item.getIcon());
       item.dispose();
@@ -119,7 +118,7 @@ qx.Class.define("qx.test.ui.virtual.cell.WidgetCell",
       this.__setUpDelegate();
       var item = this.__cell.getCellWidget();
 
-      this.__cell.updateData(item)
+      this.__cell.updateData(item);
       this.assertNull(item.getLabel());
       this.assertNull(item.getIcon());
       item.dispose();
@@ -134,7 +133,7 @@ qx.Class.define("qx.test.ui.virtual.cell.WidgetCell",
 
       var that = this;
       this.assertException(function() {
-        that.__cell.updateData(item, data)
+        that.__cell.updateData(item, data);
       });
       item.dispose();
     },

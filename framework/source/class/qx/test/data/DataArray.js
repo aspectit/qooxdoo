@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -143,6 +142,10 @@ qx.Class.define("qx.test.data.DataArray",
        var b = this.__a.concat(["four", "five"]);
        this.assertEquals("one two three four five", b.join(" "), "Concat does not work");
        b.dispose();
+       
+       var b = this.__a.concat(new qx.data.Array(["four", "five"]));
+       this.assertEquals("one two three four five", b.join(" "), "Concat does not work");
+       b.dispose();
     },
 
 
@@ -159,6 +162,25 @@ qx.Class.define("qx.test.data.DataArray",
       slice = this.__a.slice(0, 2);
       this.assertEquals("two", slice.getItem(1), "Slice does not work");
       slice.dispose();
+    },
+    
+    
+    testReplace: function() {
+      var numFired = 0;
+      var id = this.__a.addListener("change", function() {
+        numFired++;
+      });
+      
+      this.__a.replace([ "one", "two", "three" ]);
+      this.assertEquals(0, numFired);
+      this.__a.replace([ "one", "three" ]);
+      this.assertEquals(1, numFired);
+      this.assertArrayEquals([ "one", "three" ], this.__a.toArray());
+      this.__a.replace(new qx.data.Array([ "two", "four" ]));
+      this.assertEquals(2, numFired);
+      this.assertArrayEquals([ "two", "four" ], this.__a.toArray());
+      
+      this.__a.removeListenerById(id);
     },
 
 
@@ -400,6 +422,17 @@ qx.Class.define("qx.test.data.DataArray",
       this.assertEquals("sechs", this.__a.getItem(5), "append does not work");
       dArray.dispose();
     },
+    
+    
+    testExclude: function() {
+      var tmp = new qx.data.Array([ "one", "two", "three", "four", "five" ]);
+      tmp.exclude([ "two", "four" ]);
+      this.assertArrayEquals(tmp.toArray(), [ "one", "three", "five" ]);
+      
+      var tmp = new qx.data.Array([ "one", "two", "three", "four", "five" ]);
+      tmp.exclude(new qx.data.Array([ "one", "three", "five" ]));
+      this.assertArrayEquals(tmp.toArray(), [ "two", "four" ]);
+    },
 
 
     testRemove: function() {
@@ -413,10 +446,10 @@ qx.Class.define("qx.test.data.DataArray",
 
     testEquals: function() {
       var a = new qx.data.Array("one", "two", "three");
-
       this.assertTrue(this.__a.equals(a), "equals does not work.");
-
       a.dispose();
+      
+      this.assertTrue(this.__a.equals([ "one", "two", "three" ]), "equals does not work.");
     },
 
 
@@ -568,6 +601,25 @@ qx.Class.define("qx.test.data.DataArray",
         self.assertEquals(1, e.getData().removed.length, "Wrong amount of items in the event. (add/remove)");
       }, "Change event not fired!");
       a.dispose();
+
+      // test for the event (add/remove) in replace
+      a = new qx.data.Array("a", "b", "c");
+      this.assertEventFired(a, "change", function () {
+        a.splice(0, 3, "x", "y", "z").dispose();
+      }, function(e) {
+        self.assertEquals(0, e.getData().start, "Wrong start index in the event. (replace)");
+        self.assertEquals(2, e.getData().end, "Wrong end index in the event. (replace)");
+        self.assertEquals("add/remove", e.getData().type, "Wrong type in the event. (replace)");
+        self.assertEquals("x", e.getData().added[0], "Wrong items in the event. (replace)");
+        self.assertEquals("y", e.getData().added[1], "Wrong items in the event. (replace)");
+        self.assertEquals("z", e.getData().added[2], "Wrong items in the event. (replace)");
+        self.assertEquals(3, e.getData().added.length, "Wrong amount of items in the event. (replace)");
+        self.assertEquals("a", e.getData().removed[0], "Wrong items in the event. (replace)");
+        self.assertEquals("b", e.getData().removed[1], "Wrong items in the event. (replace)");
+        self.assertEquals("c", e.getData().removed[2], "Wrong items in the event. (replace)");
+        self.assertEquals(3, e.getData().removed.length, "Wrong amount of items in the event. (replace)");
+      }, "Change event not fired!");
+      a.dispose();
     },
 
     testSpliceBubbleEvent: function() {
@@ -695,7 +747,7 @@ qx.Class.define("qx.test.data.DataArray",
           self.assertEquals("one", item);
           return;
         } else if (i == 1) {
-          i++
+          i++;
           self.assertEquals("two", item);
           return;
         } else if (i == 2) {
@@ -705,7 +757,7 @@ qx.Class.define("qx.test.data.DataArray",
         }
         // something went wrong!
         throw new Error("Wrong call in the handler.");
-      }
+      };
 
       // invoke the forEach
       this.__a.forEach(forEachHandler, thisContext);

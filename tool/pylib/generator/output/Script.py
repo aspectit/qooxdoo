@@ -10,8 +10,7 @@
 #    2006-2010 1&1 Internet AG, Germany, http://www.1und1.de
 #
 #  License:
-#    LGPL: http://www.gnu.org/licenses/lgpl.html
-#    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+#    MIT: https://opensource.org/licenses/MIT
 #    See the LICENSE file in the project's top-level directory for details.
 #
 #  Authors:
@@ -31,6 +30,7 @@ from misc.Trie              import Trie
 from misc.ExtMap            import ExtMap
 from generator.output.Package import Package
 from generator.resource.CombinedImage import CombinedImage
+from generator.resource.FontMap import FontMap
 
 class Script(object):
 
@@ -122,6 +122,17 @@ class Script(object):
         # Flatten out the resource representation
         for resid, res in result.items():
             result[resid] = res.toResinfo()
+
+            # Unify font map aliases
+            if isinstance(res, FontMap):
+                for glyphname, code in res.mapping.iteritems():
+                  fdsc = "@%s/%s" % (res.alias, glyphname)
+                  if not fdsc in result:
+                      try:
+                          result[fdsc] = [result[resid][1], round(result[resid][2] / code[1]), code[0]]
+                      except:
+                          pass
+                del result[resid][4]
 
         # ExtMap returns nested maps
         if formatAsTree:

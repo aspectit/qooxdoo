@@ -8,8 +8,7 @@
      2004-2010 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -90,7 +89,7 @@ qx.Class.define("qx.ui.virtual.cell.WidgetCell",
         if (qx.Class.hasProperty(widget.constructor, key)) {
           qx.util.PropertyUtil.setUserValue(widget, key, data[key]);
         } else {
-          throw new Error("Can't update data! The key '" + key + "' is not a Property!")
+          throw new Error("Can't update data! The key '" + key + "' is not a Property!");
         }
       }
     }

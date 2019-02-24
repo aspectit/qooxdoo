@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -20,7 +19,7 @@
 
 /**
  * This mixin exposes all methods to manage the layout manager of a widget.
- * It can only be included into instances of {@link Widget}.
+ * It can only be included into instances of {@link qx.ui.core.Widget}.
  *
  * To optimize the method calls the including widget should call the method
  * {@link #remap} in its defer function. This will map the protected

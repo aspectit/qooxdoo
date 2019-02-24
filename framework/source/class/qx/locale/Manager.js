@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -50,18 +49,9 @@ qx.Class.define("qx.locale.Manager",
     this.__translations = qx.$$translations || {};
     this.__locales      = qx.$$locales || {};
 
-    var locale = qx.core.Environment.get("locale");
-    var variant = qx.core.Environment.get("locale.variant");
-    if (variant !== "") {
-      locale += "_" + variant;
-    }
-
-    this.__clientLocale = locale;
-
-    this.setLocale(locale || this.__defaultLocale);
+    this.initLocale();
+    this.__clientLocale = this.getLocale();
   },
-
-
 
 
   /*
@@ -186,9 +176,18 @@ qx.Class.define("qx.locale.Manager",
     locale :
     {
       check : "String",
-      nullable : true,
       apply : "_applyLocale",
-      event : "changeLocale"
+      event : "changeLocale",
+      init : (function() { 
+        var locale = qx.core.Environment.get("locale");
+        if(!locale || locale === "") {
+          return qx.core.Environment.get("locale.default");
+        }
+        var variant = qx.core.Environment.get("locale.variant");
+        if (variant !== "") {
+          locale += "_" + variant;
+        }
+        return locale; })()
     }
   },
 
@@ -204,7 +203,7 @@ qx.Class.define("qx.locale.Manager",
   members :
   {
 
-    __defaultLocale : "C",
+    __defaultLocale : qx.core.Environment.get("locale.default"),
     __locale : null,
     __language : null,
     __translations : null,
@@ -377,7 +376,7 @@ qx.Class.define("qx.locale.Manager",
     },
 
     /**
-     * Provide localisation (CLDR) data.
+     * Provide localization (CLDR) data.
      *
      * Implements the lookup chain locale (e.g. en_US) -> language (e.g. en) ->
      * default locale (e.g. C). Localizes the arguments if possible and splices
@@ -467,21 +466,10 @@ qx.Class.define("qx.locale.Manager",
       }
 
       if (qx.core.Environment.get("qx.dynlocale")) {
-        txt = new qx.locale.LocalizedString(txt, messageId, args);
+        txt = new qx.locale.LocalizedString(txt, messageId, args, catalog === this.__locales);
       }
 
       return txt;
     }
-  },
-
-
-  /*
-  *****************************************************************************
-     DESTRUCTOR
-  *****************************************************************************
-  */
-
-  destruct : function() {
-    this.__translations = this.__locales = null;
   }
 });

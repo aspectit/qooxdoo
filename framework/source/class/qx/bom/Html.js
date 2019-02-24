@@ -8,8 +8,7 @@
      2009 Sebastian Werner, http://sebastian-werner.net
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -214,7 +213,7 @@ qx.Bootstrap.define("qx.bom.Html",
         }
       }
 
-      // Interate through items in incoming array
+      // Iterate through items in incoming array
       var obj, ret=[];
       for (var i=0, l=objs.length; i<l; i++)
       {

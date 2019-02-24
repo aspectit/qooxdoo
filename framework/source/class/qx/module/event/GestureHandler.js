@@ -8,8 +8,7 @@
      2014 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -22,7 +21,7 @@
  * based on low-level event sequences on the given element
  *
  * @require(qx.module.Event)
- * @require(qx.module.event.PointerHandler)
+ * @use(qx.module.event.PointerHandler)
  *
  * @group (Event_Normalization)
  */

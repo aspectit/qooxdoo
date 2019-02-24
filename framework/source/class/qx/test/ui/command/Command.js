@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -41,6 +40,8 @@ qx.Class.define("qx.test.ui.command.Command",
 
       this.__menuButton = new qx.ui.menu.Button("c");
       this.__menuButton.setCommand(this.__cmd);
+
+      qx.locale.Manager.getInstance().setLocale("en");
     },
 
 
@@ -50,6 +51,8 @@ qx.Class.define("qx.test.ui.command.Command",
       this.__button.destroy();
       this.__toolbarButton.destroy();
       this.__menuButton.destroy();
+
+      qx.locale.Manager.getInstance().resetLocale();
     },
 
 
@@ -259,14 +262,14 @@ qx.Class.define("qx.test.ui.command.Command",
 
     testDestructExecutable : function() {
       // Create the command
-      var cmd = new qx.ui.command.Command("Meta+T")
+      var cmd = new qx.ui.command.Command("Meta+T");
 
       // Create a button linked to cmd
       var button = new qx.ui.form.Button("Command button", null,cmd);
 
       cmd.setEnabled(false);
       button.destroy();
-      // make sure the dipose queue is flushed
+      // make sure the dispose queue is flushed
       qx.ui.core.queue.Manager.flush();
       cmd.setEnabled(true);
 
@@ -307,6 +310,14 @@ qx.Class.define("qx.test.ui.command.Command",
       var cmd = new qx.ui.command.Command("Control+X");
       this.assertEquals('Control+X', cmd.getShortcut());
       cmd.dispose();
+    },
+
+    testShortCutToString : function() {
+      // for bug #8465
+      var cmd = new qx.ui.command.Command("Ctrl+X");
+      this.assertEquals("Ctrl+X", cmd.toString());
+      cmd.dispose();
+      this.assertEquals("qx.ui.command.Command[undefined]",cmd.toString());
     }
   }
 });

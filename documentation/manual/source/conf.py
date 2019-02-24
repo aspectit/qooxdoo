@@ -49,24 +49,24 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'qooxdoo'
-copyright = u'2011-2013, 1&1 Internet AG'
+copyright = u'2011-2015, 1&1 Internet AG'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '4.1'
+version = '6.0.0-alpha'
 # The full version, including alpha/beta/rc tags.
-release = '4.1'
+release = '6.0.0-alpha'
 # The current git branch (used for github links)
 git_branch = "master"
 
 # qooxdoo Source Text Macros
 # use e.g. as "%{version}" anywhere in .rst files
-vMajor = "4"
-vMinor = "1"
-vPatch = ""
+vMajor = "6"
+vMinor = "0"
+vPatch = "0-alpha"
 qxmacros = {
     "version"  : vMajor + '.' + vMinor + (('.' + vPatch) if vPatch else '')
    ,"versionL" : vMajor + '.' + vMinor + '.x' # latest in this line

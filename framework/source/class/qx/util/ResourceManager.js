@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -61,6 +60,97 @@ qx.Class.define("qx.util.ResourceManager",
 
   members :
   {
+    /**
+     * Detects whether there is a high-resolution image available.
+     * A high-resolution image is assumed to have the same file name as
+     * the parameter source, but with a pixelRatio identifier before the file
+     * extension, like "@2x".
+     * Medium Resolution: "example.png", high-resolution: "example@2x.png"
+     *
+     * @param lowResImgSrc {String} source of the low resolution image.
+     * @param factor {Number} Factor to find the right image. If not set calculated by getDevicePixelRatio()
+     * @return {String|Boolean} If a high-resolution image source.
+     */
+     findHighResolutionSource: function(lowResImgSrc, factor) {
+      var pixelRatioCandidates = ["3", "2", "1.5"];
+
+      // Calculate the optimal ratio, based on the rem scale factor of the application and the device pixel ratio.
+      if (!factor) {
+        factor = parseFloat(qx.bom.client.Device.getDevicePixelRatio().toFixed(2));
+      }  
+      if (factor <= 1) {
+        return false;
+      }
+
+      var i = pixelRatioCandidates.length;
+      while (i > 0 && factor > pixelRatioCandidates[--i]) {}
+
+      var hiResImgSrc;
+      var k;
+
+      // Search for best img with a higher resolution.
+      for (k = i; k >= 0; k--) {
+        hiResImgSrc = this.getHighResolutionSource(lowResImgSrc, pixelRatioCandidates[k]);
+        if (hiResImgSrc) {
+          return hiResImgSrc;
+        }
+      }
+
+      // Search for best img with a lower resolution.
+      for (k = i + 1; k < pixelRatioCandidates.length; k++) {
+        hiResImgSrc = this.getHighResolutionSource(lowResImgSrc, pixelRatioCandidates[k]);
+        if (hiResImgSrc) {
+          return hiResImgSrc;
+        }
+      }
+
+      return null;
+    },
+
+    /**
+     * Returns the source name for the high-resolution image based on the passed
+     * parameters.
+     * @param source {String} the source of the medium resolution image.
+     * @param pixelRatio {Number} the pixel ratio of the high-resolution image.
+     * @return {String} the high-resolution source name or null if no source could be found.
+     */
+    getHighResolutionSource : function(source, pixelRatio) {
+      var fileExtIndex = source.lastIndexOf('.');
+      if (fileExtIndex > -1) {
+        var pixelRatioIdentifier = "@" + pixelRatio + "x";
+        var candidate = source.slice(0, fileExtIndex) + pixelRatioIdentifier + source.slice(fileExtIndex);
+
+        if(this.has(candidate)) {
+          return candidate;
+        }
+      }
+      return null;
+    },
+
+    /**
+     * Get all known resource IDs.
+     *
+     * @param pathfragment{String|null|undefined} an optional path fragment to check against with id.indexOf(pathfragment)
+     * @return {Array|null} an array containing the IDs or null if the registry is not initialized
+     */
+    getIds : function(pathfragment) {
+      var registry = this.self(arguments).__registry;
+      if(!registry) {
+        return null;
+      }
+
+      var ids = [];
+      for (var id in registry) {
+        if (registry.hasOwnProperty(id)) {
+          if(pathfragment && id.indexOf(pathfragment) == -1) {
+            continue;
+          }
+          ids.push(id);
+        }
+      }
+
+      return ids;
+    },
 
     /**
      * Whether the registry has information about the given resource.
@@ -94,7 +184,19 @@ qx.Class.define("qx.util.ResourceManager",
      */
     getImageWidth : function(id)
     {
-      var entry = this.self(arguments).__registry[id];
+      var size;
+      if (id && id.startsWith("@")) {
+        var part = id.split("/");
+        size = parseInt(part[2],10);
+        if (size) {
+          id = part[0]+"/"+part[1];
+        }
+      }
+      var entry = this.self(arguments).__registry[id]; // [ width, height, codepoint ]
+      if (size && entry) {
+        var width = Math.ceil(size / entry[1] * entry[0]);
+        return width;
+      }
       return entry ? entry[0] : null;
     },
 
@@ -109,6 +211,13 @@ qx.Class.define("qx.util.ResourceManager",
      */
     getImageHeight : function(id)
     {
+      if (id && id.startsWith("@")) {
+        var part = id.split("/");
+        var size = parseInt(part[2],10);
+        if (size) {
+          return size;
+        }
+      }
       var entry = this.self(arguments).__registry[id];
       return entry ? entry[1] : null;
     },
@@ -124,6 +233,10 @@ qx.Class.define("qx.util.ResourceManager",
      */
     getImageFormat : function(id)
     {
+      if (id && id.startsWith("@")) {
+        return "font";
+      }
+
       var entry = this.self(arguments).__registry[id];
       return entry ? entry[2] : null;
     },
@@ -205,7 +318,7 @@ qx.Class.define("qx.util.ResourceManager",
     toDataUri : function (resid)
     {
       var resentry = this.constructor.__registry[resid];
-      var combined = this.constructor.__registry[resentry[4]];
+      var combined = resentry ? this.constructor.__registry[resentry[4]] : null;
       var uri;
       if (combined) {
         var resstruct = combined[4][resid];
@@ -216,6 +329,17 @@ qx.Class.define("qx.util.ResourceManager",
         uri = this.toUri(resid);
       }
       return uri;
+    },
+
+    /**
+     * Checks whether a given resource id for an image is a font handle.
+     *
+     * @param resid {String} resource id of the image
+     * @return {Boolean} True if it's a font URI
+     */
+    isFontUri : function (resid)
+    {
+      return resid ? resid.startsWith("@") : false;
     }
   },
 
@@ -245,6 +369,13 @@ qx.Class.define("qx.util.ResourceManager",
             continue;
           }
 
+          var href;
+          //first check if there is base url set
+          var baseElements = document.getElementsByTagName("base");
+          if (baseElements.length > 0) {
+            href = baseElements[0].href;
+          }
+
           // It is valid to to begin a URL with "//" so this case has to
           // be considered. If the to resolved URL begins with "//" the
           // manager prefixes it with "https:" to avoid any problems for IE
@@ -253,8 +384,16 @@ qx.Class.define("qx.util.ResourceManager",
           }
           // If the resourceUri begins with a single slash, include the current
           // hostname
-          else if (resourceUri.match(/^\//) != null) {
-            statics.__urlPrefix[lib] = window.location.protocol + "//" + window.location.host;
+          else if (resourceUri.match(/^\//) != null)
+          {
+            if (href)
+            {
+              statics.__urlPrefix[lib] = href;
+            }
+            else
+            {
+              statics.__urlPrefix[lib] = window.location.protocol + "//" + window.location.host;
+            }
           }
           // If the resolved URL begins with "./" the final URL has to be
           // put together using the document.URL property.
@@ -269,13 +408,19 @@ qx.Class.define("qx.util.ResourceManager",
           }
           else
           {
-            // check for parameters with URLs as value
-            var index = window.location.href.indexOf("?");
-            var href;
-            if (index == -1) {
-              href = window.location.href;
-            } else {
-              href = window.location.href.substring(0, index);
+            if (!href)
+            {
+              // check for parameters with URLs as value
+              var index = window.location.href.indexOf("?");
+
+              if (index == -1)
+              {
+                href = window.location.href;
+              }
+              else
+              {
+                href = window.location.href.substring(0, index);
+              }
             }
 
             statics.__urlPrefix[lib] = href.substring(0, href.lastIndexOf("/") + 1);

@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -84,7 +83,7 @@ qx.Class.define("qx.ui.virtual.selection.CellRectangle",
           var cell = {
               row: row,
               column: column
-          }
+          };
           if (this._isSelectable(cell)) {
             selectables.push(cell);
           }
@@ -98,7 +97,6 @@ qx.Class.define("qx.ui.virtual.selection.CellRectangle",
     // overridden
     _getSelectableRange : function(item1, item2)
     {
-      //console.log("selecte range", item1, item2);
       var selectables = [];
 
       var minRow = Math.min(item1.row, item2.row);
@@ -113,7 +111,7 @@ qx.Class.define("qx.ui.virtual.selection.CellRectangle",
           var cell = {
               row: row,
               column: column
-          }
+          };
           if (this._isSelectable(cell)) {
             selectables.push(cell);
           }
@@ -136,9 +134,9 @@ qx.Class.define("qx.ui.virtual.selection.CellRectangle",
           var cell = {
               row: row,
               column: column
-          }
+          };
           if (this._isSelectable(cell)) {
-            return cell
+            return cell;
           }
         }
       }
@@ -160,9 +158,9 @@ qx.Class.define("qx.ui.virtual.selection.CellRectangle",
           var cell = {
               row: row,
               column: column
-          }
+          };
           if (this._isSelectable(cell)) {
-            return cell
+            return cell;
           }
         }
       }
@@ -263,7 +261,7 @@ qx.Class.define("qx.ui.virtual.selection.CellRectangle",
       return {
         left: itemLeft,
         right: itemRight
-      }
+      };
     },
 
 
@@ -278,7 +276,7 @@ qx.Class.define("qx.ui.virtual.selection.CellRectangle",
       return {
         top: itemTop,
         bottom: itemBottom
-      }
+      };
     }
   }
 });

@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -77,11 +76,14 @@ qx.Mixin.define("qx.core.MLogging",
 
 
     /**
-     * Prints the current stack trace
+     * Logs an error message with the current stack trace
      *
+     * @param varargs {var} The item(s) to log. Any number of arguments is
+     * supported. If an argument is not a string, the object dump will be
+     * logged.
      */
-    trace : function() {
-      this.__Logger.trace(this);
+    trace : function(varargs) {
+      this.__logMessage("trace", arguments);
     },
 
 

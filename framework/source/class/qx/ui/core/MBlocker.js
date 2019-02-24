@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -104,7 +103,7 @@ qx.Mixin.define("qx.ui.core.MBlocker",
     /**
      * Unblock the widget blocked by {@link #block}, but it takes care of
      * the amount of {@link #block} calls. The blocker is only removed if
-     * the numer of {@link #unblock} calls is identical to {@link #block} calls.
+     * the number of {@link #unblock} calls is identical to {@link #block} calls.
      */
     unblock : function() {
       if (this.__blocker) {

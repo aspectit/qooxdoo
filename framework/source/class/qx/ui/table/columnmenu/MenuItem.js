@@ -8,8 +8,7 @@
      2009 Derrell Lipman
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -25,19 +24,13 @@ qx.Class.define("qx.ui.table.columnmenu.MenuItem",
   extend     : qx.ui.menu.CheckBox,
   implement  : qx.ui.table.IColumnMenuItem,
 
-  properties :
-  {
-    /**
-     * Whether the table column associated with this menu item is visible.
-     */
-    visible :
-    {
-      check : "Boolean",
-      init  : true,
-      apply : "_applyVisible",
-      event : "changeVisible"
-    }
-  },
+
+
+  /*
+  *****************************************************************************
+     CONSTRUCTOR
+  *****************************************************************************
+  */
 
   /**
    * Create a new instance of an item for insertion into the table column
@@ -51,36 +44,26 @@ qx.Class.define("qx.ui.table.columnmenu.MenuItem",
   {
     this.base(arguments, text);
 
-    // Mirror native "value" property in our "visible" property
-    this.addListener("changeValue",
-                     function(e)
-                     {
-                       this.bInListener = true;
-                       this.setVisible(e.getData());
-                       this.bInListener = false;
-                     });
+    // Two way binding this.columnVisible <--> this.value
+    this.bind("value", this, "columnVisible");
+    this.bind("columnVisible", this, "value");
   },
 
-  members :
-  {
-    __bInListener : false,
 
-    /**
-     * Keep menu in sync with programmatic changes of visibility
-     *
-     * @param value {Boolean}
-     *   New visibility value
-     *
-     * @param old {Boolean}
-     *   Previous visibility value
-     */
-    _applyVisible : function(value, old)
+
+  /*
+  *****************************************************************************
+     PROPERTIES
+  *****************************************************************************
+  */
+
+  properties :
+  {
+    columnVisible :
     {
-      // avoid recursion if called from listener on "changeValue" property
-      if (! this.bInListener)
-      {
-        this.setValue(value);
-      }
+      check : "Boolean",
+      init  : true,
+      event : "changeColumnVisible"
     }
   }
 });

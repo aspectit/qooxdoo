@@ -8,8 +8,7 @@
      2004-2010 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -133,10 +132,12 @@ qx.Bootstrap.define("qx.bom.element.Attribute",
       property :
       {
         // Used by qx.html.Element
-        $$html      : 1,
+        $$element       : 1,
+        $$elementObject : 1,
 
         // Used by qx.ui.core.Widget
-        $$widget    : 1,
+        $$widget        : 1,
+        $$widgetObject  : 1,
 
         // Native properties
         checked     : 1,
@@ -156,7 +157,9 @@ qx.Bootstrap.define("qx.bom.element.Attribute",
       qxProperties :
       {
         $$widget : 1,
-        $$html : 1
+        $$widgetObject : 1,
+        $$element : 1,
+        $$elementObject : 1
       },
 
       // Default values when "null" is given to a property
@@ -311,11 +314,19 @@ qx.Bootstrap.define("qx.bom.element.Attribute",
       }
       else
       {
-        if (value === true) {
+        if ((hints.bools[name] || value === null) &&
+          name.indexOf("data-") !== 0)
+        {
+          if (value === true) {
           element.setAttribute(name, name);
-        } else if (value === false || value === null) {
+          } else if (value === false || value === null) {
+            element.removeAttribute(name);
+          }
+        }
+        else if (value === null) {
           element.removeAttribute(name);
-        } else {
+        }
+        else {
           element.setAttribute(name, value);
         }
       }
@@ -329,7 +340,11 @@ qx.Bootstrap.define("qx.bom.element.Attribute",
      * @param name {String} Name of the attribute
      */
     reset : function(element, name) {
-      this.set(element, name, null);
+      if (name.indexOf("data-") === 0) {
+        element.removeAttribute(name);
+      } else {
+        this.set(element, name, null);
+      }
     }
   }
 });

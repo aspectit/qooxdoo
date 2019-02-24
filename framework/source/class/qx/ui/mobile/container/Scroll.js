@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -30,7 +29,7 @@
  *
  * <pre class='javascript'>
  *   // create the scroll widget
- *   var scroll = new qx.ui.mobile.container.Scroll()
+ *   var scroll = new qx.ui.mobile.container.Scroll();
  *
  *   // add a children
  *   scroll.add(new qx.ui.mobile.basic.Label("Name: "));
@@ -207,7 +206,7 @@ qx.Class.define("qx.ui.mobile.container.Scroll",
     _updateWaypoints: function() {
       this._calculatedWaypointsX = [];
       this._calculatedWaypointsY = [];
-      this._calcWaypoints(this._waypointsX, this._calculatedWaypointsX, this.getScrollWidth());
+      this._calcWaypoints(this._waypointsX, this._calculatedWaypointsX, this.getScrollWidth(), "x");
       this._calcWaypoints(this._waypointsY, this._calculatedWaypointsY, this.getScrollHeight());
     },
 
@@ -217,30 +216,41 @@ qx.Class.define("qx.ui.mobile.container.Scroll",
      * @param waypoints {Array} an array with waypoint descriptions.
      * @param results {Array} the array where calculated waypoints will be added.
      * @param scrollSize {Number} the vertical or horizontal scroll size.
+     * @param axis {String?} "x" or "y".
      */
-    _calcWaypoints: function(waypoints, results, scrollSize) {
+    _calcWaypoints: function(waypoints, results, scrollSize, axis) {
+      axis = axis || "y";
+
+      var offset = 0;
       for (var i = 0; i < waypoints.length; i++) {
         var waypoint = waypoints[i];
         if (qx.lang.Type.isString(waypoint)) {
-          if (qx.lang.String.endsWith(waypoint, "%")) {
-            var offset = parseInt(waypoint, 10) * (scrollSize / 100);
+          if (waypoint.endsWith("%")) {
+            offset = parseInt(waypoint, 10) * (scrollSize / 100);
             results.push({
               "offset": offset,
               "input": waypoint,
               "index": i,
-              "element": null
+              "element": null,
+              "axis": axis
             });
           } else {
             // Dynamically created waypoints, based upon a selector.
             var element = this.getContentElement();
-            var waypointElements = qx.bom.Selector.query(waypoint,element);
+            var waypointElements = qx.bom.Selector.query(waypoint, element);
             for (var j = 0; j < waypointElements.length; j++) {
-              var position = qx.bom.element.Location.getRelative(waypointElements[j],element);
+              var position = qx.bom.element.Location.getRelative(waypointElements[j], element);
+              if (axis === "y") {
+                offset = position.top + this.getContentElement().scrollTop;
+              } else if (axis === "x") {
+                offset = position.left + this.getContentElement().scrollLeft;
+              }
               results.push({
                 "offset": position.top + this._currentY,
                 "input": waypoint,
                 "index": i,
-                "element" : j
+                "element": j,
+                "axis": axis
               });
             }
           }
@@ -249,12 +259,13 @@ qx.Class.define("qx.ui.mobile.container.Scroll",
             "offset": waypoint,
             "input": waypoint,
             "index": i,
-            "element": null
+            "element": null,
+            "axis": axis
           });
         }
       }
 
-      results.sort(function(a, b) {
+      results.sort(function (a, b) {
         return a.offset - b.offset;
       });
     },

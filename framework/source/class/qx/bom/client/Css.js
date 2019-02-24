@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -25,6 +24,7 @@
  *
  * @internal
  * @ignore(WebKitCSSMatrix)
+ * @require(qx.bom.Style)
  */
 qx.Bootstrap.define("qx.bom.client.Css",
 {
@@ -33,7 +33,7 @@ qx.Bootstrap.define("qx.bom.client.Css",
     __WEBKIT_LEGACY_GRADIENT : null,
 
     /**
-     * Checks what box model is used in the current environemnt.
+     * Checks what box model is used in the current environment.
      * @return {String} It either returns "content" or "border".
      * @internal
      */
@@ -207,6 +207,21 @@ qx.Bootstrap.define("qx.bom.client.Css",
      */
     getUserModify : function() {
       return qx.bom.Style.getPropertyName("userModify");
+    },
+
+
+    /**
+     * Returns the vendor-specific name of the <code>float</code> style property
+     *
+     * @return {String|null} <code>cssFloat</code> for standards-compliant
+     * browsers, <code>styleFloat</code> for legacy IEs, <code>null</code> if
+     * the client supports neither property.
+     * @internal
+     */
+    getFloat : function() {
+      var style = document.documentElement.style;
+      return style.cssFloat !== undefined ? "cssFloat" :
+        style.styleFloat !== undefined ? "styleFloat" : null;
     },
 
 
@@ -522,6 +537,7 @@ qx.Bootstrap.define("qx.bom.client.Css",
     qx.core.Environment.add("css.userselect", statics.getUserSelect);
     qx.core.Environment.add("css.userselect.none", statics.getUserSelectNone);
     qx.core.Environment.add("css.appearance", statics.getAppearance);
+    qx.core.Environment.add("css.float", statics.getFloat);
     qx.core.Environment.add("css.boxsizing", statics.getBoxSizing);
     qx.core.Environment.add("css.inlineblock", statics.getInlineBlock);
     qx.core.Environment.add("css.opacity", statics.getOpacity);

@@ -8,8 +8,7 @@
      2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -137,7 +136,7 @@ qx.Bootstrap.define("qx.bom.element.AnimationCss",
 
         if (qx.core.Environment.get("qx.debug")) {
           if (qx.bom.element.Style.get(el, "display") == "none") {
-            qx.log.Logger.warn("Some browsers will not animate elements with display==none", el);
+            qx.log.Logger.warn(el, "Some browsers will not animate elements with display==none");
           }
         }
 
@@ -175,7 +174,9 @@ qx.Bootstrap.define("qx.bom.element.AnimationCss",
      * @param e {Event} The native event from the browser.
      */
     __onAnimationStart : function(e) {
-      e.target.$$animation.emit("start", e.target);
+      if (e.target.$$animation) {
+        e.target.$$animation.emit("start", e.target);
+      }
     },
 
 
@@ -376,6 +377,34 @@ qx.Bootstrap.define("qx.bom.element.AnimationCss",
       this.__rules[rule] = name;
 
       return name;
+    },
+
+
+    /**
+     * Internal helper to reset the cache.
+     */
+    __clearCache: function() {
+      this.__id = 0;
+      if (this.__sheet) {
+        this.__sheet.ownerNode.remove();
+        this.__sheet = null;
+        this.__rules = {};
+      }
+    }
+  },
+
+
+  defer : function(statics) {
+    // iOS 8 seems to stumble over the old sheet object on tab
+    // changes or leaving the browser [BUG #8986]
+    if (qx.core.Environment.get("os.name") === "ios" &&
+      parseInt(qx.core.Environment.get("os.version")) >= 8
+    ) {
+      document.addEventListener("visibilitychange", function() {
+        if (!document.hidden) {
+          statics.__clearCache();
+        }
+      }, false);
     }
   }
 });

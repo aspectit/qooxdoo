@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -29,7 +28,7 @@ qx.Class.define("qx.ui.form.renderer.Single",
   {
     var layout = new qx.ui.layout.Grid();
     layout.setSpacing(6);
-    layout.setColumnFlex(0, 1);
+    layout.setColumnFlex(1, 1);
     layout.setColumnAlign(0, "right", "top");
     this._setLayout(layout);
 
@@ -45,8 +44,10 @@ qx.Class.define("qx.ui.form.renderer.Single",
 
     // overridden
     _onFormChange : function() {
-      this._buttonRow.destroy();
-      this._buttonRow = null;
+      if (this._buttonRow) {
+        this._buttonRow.destroy();
+        this._buttonRow = null;
+      }
       this._row = 0;
       this.base(arguments);
     },

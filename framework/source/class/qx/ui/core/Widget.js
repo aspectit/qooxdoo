@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -32,6 +31,8 @@
  * <a href='http://manual.qooxdoo.org/${qxversion}/pages/widget.html' target='_blank'>
  * Documentation of this widget in the qooxdoo manual.</a>
  *
+ * NOTE: Instances of this class must be disposed of after use
+ *
  * @use(qx.ui.core.EventHandler)
  * @use(qx.event.handler.DragDrop)
  * @asset(qx/static/blank.gif)
@@ -42,6 +43,7 @@ qx.Class.define("qx.ui.core.Widget",
 {
   extend : qx.ui.core.LayoutItem,
   include : [qx.locale.MTranslation],
+  implement: [ qx.core.IDisposable ],
 
 
   /*
@@ -144,6 +146,10 @@ qx.Class.define("qx.ui.core.Widget",
     /** Widget is clicked using left or middle button.
         {@link qx.event.type.Mouse#getButton} for more details.*/
     click : "qx.event.type.Mouse",
+
+    /** Widget is clicked using a non primary button.
+        {@link qx.event.type.Mouse#getButton} for more details.*/
+    auxclick : "qx.event.type.Mouse",
 
     /** Widget is double clicked using left or middle button.
         {@link qx.event.type.Mouse#getButton} for more details.*/
@@ -632,6 +638,15 @@ qx.Class.define("qx.ui.core.Widget",
       init : false
     },
 
+    /**
+     * Forces to show tooltip when widget is disabled.
+     */
+    showToolTipWhenDisabled:
+    {
+      check : "Boolean",
+      init : false
+    },
+
 
     /*
     ---------------------------------------------------------------------------
@@ -841,6 +856,9 @@ qx.Class.define("qx.ui.core.Widget",
     /** Whether the widget should print out hints and debug messages */
     DEBUG : false,
 
+    /** Whether to throw an error on focus/blur if the widget is unfocusable */
+    UNFOCUSABLE_WIDGET_FOCUS_BLUR_ERROR : true,
+
     /**
      * Returns the widget, which contains the given DOM element.
      *
@@ -853,15 +871,17 @@ qx.Class.define("qx.ui.core.Widget",
     {
       while(element)
       {
-        var widgetKey = element.$$widget;
+      	if (qx.core.Environment.get("qx.debug")) {
+      		qx.core.Assert.assertTrue((!element.$$widget && !element.$$widgetObject) ||
+      				(element.$$widgetObject && element.$$widget && element.$$widgetObject.toHashCode() === element.$$widget));
+      	}
+        var widget = element.$$widgetObject;
 
-        // dereference "weak" reference to the widget.
-        if (widgetKey != null) {
-          var widget = qx.core.ObjectRegistry.fromHashCode(widgetKey);
-          // check for anonymous widgets
-          if (!considerAnonymousState || !widget.getAnonymous()) {
-            return widget;
-          }
+        // check for anonymous widgets
+        if (widget) {
+	        if (!considerAnonymousState || !widget.getAnonymous()) {
+	          return widget;
+	        }
         }
 
         // Fix for FF, which occasionally breaks (BUG#3525)
@@ -1574,7 +1594,7 @@ qx.Class.define("qx.ui.core.Widget",
     /**
      * Detects if the widget and all its parents are visible.
      *
-     * WARNING: Please use this method with caution becuase it flushes the
+     * WARNING: Please use this method with caution because it flushes the
      * internal queues which might be an expensive operation.
      *
      * @return {Boolean} true, if the widget is currently on the screen
@@ -1612,8 +1632,8 @@ qx.Class.define("qx.ui.core.Widget",
     __createContentElement : function()
     {
       var el = this._createContentElement();
+      el.connectWidget(this);
 
-      el.setAttribute("$$widget", this.toHashCode());
       // make sure to allow all pointer events
       el.setStyles({"touch-action": "none", "-ms-touch-action" : "none"});
 
@@ -1784,7 +1804,7 @@ qx.Class.define("qx.ui.core.Widget",
     /**
      * Returns the children list
      *
-     * @return {LayoutItem[]} The children array (Arrays are
+     * @return {qx.ui.core.LayoutItem[]} The children array (Arrays are
      *   reference types, so please do not modify it in-place).
      */
     _getChildren : function() {
@@ -1796,7 +1816,7 @@ qx.Class.define("qx.ui.core.Widget",
      * Returns the index position of the given widget if it is
      * a child widget. Otherwise it returns <code>-1</code>.
      *
-     * @param child {Widget} the widget to query for
+     * @param child {qx.ui.core.Widget} the widget to query for
      * @return {Integer} The index position or <code>-1</code> when
      *   the given widget is no child of this layout.
      */
@@ -1853,13 +1873,13 @@ qx.Class.define("qx.ui.core.Widget",
      * used to position the widget. The options are documented in the class
      * documentation of each layout manager {@link qx.ui.layout}.
      *
-     * @param child {LayoutItem} the widget to add.
+     * @param child {qx.ui.core.LayoutItem} the widget to add.
      * @param options {Map?null} Optional layout data for widget.
      */
     _add : function(child, options)
     {
       if (qx.core.Environment.get("qx.debug")) {
-        this.assertInstance(child, qx.ui.core.LayoutItem.constructor, "'Child' must be an instance of qx.ui.core.LayoutItem!")
+        this.assertInstance(child, qx.ui.core.LayoutItem.constructor, "'Child' must be an instance of qx.ui.core.LayoutItem!");
       }
 
       // When moving in the same widget, remove widget first
@@ -1880,8 +1900,10 @@ qx.Class.define("qx.ui.core.Widget",
     /**
      * Add a child widget at the specified index
      *
-     * @param child {LayoutItem} widget to add
-     * @param index {Integer} Index, at which the widget will be inserted
+     * @param child {qx.ui.core.LayoutItem} widget to add
+     * @param index {Integer} Index, at which the widget will be inserted. If no
+     *   widget exists at the given index, the new widget gets appended to the
+     *   current list of children.
      * @param options {Map?null} Optional layout data for widget.
      */
     _addAt : function(child, index, options)
@@ -1914,8 +1936,8 @@ qx.Class.define("qx.ui.core.Widget",
     /**
      * Add a widget before another already inserted widget
      *
-     * @param child {LayoutItem} widget to add
-     * @param before {LayoutItem} widget before the new widget will be inserted.
+     * @param child {qx.ui.core.LayoutItem} widget to add
+     * @param before {qx.ui.core.LayoutItem} widget before the new widget will be inserted.
      * @param options {Map?null} Optional layout data for widget.
      */
     _addBefore : function(child, before, options)
@@ -1947,8 +1969,8 @@ qx.Class.define("qx.ui.core.Widget",
     /**
      * Add a widget after another already inserted widget
      *
-     * @param child {LayoutItem} widget to add
-     * @param after {LayoutItem} widget, after which the new widget will
+     * @param child {qx.ui.core.LayoutItem} widget to add
+     * @param after {qx.ui.core.LayoutItem} widget, after which the new widget will
      *   be inserted
      * @param options {Map?null} Optional layout data for widget.
      */
@@ -1981,7 +2003,7 @@ qx.Class.define("qx.ui.core.Widget",
     /**
      * Remove the given child widget.
      *
-     * @param child {LayoutItem} the widget to remove
+     * @param child {qx.ui.core.LayoutItem} the widget to remove
      */
     _remove : function(child)
     {
@@ -2081,7 +2103,7 @@ qx.Class.define("qx.ui.core.Widget",
      * Convenience function to add a child widget. It will insert the child to
      * the parent widget and schedule a layout update.
      *
-     * @param child {LayoutItem} The child to add.
+     * @param child {qx.ui.core.LayoutItem} The child to add.
      * @param options {Map|null} Optional layout data for the widget.
      */
     __addHelper : function(child, options)
@@ -2125,7 +2147,7 @@ qx.Class.define("qx.ui.core.Widget",
      * Convenience function to remove a child widget. It will remove it
      * from the parent widget and schedule a layout update.
      *
-     * @param child {LayoutItem} The child to remove.
+     * @param child {qx.ui.core.LayoutItem} The child to remove.
      */
     __removeHelper : function(child)
     {
@@ -2931,7 +2953,7 @@ qx.Class.define("qx.ui.core.Widget",
 
         // hovered not configured in widget, but as this is a
         // standardized name in qooxdoo and we never want a hover
-        // state for disabled widgets, remove this state everytime
+        // state for disabled widgets, remove this state every time
         this.removeState("hovered");
 
         // Blur when focused
@@ -3261,7 +3283,7 @@ qx.Class.define("qx.ui.core.Widget",
       // This is to make sure that the scroll position is computed
       // after layout changes have been applied to the DOM. Note that changes
       // scheduled for the grand parent (and up) are not tracked and need to
-      // be signalled manually.
+      // be signaled manually.
       var Layout = qx.ui.core.queue.Layout;
       var parent;
 
@@ -3337,7 +3359,7 @@ qx.Class.define("qx.ui.core.Widget",
     {
       if (this.isFocusable()) {
         this.getFocusElement().focus();
-      } else {
+      } else if (qx.ui.core.Widget.UNFOCUSABLE_WIDGET_FOCUS_BLUR_ERROR) {
         throw new Error("Widget is not focusable!");
       }
     },
@@ -3351,7 +3373,7 @@ qx.Class.define("qx.ui.core.Widget",
     {
       if (this.isFocusable()) {
         this.getFocusElement().blur();
-      } else {
+      } else if (qx.ui.core.Widget.UNFOCUSABLE_WIDGET_FOCUS_BLUR_ERROR) {
         throw new Error("Widget is not focusable!");
       }
     },
@@ -3617,7 +3639,7 @@ qx.Class.define("qx.ui.core.Widget",
      * to support new child control types.
      *
      * @param id {String} ID of the child control. If a # is used, the id is
-     *   the part infront of the #.
+     *   the part in front of the #.
      * @param hash {String?undefined} If a child control name contains a #,
      *   all text following the # will be the hash argument.
      * @return {qx.ui.core.Widget} The created control or <code>null</code>
@@ -3676,6 +3698,18 @@ qx.Class.define("qx.ui.core.Widget",
       return null;
     },
 
+
+    /**
+     * Return the ID (name) if this instance was a created as a child control of another widget.
+     *
+     * See the first parameter id in {@link qx.ui.core.Widget#_createChildControlImpl}
+     *
+     * @return {String|null} ID of the current widget or null if it was not created as a subcontrol
+     */
+    getSubcontrolId : function()
+    {
+      return this.$$subcontrol || null;
+    },
 
 
 
@@ -3869,7 +3903,7 @@ qx.Class.define("qx.ui.core.Widget",
       // Remove widget pointer from DOM
       var contentEl = this.getContentElement();
       if (contentEl) {
-        contentEl.setAttribute("$$widget", null, true);
+      	contentEl.disconnectWidget(this);
       }
 
       // Clean up all child controls

@@ -8,8 +8,7 @@
      2006-2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -30,6 +29,13 @@ qx.Class.define("qx.test.locale.LocalizedString",
         var ls  = new qx.locale.LocalizedString("foo", "id", "xyz");
         ls.translate();
       });
+    },
+
+    testLocalizeVsTranslate : function() {
+      this.assertEquals(
+        qx.locale.Date.getMonthName("wide", new Date().getMonth()).toString(),
+        qx.locale.Date.getMonthName("wide", new Date().getMonth()).translate().toString()
+      );
     }
   }
 });

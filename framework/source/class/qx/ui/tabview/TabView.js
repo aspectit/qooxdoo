@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -25,6 +24,11 @@
  * A tab view is a multi page view where only one page is visible
  * at each moment. It is possible to switch the pages using the
  * buttons rendered by each page.
+ * 
+ * Note that prior to v6.0, when changing the currently selected tab via code
+ * (ie changing the selection property) TabView would automatically set the 
+ * focus to that tab; this is undesirable (and inconsistent with other parts
+ * of the framework) and is no longer done automatically.
  *
  * @childControl bar {qx.ui.container.SlideBar} slidebar for all tab buttons
  * @childControl pane {qx.ui.container.Stack} stack container to show one tab page
@@ -61,7 +65,7 @@ qx.Class.define("qx.ui.tabview.TabView",
     this._createChildControl("pane");
 
     // Create manager
-    var mgr = this.__radioGroup = new qx.ui.form.RadioGroup;
+    var mgr = this.__radioGroup = this._createRadioGroupInstance();
     mgr.setWrap(false);
     mgr.addListener("changeSelection", this._onChangeSelection, this);
 
@@ -84,7 +88,10 @@ qx.Class.define("qx.ui.tabview.TabView",
   events :
   {
     /** Fires after the selection was modified */
-    "changeSelection" : "qx.event.type.Data"
+    "changeSelection" : "qx.event.type.Data",
+
+    /** Fires after the value was modified */
+    "changeValue" : "qx.event.type.Data"
   },
 
 
@@ -129,6 +136,51 @@ qx.Class.define("qx.ui.tabview.TabView",
     __radioGroup : null,
 
 
+    /**
+     * setValue implements part of the {@link qx.ui.form.IField} interface.
+     *
+     * @param item {null|qx.ui.tabview.Page} Page to set as selected value.
+     * @returns {null|TypeError} The status of this operation.
+     */
+    setValue : function(item) {
+      if (null === item) {
+        this.resetSelection();
+        return null;
+      }
+
+      if (item instanceof qx.ui.tabview.Page) {
+        this.setSelection([item]);
+        return null;
+
+      } else {
+        return new TypeError("Given argument is not null or a {qx.ui.tabview.Page}.");
+      }
+    },
+
+
+    /**
+     * getValue implements part of the {@link qx.ui.form.IField} interface.
+     *
+     * @returns {null|qx.ui.tabview.Page} The currently selected page or null if there is none.
+     */
+    getValue : function() {
+      var pages = this.getSelection();
+      if (pages.length) {
+        return pages[0];
+      } else {
+        return null;
+      }
+    },
+
+
+    /**
+     * resetValue implements part of the {@link qx.ui.form.IField} interface.
+     */
+    resetValue : function() {
+      this.resetSelection();
+    },
+
+
     /*
     ---------------------------------------------------------------------------
       WIDGET API
@@ -159,6 +211,17 @@ qx.Class.define("qx.ui.tabview.TabView",
       return control || this.base(arguments, id);
     },
 
+    /**
+     * Creates the radio group manager instance.
+     * 
+     * Allows override customizations of the instance 
+     * 
+     * @return {qx.ui.form.RadioGroup} 
+     */
+    _createRadioGroupInstance : function() {
+      return new qx.ui.form.RadioGroup;
+    },
+    
     /**
      * Returns the element, to which the content padding should be applied.
      *
@@ -355,6 +418,15 @@ qx.Class.define("qx.ui.tabview.TabView",
       return this.getChildControl("pane").indexOf(page);
     },
 
+    /**
+     * Returns the radio group manager.
+     *
+     * @return {qx.ui.form.RadioGroup} the radio group.
+     */
+    getRadioGroup : function() {
+      return this.__radioGroup;
+    },
+
 
     /*
     ---------------------------------------------------------------------------
@@ -403,6 +475,7 @@ qx.Class.define("qx.ui.tabview.TabView",
       // Read children
       var children = this.getChildren();
 
+      var i, l;
       // Toggle state to bar
       if (old)
       {
@@ -415,7 +488,7 @@ qx.Class.define("qx.ui.tabview.TabView",
         pane.removeState(oldState);
 
         // Update pages
-        for (var i=0, l=children.length; i<l; i++) {
+        for (i=0, l=children.length; i<l; i++) {
           children[i].removeState(oldState);
         }
       }
@@ -431,7 +504,7 @@ qx.Class.define("qx.ui.tabview.TabView",
         pane.addState(newState);
 
         // Update pages
-        for (var i=0, l=children.length; i<l; i++) {
+        for (i=0, l=children.length; i<l; i++) {
           children[i].addState(newState);
         }
       }
@@ -471,7 +544,7 @@ qx.Class.define("qx.ui.tabview.TabView",
      *    items contains more than one elements.
      */
     setSelection : function(items) {
-      var buttons = []
+      var buttons = [];
 
       for (var i = 0; i < items.length; i++) {
         buttons.push(items[i].getChildControl("button"));
@@ -543,7 +616,6 @@ qx.Class.define("qx.ui.tabview.TabView",
       {
         value = [button.getUserData("page")];
         pane.setSelection(value);
-        button.focus();
         this.scrollChildIntoView(button, null, null, false);
       }
       else
@@ -602,7 +674,7 @@ qx.Class.define("qx.ui.tabview.TabView",
     {
       // reset the old close button states, before remove page
       // see http://bugzilla.qooxdoo.org/show_bug.cgi?id=3763 for details
-      var page = e.getTarget()
+      var page = e.getTarget();
       var closeButton = page.getButton().getChildControl("close-button");
       closeButton.reset();
 

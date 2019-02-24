@@ -8,8 +8,7 @@
      2004-2014 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -28,7 +27,7 @@ qx.Mixin.define("qx.ui.core.scroll.MRoll",
 {
   members :
   {
-    __cancelRoll : null,
+    _cancelRoll : null,
 
 
     /**
@@ -55,7 +54,7 @@ qx.Mixin.define("qx.ui.core.scroll.MRoll",
      * @param e {qx.event.type.Pointer} pointerdown event
      */
     _onPointerDownForRoll : function(e) {
-      this.__cancelRoll = e.getPointerId();
+      this._cancelRoll = e.getPointerId();
     },
 
 
@@ -71,16 +70,12 @@ qx.Mixin.define("qx.ui.core.scroll.MRoll",
         return;
       }
 
-      if (this.__cancelRoll && e.getMomentum()) {
-        qx.event.Registration.getManager(e.getOriginalTarget())
-          .getHandler(qx.event.handler.Gesture)
-          .gestureCancel(this.__cancelRoll);
-
+      if (this._cancelRoll && e.getMomentum()) {
         e.stopMomentum();
-        this.__cancelRoll = null;
+        this._cancelRoll = null;
         return;
       }
-      this.__cancelRoll = null;
+      this._cancelRoll = null;
 
       var showX = this._isChildControlVisible("scrollbar-x");
       var showY = this._isChildControlVisible("scrollbar-y");

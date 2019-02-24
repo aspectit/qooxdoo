@@ -8,8 +8,7 @@
      2009 Derrell Lipman
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -26,8 +25,9 @@ qx.Interface.define("qx.ui.table.IColumnMenuItem",
   {
     /**
      * Whether the table column associated with this menu item is visible
+     * Should be of type {Boolean}!
      */
-    visible : { }
+    columnVisible : { }
   },
 
   events :
@@ -37,6 +37,6 @@ qx.Interface.define("qx.ui.table.IColumnMenuItem",
      * boolean indicating whether the table column associated with this menu
      * item is now visible.
      */
-    changeVisible : "qx.event.type.Data"
+    changeColumnVisible : "qx.event.type.Data"
   }
 });

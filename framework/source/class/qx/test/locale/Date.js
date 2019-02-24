@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -22,9 +21,13 @@ qx.Class.define("qx.test.locale.Date",
   extend : qx.dev.unit.TestCase,
 
   members :
-  {
+  {    
     setUp : function() {
       qx.locale.Manager.getInstance().setLocale("C");
+    },
+
+    tearDown : function() {
+      qx.locale.Manager.getInstance().resetLocale();
     },
 
 
@@ -40,13 +43,13 @@ qx.Class.define("qx.test.locale.Date",
       }
 
       var narrowDays = ["S","M","T","W","T","F","S"];
-      this.assertJsonEquals(narrowDays, Date.getDayNames("narrow", useLocale, "stand-alone").map(function(v) {return v+""}));
+      this.assertJsonEquals(narrowDays, Date.getDayNames("narrow", useLocale, "stand-alone").map(function(v) {return v+"";}));
       for (var i=0; i<7; i++) {
         this.assertEquals(narrowDays[i], Date.getDayName("narrow", i, useLocale, "stand-alone"));
       }
 
       var wideDays = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-      this.assertJsonEquals(wideDays, Date.getDayNames("wide").map(function(v) {return v+""}));
+      this.assertJsonEquals(wideDays, Date.getDayNames("wide").map(function(v) {return v+"";}));
 
       for (var i=0; i<7; i++) {
         this.assertEquals(wideDays[i], Date.getDayName("wide", i));
@@ -64,13 +67,13 @@ qx.Class.define("qx.test.locale.Date",
       }
 
       var narrowDays = ["S","M","D","M","D","F","S"];
-      this.assertJsonEquals(narrowDays, Date.getDayNames("narrow", useLocale, "stand-alone").map(function(v) {return v+""}));
+      this.assertJsonEquals(narrowDays, Date.getDayNames("narrow", useLocale, "stand-alone").map(function(v) {return v+"";}));
       for (var i=0; i<7; i++) {
         this.assertEquals(narrowDays[i], Date.getDayName("narrow", i, useLocale, "stand-alone"));
       }
 
       var wideDays = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
-      this.assertJsonEquals(wideDays, Date.getDayNames("wide").map(function(v) {return v+""}));
+      this.assertJsonEquals(wideDays, Date.getDayNames("wide").map(function(v) {return v+"";}));
 
       for (var i=0; i<7; i++) {
         this.assertEquals(wideDays[i], Date.getDayName("wide", i));

@@ -8,8 +8,7 @@
      2008 Derrell Lipman
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -51,10 +50,10 @@ qx.Class.define("qx.ui.progressive.renderer.table.Row",
 
     // This layout is not connected to a widget but to this class. This class
     // must implement the method "getLayoutChildren", which must return all
-    // columns (LayoutItems) which should be recalcutated. The call
+    // columns (LayoutItems) which should be recalculated. The call
     // "layout.renderLayout" will call the method "renderLayout" on each
     // column data object The advantage of the use of the normal layout
-    // manager is that the samantics of flex and percent are exectly the same
+    // manager is that the semantics of flex and percent are exactly the same
     // as in the widget code.
     this.__layout = new qx.ui.layout.HBox();
     this.__layout.connectToWidget(this);

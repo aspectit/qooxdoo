@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -201,12 +200,12 @@ qx.Class.define("qx.locale.Date",
       }
 
       var key = "cldr_date_format_" + size;
-      return this.__mgr.localize(key, [], locale)
+      return this.__mgr.localize(key, [], locale);
     },
 
 
     /**
-     * Try to localize a date/time format string. For format string possibillities see
+     * Try to localize a date/time format string. For format string possibilities see
      * <a href="http://cldr.unicode.org/translation/date-time">Date/Time Symbol reference</a>
      * at CLDR - Unicode Common Locale Data Repository.
      *
@@ -477,12 +476,12 @@ qx.Class.define("qx.locale.Date",
     },
 
     /**
-     * Provide localisation (CLDR) data with fallback between "format" and "stand-alone" contexts.
+     * Provide localization (CLDR) data with fallback between "format" and "stand-alone" contexts.
      * It is used in {@link #getDayName} and {@link #getMonthName} methods.
      *
      * @param context {String} intended context.
      *       Possible values: "format", "stand-alone".
-     * @param fallbackContext {String} the context used in case no localisation is found for the key.
+     * @param fallbackContext {String} the context used in case no localization is found for the key.
      * @param key {String} message id (may contain format strings)
      * @param locale {String} the locale
      * @return {String} localized name for the key

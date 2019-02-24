@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -48,7 +47,7 @@ qx.Class.define("qx.locale.String",
      * @return {String} quotation end sign
      */
     getQuotationEnd : function(locale) {
-      return qx.locale.Manager.getInstance().localize("cldr_quotationEnd", [], locale)
+      return qx.locale.Manager.getInstance().localize("cldr_quotationEnd", [], locale);
     },
 
 
@@ -59,7 +58,7 @@ qx.Class.define("qx.locale.String",
      * @return {String} alternative quotation start sign
      */
     getAlternateQuotationStart : function(locale) {
-      return qx.locale.Manager.getInstance().localize("cldr_alternateQuotationStart", [], locale)
+      return qx.locale.Manager.getInstance().localize("cldr_alternateQuotationStart", [], locale);
     },
 
 
@@ -70,7 +69,7 @@ qx.Class.define("qx.locale.String",
      * @return {String} alternative quotation end sign
      */
     getAlternateQuotationEnd : function(locale) {
-      return qx.locale.Manager.getInstance().localize("cldr_alternateQuotationEnd", [], locale)
+      return qx.locale.Manager.getInstance().localize("cldr_alternateQuotationEnd", [], locale);
     }
   }
 });

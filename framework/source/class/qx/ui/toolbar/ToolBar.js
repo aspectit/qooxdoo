@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -136,7 +135,7 @@ qx.Class.define("qx.ui.toolbar.ToolBar",
     /** Fired if an item will be hidden by the {@link #overflowHandling}.*/
     "hideItem" : "qx.event.type.Data",
 
-    /** Fired if an item will be show by the {@link #overflowHandling}.*/
+    /** Fired if an item will be shown by the {@link #overflowHandling}.*/
     "showItem" : "qx.event.type.Data"
   },
 
@@ -214,7 +213,7 @@ qx.Class.define("qx.ui.toolbar.ToolBar",
        width = this.getBounds().width;
      }
 
-     // if we still don't have a width, than we are not added to a parrent
+     // if we still don't have a width, than we are not added to a parent
      if (width == undefined) {
        // we should ignore it in that case
        return;
@@ -314,7 +313,7 @@ qx.Class.define("qx.ui.toolbar.ToolBar",
     {
       child.setVisibility("visible");
       this.__removedItems.shift();
-      this.fireDataEvent("showItem", child)
+      this.fireDataEvent("showItem", child);
     },
 
 
@@ -341,7 +340,7 @@ qx.Class.define("qx.ui.toolbar.ToolBar",
      * already excluded, it takes the widget added at last.
      *
      * @return {qx.ui.core.Widget|null} The widget which should be removed next.
-     *   If null is returned, no widget is availablew to remove.
+     *   If null is returned, no widget is available to remove.
      */
     _getNextToHide : function()
     {
@@ -357,7 +356,7 @@ qx.Class.define("qx.ui.toolbar.ToolBar",
       // if there is non found by priority, check all available widgets
       var children = this._getChildren();
       for (var i = children.length -1; i >= 0; i--) {
-        var child = children[i]
+        var child = children[i];
         // ignore the overflow widget
         if (child == this.getOverflowIndicator()) {
           continue;
@@ -373,7 +372,7 @@ qx.Class.define("qx.ui.toolbar.ToolBar",
     /**
      * The removal of the toolbar items is priority based. You can change these
      * priorities with this method. The higher a priority, the earlier it will
-     * be excluded. Remmeber to use every priority only once! If you want
+     * be excluded. Remember to use every priority only once! If you want
      * override an already set priority, use the override parameter.
      * Keep in mind to only use already added items.
      *
@@ -394,7 +393,7 @@ qx.Class.define("qx.ui.toolbar.ToolBar",
     // property apply
     _applyOverflowHandling : function(value, old)
     {
-      // invalidate the own and the parrents layout cach because the size hint changes
+      // invalidate the own and the parents layout cache because the size hint changes
       this.invalidateLayoutCache();
       var parent = this.getLayoutParent();
       if (parent) {
@@ -402,7 +401,7 @@ qx.Class.define("qx.ui.toolbar.ToolBar",
       }
 
       // recalculate if possible
-      var bounds = this.getBounds()
+      var bounds = this.getBounds();
       if (bounds && bounds.width) {
         this._recalculateOverflow(bounds.width);
       }
@@ -412,7 +411,7 @@ qx.Class.define("qx.ui.toolbar.ToolBar",
         // add the resize listener
         this.addListener("resize", this._onResize, this);
 
-      // if the handlis has been disabled
+      // if the handles has been disabled
       } else {
         this.removeListener("resize", this._onResize, this);
 
@@ -466,7 +465,7 @@ qx.Class.define("qx.ui.toolbar.ToolBar",
      *    <code>false</code> otherwise.
      */
     _setAllowMenuOpenHover : function(value) {
-      this.__allowMenuOpenHover = value
+      this.__allowMenuOpenHover = value;
     },
 
     /**
@@ -590,12 +589,14 @@ qx.Class.define("qx.ui.toolbar.ToolBar",
         child.getSizeHint().width -
         2 * this.getSpacing();
       this._recalculateOverflow(null, newWidth);
+      return child;
     },
 
     // overridden
     _removeAll : function() {
-      this.base(arguments);
+      var children = this.base(arguments);
       this._recalculateOverflow(null, 0);
+      return children;
     },
 
 

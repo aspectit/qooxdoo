@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -194,6 +193,32 @@ qx.Class.define("qx.test.io.request.Xhr",
 
       this.assertCalledWith(this.transport.send, "affe=true");
       obj.dispose();
+    },
+
+    "test: send blob data with POST request": function() {
+      if (typeof window.Blob == "undefined") {
+        this.skip("Blob constructor not available");
+      }
+      var blob = new window.Blob(['abc123'], {type: 'text/plain'});
+      this.setUpFakeTransport();
+      this.req.setMethod("POST");
+      this.req.setRequestData(blob);
+      this.req.send();
+
+      this.assertCalledWith(this.transport.send, blob);
+    },
+
+    "test: send array buffer data with POST request": function() {
+      if (typeof window.ArrayBuffer == "undefined") {
+        this.skip("ArrayBuffer constructor not available");
+      }
+      var array = new window.ArrayBuffer(512);
+      this.setUpFakeTransport();
+      this.req.setMethod("POST");
+      this.req.setRequestData(array);
+      this.req.send();
+
+      this.assertCalledWith(this.transport.send, array);
     },
 
     "test: serialize data": function() {

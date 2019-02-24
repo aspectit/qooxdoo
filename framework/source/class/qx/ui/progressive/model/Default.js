@@ -8,8 +8,7 @@
      2008 Derrell Lipman
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -39,7 +38,7 @@ qx.Class.define("qx.ui.progressive.model.Default",
     __elements : null,
 
     /**
-     * Add elements to be progressively renderered.  Each element must be an
+     * Add elements to be progressively rendered.  Each element must be an
      * object which contains at least two members: renderer (the renderer
      * name) and data.
      *
@@ -56,7 +55,7 @@ qx.Class.define("qx.ui.progressive.model.Default",
     },
 
     /**
-     * Add a single element to be progressively renderered.  The element must
+     * Add a single element to be progressively rendered.  The element must
      * be an object which contains at least two members: renderer (the
      * renderer name) and data.
      *

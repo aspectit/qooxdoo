@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -227,7 +226,7 @@ qx.Class.define("qx.test.data.singlevalue.Simple",
       this.__a.setZIndex(892);
       this.assertEquals(89, this.__b.getZIndex(), "Number binding not removed!");
 
-      // check if they are internaly removed
+      // check if they are internally removed
       var bindings = qx.data.SingleValueBinding.getAllBindingsForObject(this.__a);
       this.assertEquals(0, bindings.length, "Still bindings there!");
 
@@ -245,28 +244,6 @@ qx.Class.define("qx.test.data.singlevalue.Simple",
       }
 
    },
-
-
-    testRemoveAllBindings: function(){
-      // add three bindings
-      qx.data.SingleValueBinding.bind(this.__a, "appearance", this.__b, "appearance");
-      qx.data.SingleValueBinding.bind(this.__a, "zIndex", this.__b, "zIndex");
-      qx.data.SingleValueBinding.bind(this.__b, "zIndex", this.__a, "zIndex");
-
-      // check if the bindings are there
-      var bindingsA = qx.data.SingleValueBinding.getAllBindingsForObject(this.__a);
-      var bindingsB = qx.data.SingleValueBinding.getAllBindingsForObject(this.__b);
-      this.assertEquals(3, bindingsA.length, "There are more than 3 bindings!");
-      this.assertEquals(3, bindingsB.length, "There are more than 3 bindings!");
-
-      // remove all bindings
-      qx.data.SingleValueBinding.removeAllBindings();
-
-      bindingsA = qx.data.SingleValueBinding.getAllBindingsForObject(this.__a);
-      bindingsB = qx.data.SingleValueBinding.getAllBindingsForObject(this.__b);
-      this.assertEquals(0, bindingsA.length, "Still bindings there!");
-      this.assertEquals(0, bindingsB.length, "Still bindings there!");
-    },
 
 
     testGetAllBindings: function(){
@@ -353,7 +330,7 @@ qx.Class.define("qx.test.data.singlevalue.Simple",
       this.__a.setAppearance("affe");
       this.assertEquals("affe", this.__b.getAppearance(), "String binding does not work!");
 
-      var affe = new qx.test.data.singlevalue.TextFieldDummy()
+      var affe = new qx.test.data.singlevalue.TextFieldDummy();
       affe.setAppearance("Jonny");
       qx.data.SingleValueBinding.bind(affe, "appearance", this.__b, "appearance");
       this.assertEquals("Jonny", this.__b.getAppearance(), "String binding does not work!");
@@ -698,6 +675,54 @@ qx.Class.define("qx.test.data.singlevalue.Simple",
       bindingsB = qx.data.SingleValueBinding.getAllBindingsForObject(this.__b);
       this.assertEquals(1, bindingsB.length, "There must be one binding!");
       this.assertTrue(bindingsA[0][1] === c, "Source object of the binding must be object 'c'!");
+    },
+
+
+
+    testNonExistingSetup: function() {
+      var a = qx.data.marshal.Json.createModel({b: {}, target: null});
+
+      qx.data.SingleValueBinding.bind(a, "b.c", a, "target");
+      this.assertNull(a.getTarget());
+
+      a.setB(qx.data.marshal.Json.createModel({c: "txt"}));
+      this.assertEquals("txt", a.getTarget());
+    },
+
+
+    testNonExistingSetupDeep: function() {
+      var a = qx.data.marshal.Json.createModel({b: {c: {d: {e: {}}}}, target: null});
+
+      qx.data.SingleValueBinding.bind(a, "b.c.d.e.f", a, "target");
+      this.assertNull(a.getTarget());
+
+      a.getB().setC(qx.data.marshal.Json.createModel({d: {e: {f: "txt"}}}));
+      this.assertEquals("txt", a.getTarget());
+    },
+
+
+    testNonExistingChange: function() {
+      var a = qx.data.marshal.Json.createModel({b: {c: "txt"}, bb: {}, target: null});
+
+      qx.data.SingleValueBinding.bind(a, "b.c", a, "target");
+      this.assertEquals("txt", a.getTarget());
+
+      a.setB(a.getBb());
+      this.assertNull(a.getTarget());
+    },
+
+
+    testNonExistingChangeDeep: function() {
+      var a = qx.data.marshal.Json.createModel({b: {c: {d: {e: {f: "txt"}}}}, target: null});
+
+      qx.data.SingleValueBinding.bind(a, "b.c.d.e.f", a, "target");
+      this.assertEquals("txt", a.getTarget());
+
+      a.getB().setC(qx.data.marshal.Json.createModel({d: {e: {}}}));
+      this.assertNull(a.getTarget());
+
+      a.getB().setC(qx.data.marshal.Json.createModel({d: {}}));
+      this.assertNull(a.getTarget());
     }
   }
 });

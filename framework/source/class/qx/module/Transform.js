@@ -8,8 +8,7 @@
      2004-2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -27,7 +26,7 @@
  */
 qx.Bootstrap.define("qx.module.Transform",
 {
-  statics :
+  members :
   {
     /**
      * Method to apply multiple transforms at once to the given element. It
@@ -276,23 +275,6 @@ qx.Bootstrap.define("qx.module.Transform",
 
 
   defer : function(statics) {
-    qxWeb.$attach({
-      "transform" : statics.transform,
-      "translate" : statics.translate,
-      "rotate" : statics.rotate,
-      "skew" : statics.skew,
-      "scale" : statics.scale,
-
-      "setTransformStyle" : statics.setTransformStyle,
-      "getTransformStyle" : statics.getTransformStyle,
-      "setTransformOrigin" : statics.setTransformOrigin,
-      "getTransformOrigin" : statics.getTransformOrigin,
-      "setTransformPerspective" : statics.setTransformPerspective,
-      "getTransformPerspective" : statics.getTransformPerspective,
-      "setTransformPerspectiveOrigin" : statics.setTransformPerspectiveOrigin,
-      "getTransformPerspectiveOrigin" : statics.getTransformPerspectiveOrigin,
-      "setTransformBackfaceVisibility" : statics.setTransformBackfaceVisibility,
-      "getTransformBackfaceVisibility" : statics.getTransformBackfaceVisibility
-    });
+    qxWeb.$attachAll(this);
   }
 });

@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -78,7 +77,6 @@ qx.Class.define("qx.ui.form.DateField",
     // is not focusable so the events need to be forwarded manually.
     this.addListener("focusin", function(e) {
       textField.fireNonBubblingEvent("focusin", qx.event.type.Focus);
-      textField.setTextSelection(0,0);
     }, this);
 
     this.addListener("focusout", function(e) {
@@ -231,7 +229,7 @@ qx.Class.define("qx.ui.form.DateField",
     */
     /**
      * Sets the default date format which is returned by
-     * {@link #getDefaultDateFormatter}. You can overrride this method to
+     * {@link #getDefaultDateFormatter}. You can override this method to
      * define your own default format.
      */
     _setDefaultDateFormat : function() {
@@ -296,6 +294,9 @@ qx.Class.define("qx.ui.form.DateField",
 
       // return the parsed date
       try {
+        if (textfieldValue == null || textfieldValue.length == 0) {
+          return null;
+        }
         return this.getDateFormat().parse(textfieldValue);
       } catch (ex) {
         return null;
@@ -378,8 +379,10 @@ qx.Class.define("qx.ui.form.DateField",
       {
         var textfield = this.getChildControl("textfield");
         var dateStr = textfield.getValue();
-        var currentDate = old.parse(dateStr);
-        textfield.setValue(value.format(currentDate));
+        if (dateStr != null) {
+          var currentDate = old.parse(dateStr);
+          textfield.setValue(value.format(currentDate));
+        }
       }
       catch (ex) {
         // do nothing if the former date could not be parsed
@@ -583,6 +586,13 @@ qx.Class.define("qx.ui.form.DateField",
     {
       var value = this.getChildControl("textfield").getValue();
       return value == null || value == "";
+    },
+
+    // overridden
+    focus : function()
+    {
+      this.base(arguments);
+      this.getChildControl("textfield").getFocusElement().focus();
     }
   },
 

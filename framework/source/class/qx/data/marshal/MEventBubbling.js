@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -37,7 +36,7 @@ qx.Mixin.define("qx.data.marshal.MEventBubbling",
      * desired. It is already taken care of that properties created with the
      * {@link qx.data.marshal.Json} marshaler call this method.
      *
-     * The data will contain a map with the following three keys
+     * The data will contain a map with the following four keys
      *   <li>value: The new value of the property</li>
      *   <li>old: The old value of the property.</li>
      *   <li>name: The name of the property changed including its parent
@@ -134,7 +133,7 @@ qx.Mixin.define("qx.data.marshal.MEventBubbling",
           var dotIndex = data.name.indexOf(".") != -1 ? data.name.indexOf(".") : data.name.length;
           var bracketIndex = data.name.indexOf("[") != -1 ? data.name.indexOf("[") : data.name.length;
 
-          // braktes in the first spot is ok [BUG #5985]
+          // brackets in the first spot is ok [BUG #5985]
           if (bracketIndex == 0) {
             var newName = name + data.name;
           } else if (dotIndex < bracketIndex) {

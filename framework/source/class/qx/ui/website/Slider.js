@@ -8,8 +8,7 @@
      2013 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -161,7 +160,7 @@ qx.Bootstrap.define("qx.ui.website.Slider",
   members :
   {
     __dragMode : null,
-
+    _value : 0,
 
     init : function() {
       if (!this.base(arguments)) {
@@ -173,33 +172,31 @@ qx.Bootstrap.define("qx.ui.website.Slider",
       if (!this.getValue()) {
         var step = this.getConfig("step");
         var defaultVal= qxWeb.type.get(step) == "Array" ? step[0] : this.getConfig("minimum");
-        this.setProperty("value", defaultVal);
+        this._value = defaultVal;
       }
 
-      this._forEachElementWrapped(function(slider) {
-        slider.$onFirstCollection("pointerup", slider._onSliderPointerUp, slider)
-        .$onFirstCollection("focus", slider._onSliderFocus, slider)
-        .setStyle("touch-action", "pan-y");
-        qxWeb(document).on("pointerup", slider._onDocPointerUp, slider);
-        qxWeb(window).$onFirstCollection("resize", slider._onWindowResize, slider);
+      this.on("pointerup", this._onSliderPointerUp, this)
+      .on("focus", this._onSliderFocus, this)
+      .setStyle("touch-action", "pan-y");
+      qxWeb(document).on("pointerup", this._onDocPointerUp, this);
+      qxWeb(window).on("resize", this._onWindowResize, this);
 
-        if (slider.getChildren("." + cssPrefix + "-knob").length === 0) {
-          slider.append(qx.ui.website.Widget.create("<button>")
-          .addClass(cssPrefix + "-knob"));
-        }
+      if (this.getChildren("." + cssPrefix + "-knob").length === 0) {
+        this.append(qx.ui.website.Widget.create("<button>")
+        .addClass(cssPrefix + "-knob"));
+      }
 
-        slider.getChildren("." + cssPrefix + "-knob")
-        .setAttributes({
-          "draggable": "false",
-          "unselectable": "true"
-        })
-        .setHtml(slider._getKnobContent())
-        .$onFirstCollection("pointerdown", slider._onPointerDown, slider)
-        .$onFirstCollection("dragstart", slider._onDragStart, slider)
-        .$onFirstCollection("focus", slider._onKnobFocus, slider)
-        .$onFirstCollection("blur", slider._onKnobBlur, slider);
-        slider.render();
-      });
+      this.getChildren("." + cssPrefix + "-knob")
+      .setAttributes({
+        "draggable": "false",
+        "unselectable": "true"
+      })
+      .setHtml(this._getKnobContent())
+      .on("pointerdown", this._onPointerDown, this)
+      .on("dragstart", this._onDragStart, this)
+      .on("focus", this._onKnobFocus, this)
+      .on("blur", this._onKnobBlur, this);
+      this.render();
 
       return true;
     },
@@ -211,7 +208,7 @@ qx.Bootstrap.define("qx.ui.website.Slider",
      * @return {Integer} slider value
      */
     getValue : function() {
-      return this.getProperty("value");
+      return this._value;
     },
 
     /**
@@ -242,7 +239,7 @@ qx.Bootstrap.define("qx.ui.website.Slider",
         }
       }
 
-      this.setProperty("value", value);
+      this._value = value;
 
       if (qxWeb.type.get(step) != "Array" || step.indexOf(value) != -1) {
         this.__valueToPosition(value);
@@ -509,7 +506,7 @@ qx.Bootstrap.define("qx.ui.website.Slider",
      */
     _onKnobFocus : function(e) {
       this.getChildren("." + this.getCssPrefix() + "-knob")
-        .$onFirstCollection("keydown", this._onKeyDown, this);
+        .on("keydown", this._onKeyDown, this);
     },
 
 
@@ -519,7 +516,7 @@ qx.Bootstrap.define("qx.ui.website.Slider",
      */
     _onKnobBlur : function(e) {
       this.getChildren("." + this.getCssPrefix() + "-knob")
-        .$offFirstCollection("keydown", this._onKeyDown, this);
+        .off("keydown", this._onKeyDown, this);
     },
 
 
@@ -586,11 +583,10 @@ qx.Bootstrap.define("qx.ui.website.Slider",
      * calculated values which are used to position the slider knob.
      */
     _onWindowResize : function() {
-      var value = this.getProperty("value");
       if (qxWeb.type.get(this.getConfig("step")) == "Array") {
         this._getPixels();
       }
-      this.__valueToPosition(value);
+      this.__valueToPosition(this._value);
     },
 
 
@@ -626,18 +622,16 @@ qx.Bootstrap.define("qx.ui.website.Slider",
 
     dispose : function()
     {
-      this._forEachElementWrapped(function(slider) {
-        qxWeb(document).off("pointerup", slider._onDocPointerUp, slider);
-        qxWeb(window).$offFirstCollection("resize", slider._onWindowResize, slider);
-        slider.$offFirstCollection("pointerup", slider._onSliderPointerUp, slider)
-        .$offFirstCollection("focus", slider._onSliderFocus, slider);
-        slider.getChildren("." + this.getCssPrefix() + "-knob")
-        .$offFirstCollection("pointerdown", slider._onPointerDown, slider)
-        .$offFirstCollection("dragstart", slider._onDragStart, slider)
-        .$offFirstCollection("focus", slider._onKnobFocus, slider)
-        .$offFirstCollection("blur", slider._onKnobBlur, slider)
-        .$offFirstCollection("keydown", slider._onKeyDown, slider);
-      });
+      qxWeb(document).off("pointerup", this._onDocPointerUp, this);
+      qxWeb(window).off("resize", this._onWindowResize, this);
+      this.off("pointerup", this._onSliderPointerUp, this)
+      .off("focus", this._onSliderFocus, this);
+      this.getChildren("." + this.getCssPrefix() + "-knob")
+      .off("pointerdown", this._onPointerDown, this)
+      .off("dragstart", this._onDragStart, this)
+      .off("focus", this._onKnobFocus, this)
+      .off("blur", this._onKnobBlur, this)
+      .off("keydown", this._onKeyDown, this);
 
       this.setHtml("");
 

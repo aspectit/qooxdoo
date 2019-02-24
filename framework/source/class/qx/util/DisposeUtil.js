@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -170,12 +169,12 @@ qx.Class.define("qx.util.DisposeUtil",
       trigger.dispose = function(){
         triggerDispose.call(trigger);
         disposeMe.dispose();
-      }
+      };
     },
 
 
     /**
-     * Destroys a container and all of its children recursivly.
+     * Destroys a container and all of its children recursively.
      * @param container {qx.ui.container.Composite | qx.ui.container.Scroll |
      *   qx.ui.container.SlideBar | qx.ui.container.Stack} Container to be destroyed
      */
@@ -208,9 +207,9 @@ qx.Class.define("qx.util.DisposeUtil",
 
 
     /**
-     * Helper function to collect all children widgets of an container recursivly.
+     * Helper function to collect all children widgets of an container recursively.
      * @param container {qx.ui.container.Composite | qx.ui.container.Scroll | qx.ui.container.SlideBar | qx.ui.container.Stack} Container to be destroyed
-     * @param arr {Array} Array wich holds all children widgets
+     * @param arr {Array} Array which holds all children widgets
      */
     _collectContainerChildren : function(container, arr)
     {

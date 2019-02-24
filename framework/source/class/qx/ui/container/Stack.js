@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -63,7 +62,10 @@
 qx.Class.define("qx.ui.container.Stack",
 {
   extend : qx.ui.core.Widget,
-  implement : qx.ui.core.ISingleSelection,
+  implement : [
+    qx.ui.form.IField,
+    qx.ui.core.ISingleSelection
+  ],
   include : [
     qx.ui.core.MSingleSelectionHandling,
     qx.ui.core.MChildrenHandling
@@ -202,7 +204,7 @@ qx.Class.define("qx.ui.container.Stack",
     },
 
 
-    //overriden
+    //overridden
     _afterAddChild : function(child) {
       var selected = this.getSelection()[0];
 
@@ -218,7 +220,7 @@ qx.Class.define("qx.ui.container.Stack",
     },
 
 
-    //overriden
+    //overridden
     _afterRemoveChild : function(child) {
       if (this.getSelection()[0] === child) {
         var first = this._getChildren()[0];

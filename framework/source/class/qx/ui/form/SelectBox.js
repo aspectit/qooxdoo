@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -48,7 +47,8 @@ qx.Class.define("qx.ui.form.SelectBox",
   extend : qx.ui.form.AbstractSelectBox,
   implement : [
     qx.ui.core.ISingleSelection,
-    qx.ui.form.IModelSelection
+    qx.ui.form.IModelSelection,
+    qx.ui.form.IField
   ],
   include : [qx.ui.core.MSingleSelectionHandling, qx.ui.form.MModelSelection],
 
@@ -92,6 +92,12 @@ qx.Class.define("qx.ui.form.SelectBox",
     {
       refine : true,
       init : "selectbox"
+    },
+    
+    rich: {
+      init: false,
+      check: "Boolean",
+      apply: "_applyRich"
     }
   },
 
@@ -114,6 +120,21 @@ qx.Class.define("qx.ui.form.SelectBox",
       WIDGET API
     ---------------------------------------------------------------------------
     */
+
+    _applyRich: function(value, oldValue) {
+      this.getChildControl("atom").setRich(value);
+    },
+    
+    // overridden
+    _defaultFormat: function(item) {
+      if (item) {
+        if (typeof item.isRich == "function" && item.isRich()) {
+          this.setRich(true);
+        }
+        return item.getLabel();
+      }
+      return null;
+    },
 
     // overridden
     _createChildControlImpl : function(id, hash)
@@ -165,7 +186,7 @@ qx.Class.define("qx.ui.form.SelectBox",
     /**
      * Returns the list items for the selection.
      *
-     * @return {qx.ui.form.ListItem[]} List itmes to select.
+     * @return {qx.ui.form.ListItem[]} List items to select.
      */
     _getItems : function() {
       return this.getChildrenContainer().getChildren();
@@ -224,7 +245,7 @@ qx.Class.define("qx.ui.form.SelectBox",
       var atom = this.getChildControl("atom");
       var label = listItem ? listItem.getLabel() : "";
       var format = this.getFormat();
-      if (format != null) {
+      if (format != null && listItem) {
         label = format.call(this, listItem);
       }
 
@@ -414,7 +435,7 @@ qx.Class.define("qx.ui.form.SelectBox",
           list.setSelection(this.getSelection());
         }
       } else {
-        // ensure that the list is never biger that the max list height and
+        // ensure that the list is never bigger that the max list height and
         // the available space in the viewport
         var distance = popup.getLayoutLocation(this);
         var viewPortHeight = qx.bom.Viewport.getHeight();
@@ -424,7 +445,7 @@ qx.Class.define("qx.ui.form.SelectBox",
         var availableHeigth = toTop > toBottom ? toTop : toBottom;
 
         var maxListHeight = this.getMaxListHeight();
-        var list = this.getChildControl("list")
+        var list = this.getChildControl("list");
         if (maxListHeight == null || maxListHeight > availableHeigth) {
           list.setMaxHeight(availableHeigth);
         } else if (maxListHeight < availableHeigth) {

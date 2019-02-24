@@ -10,8 +10,7 @@
 #    2006-2010 1&1 Internet AG, Germany, http://www.1und1.de
 #
 #  License:
-#    LGPL: http://www.gnu.org/licenses/lgpl.html
-#    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+#    MIT: https://opensource.org/licenses/MIT
 #    See the LICENSE file in the project's top-level directory for details.
 #
 #  Authors:
@@ -20,21 +19,31 @@
 ################################################################################
 
 import os, sys, re, types
+from misc import json
 from ecmascript.frontend import treeutil, treegenerator
+
+cacheId = "features"  # use a site-wide privates db
+
+def debug(features):
+    print
+    print json.dumps(features)
+    print
 
 ##
 # Remove features (mainly methods) from a class
 ##
 
 def patch(tree, classObj, featureMap):
-    
+
     # change this to 'False' if you want logging instead of function removal
     prune_dont_log = True
 
+    optimized_features = {}
     feature_names = featureMap[classObj.id]
     # get class map
     qxDefine = treeutil.findQxDefine(tree)
     classMap = treeutil.getClassMap(qxDefine)
+
     # go through features in 'members' and 'statics'
     for section in ("statics", "members"):
         if section in classMap:
@@ -45,7 +54,12 @@ def patch(tree, classObj, featureMap):
                 else:
                     parent = node.parent
                     assert parent.type == "keyvalue"
-                    #print "static optimizing: %s#%s" % (classObj.id, feature)
+
+                    # print "static optimizing: %s#%s" % (classObj.id, feature)
+                    if classObj.id not in optimized_features:
+                        optimized_features[classObj.id] = []
+                    optimized_features[classObj.id].append(feature);
+
                     if prune_dont_log:
                         # remove sub tree
                         parent.parent.removeChild(parent)  # remove the entire feature from the map
@@ -60,6 +74,8 @@ def patch(tree, classObj, featureMap):
                         if block:
                             LogStmt = treegenerator.parse("console.warn('Static optimization would have removed: " + classObj.id + '#' + feature + "');")
                             block.addChild(LogStmt, 0)
+
+    return optimized_features
 
 ##
 # Use this if a syntax tree is being removed from the build, to decrement its

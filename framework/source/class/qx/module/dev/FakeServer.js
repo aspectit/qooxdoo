@@ -8,8 +8,7 @@
      2013 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -23,37 +22,6 @@
  * Automatically creates URL filtering rules to ensure that only configured
  * requests are faked while others will be processed normally by the browser's
  * XHR implementation.
- *
- * The following example shows how to configure mock responses for two different
- * requests:
- * <pre class="javascript">
- *   var responseData = [
- *     {
- *       method: "GET",
- *       url: /\/api\/resource\/\d+/,
- *       response : function(request) {
- *         var status = 200;
- *         var headers = { "Content-Type": "application/json" };
- *         var responseData = {
- *           description: "Mock REST response for resource " + request.url
- *         };
- *         var body = JSON.stringify(responseData);
- *         request.respond(status, headers, body);
- *       }
- *     },
- *     {
- *       method: "GET",
- *       url: "/users/{userId}",
- *       response: [
- *         200,
- *         { "Content-Type": "application/json" },
- *         JSON.stringify({userId: 'someUser'})
- *       ]
- *     }
- *   ];
- *
- *   q.dev.fakeServer.configure(responseData);
- * </pre>
  *
  * @group (IO)
  */

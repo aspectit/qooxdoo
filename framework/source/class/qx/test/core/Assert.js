@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -134,7 +133,7 @@ qx.Class.define("qx.test.core.Assert",
       this.assertException(function() {
         var f = function(a, b) {
           qx.core.Assert.assertArgumentsCount(arguments, 2, 2);
-        }
+        };
         f("1", "2", "3", "4", "5");
       }, qx.core.AssertionError, /but found '5' arguments\./g);
     },
@@ -154,6 +153,49 @@ qx.Class.define("qx.test.core.Assert",
           this.fireEvent("xyz1");
         });
       }, qx.core.AssertionError);
+    },
+
+    testAssertEqualsFloat : function()
+    {
+      this.assertEqualsFloat(1.0, 1.0);
+      this.assertEqualsFloat(0.3, 0.1 + 0.2);
+
+      this.assertException(function() {
+        qx.core.Assert.assertEqualsFloat(1.0, 1.0000001);
+      }, qx.core.AssertionError);
+
+      this.assertException(function() {
+        qx.core.Assert.assertEqualsFloat(1.0, 0.0000009);
+      }, qx.core.AssertionError);
+
+      // test error message
+      this.assertException(function() {
+          qx.core.Assert.assertEqualsFloat(1.5, 1.6);
+        }, qx.core.AssertionError,
+        "Expected '1.5' to be equal with '1.6'!"
+      );
+    },
+
+    testAssertNotEqualsFloat : function()
+    {
+      this.assertNotEqualsFloat(1.0, 1.0000001);
+      this.assertNotEqualsFloat(1.5, 1.6);
+      this.assertNotEqualsFloat(1.0, 0.0000009);
+
+      this.assertException(function() {
+        qx.core.Assert.assertNotEqualsFloat(1.0, 1.0);
+      }, qx.core.AssertionError);
+
+      this.assertException(function() {
+        qx.core.Assert.assertNotEqualsFloat(0.3, 0.1 + 0.2);
+      }, qx.core.AssertionError);
+
+      // test error message
+      this.assertException(function() {
+        qx.core.Assert.assertNotEqualsFloat(1.5, 1.5);
+        }, qx.core.AssertionError,
+        "Expected '1.5' to be not equal with '1.5'!"
+      );
     }
   }
 });

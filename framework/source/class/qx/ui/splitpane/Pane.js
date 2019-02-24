@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -156,7 +155,7 @@ qx.Class.define("qx.ui.splitpane.Pane",
 
 
     /**
-     * Move handler for the spliiter which takes care of the external
+     * Move handler for the splitter which takes care of the external
      * triggered resize of children.
      *
      * @param e {qx.event.type.Data} The data even of move.

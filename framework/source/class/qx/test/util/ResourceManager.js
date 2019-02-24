@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -52,6 +51,15 @@ qx.Class.define("qx.test.util.ResourceManager",
     {
       var ResourceManager = qx.util.ResourceManager.getInstance();
       this.assertEquals(ResourceManager.getImageFormat("qx/static/blank.gif"), "gif");
+      this.assertEquals(ResourceManager.getImageFormat("@FontAwesome/heart"), "font");
+    },
+
+    testIsFontUri : function()
+    {
+      var ResourceManager = qx.util.ResourceManager.getInstance();
+      this.assertTrue(ResourceManager.isFontUri("@FontAwesome/heart"));
+      this.assertFalse(ResourceManager.isFontUri("qx/static/blank.gif"));
+      this.assertFalse(ResourceManager.isFontUri(undefined));
     },
 
     testIsClippedImage : function()

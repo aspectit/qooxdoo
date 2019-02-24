@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -202,7 +201,7 @@ qx.Class.define("qx.ui.virtual.core.Axis",
         return ranges;
       }
 
-      indexes.sort(function(a,b) { return a > b ? 1 : -1});
+      indexes.sort(function(a,b) { return a > b ? 1 : -1;});
 
       var ranges = [];
       var correctionSum = 0;
@@ -311,7 +310,7 @@ qx.Class.define("qx.ui.virtual.core.Axis",
         return {
           index: index,
           offset: position - startPos
-        }
+        };
       }
       else
       {
@@ -319,7 +318,7 @@ qx.Class.define("qx.ui.virtual.core.Axis",
         return {
           index: index + 1 + Math.floor((position - startPos - firstItemSize) / defaultSize),
           offset: (position - startPos - firstItemSize) % defaultSize
-        }
+        };
       }
     },
 

@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -242,6 +241,11 @@ qx.Class.define("qx.ui.tooltip.Manager",
     __onHideInterval : function(e)
     {
       var current = this.getCurrent();
+
+      if(current && !current.getAutoHide()) {
+        return;
+      }
+
       if (current && !current.isDisposed()) {
         current.exclude();
       }
@@ -324,8 +328,8 @@ qx.Class.define("qx.ui.tooltip.Manager",
 
       //do nothing if
       if (!target //don't have a target
-          // tooltip is disabled
-          || !target.getEnabled()
+          // tooltip is disabled and the value of showToolTipWhenDisabled is false
+          || (!target.getEnabled() && !target.isShowToolTipWhenDisabled() )
           //tooltip is blocked
           || target.isBlockToolTip()
           //an invalid message isn't set and tooltips are disabled
@@ -387,6 +391,10 @@ qx.Class.define("qx.ui.tooltip.Manager",
         return;
       }
 
+      if(tooltip && !tooltip.getAutoHide()) {
+        return;
+      }
+
       // If there was a tooltip and there is no new one
       if (tooltip && !related) {
         this.setCurrent(null);
@@ -420,7 +428,11 @@ qx.Class.define("qx.ui.tooltip.Manager",
 
       var tooltip = this.getCurrent();
 
-      // Only set to null if blured widget is the
+      if(tooltip && !tooltip.getAutoHide()) {
+        return;
+      }
+
+      // Only set to null if blurred widget is the
       // one which has created the current tooltip
       if (tooltip && tooltip == target.getToolTip()) {
         this.setCurrent(null);

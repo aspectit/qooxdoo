@@ -10,8 +10,7 @@
 #    2006-2010 1&1 Internet AG, Germany, http://www.1und1.de
 #
 #  License:
-#    LGPL: http://www.gnu.org/licenses/lgpl.html
-#    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+#    MIT: https://opensource.org/licenses/MIT
 #    See the LICENSE file in the project's top-level directory for details.
 #
 #  Authors:
@@ -93,10 +92,15 @@ MIGRATION_ORDER = [
     "3.5.1",
     "4.0",
     "4.0.1",
-    "4.1"
+    "4.0.2",
+    "4.1",
+    "4.1.1",
+    "5.0",
+    "5.0.1",
+    "5.1"
 ]
 
-default_old_version = "4.0"
+default_old_version = "5.0.1"
 
 LOGGING_READY = False
 

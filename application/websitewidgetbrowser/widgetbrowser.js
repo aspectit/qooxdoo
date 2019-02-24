@@ -8,8 +8,7 @@
      2004-2013 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -23,6 +22,7 @@ q.ready(function() {
     accordion : ["Default", "Responsive"],
     button : ["Default"],
     calendar : ["Default", "Range Selection","Customized"],
+    carousel : ["Default"],
     datepicker : ["Default", "Customized"],
     rating : ["Default", "Custom Length", "Custom Symbol", "Custom Styling"],
     slider : ["Default", "Customized"],
@@ -38,9 +38,9 @@ q.ready(function() {
     q("#content > ul > .qx-tabs-button")._forEachElementWrapped(function(button) {
       var selector = button.getData("qx-tabs-page");
       var widgets = q(selector).find("*[data-qx-class]");
-      if (widgets.length > 0) {
-        widgets.setEnabled(enabled);
-      }
+      widgets._forEachElementWrapped(function(widget) {
+        widget.setEnabled(enabled);
+      });
     });
   };
 

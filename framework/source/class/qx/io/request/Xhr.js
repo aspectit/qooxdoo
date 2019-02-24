@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -301,10 +300,22 @@ qx.Class.define("qx.io.request.Xhr",
      * @return {String|Object} The parsed response of the request.
      */
     _getParsedResponse: function() {
-      var response = this._transport.responseText,
-          contentType = this.getResponseContentType() || "";
+      var response = this._transport.responseType === 'blob' ? this._transport.response : this._transport.responseText,
+          contentType = this.getResponseContentType() || "",
+          parsedResponse = "";
 
-      return this._parser.parse(response, contentType);
+      try {
+        parsedResponse = this._parser.parse(response, contentType);
+        this._parserFailed = false
+      } catch(e) {
+        this._parserFailed = true
+        this.fireDataEvent("parseError", {
+          error: e,
+          response: response
+        });
+      }
+
+      return parsedResponse;
     },
 
     /**

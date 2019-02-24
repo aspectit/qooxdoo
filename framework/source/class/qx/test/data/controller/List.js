@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -36,8 +35,8 @@ qx.Class.define("qx.test.data.controller.List",
 
     setUp : function()
     {
-      // prevent the icon laod error with this stub
-      this.stub(qx.io.ImageLoader, "load")
+      // prevent the icon load error with this stub
+      this.stub(qx.io.ImageLoader, "load");
 
       this.__list = new qx.ui.form.List();
     },
@@ -84,7 +83,7 @@ qx.Class.define("qx.test.data.controller.List",
       model.push("d");
 
       this.wait(function() {
-        this.assertFalse(change, "Change event has been fired.")
+        this.assertFalse(change, "Change event has been fired.");
 
         selectBox.destroy();
         model.dispose();
@@ -578,7 +577,7 @@ qx.Class.define("qx.test.data.controller.List",
       var options = {};
       options.converter = function(data) {
         return data + " Converted";
-      }
+      };
       this.__controller.setLabelOptions(options);
 
       // check the binding
@@ -599,12 +598,12 @@ qx.Class.define("qx.test.data.controller.List",
       var flag = false;
       options.onUpdate = function() {
         flag = true;
-      }
+      };
       // create the controller
       this.__controller = new qx.data.controller.List(this.__model, this.__list);
       this.__controller.setLabelOptions(options);
 
-      // change something to inkoe a change of a binding
+      // change something to invoke a change of a binding
       this.__data.pop();
       this.__model.pop();
 
@@ -961,11 +960,11 @@ qx.Class.define("qx.test.data.controller.List",
       var delegate = {};
       delegate.createItem = function() {
         return new qx.ui.form.CheckBox();
-      }
+      };
 
       delegate.bindItem = function(controller, item, id) {
         controller.bindProperty(null, "enabled", null, item, id);
-      }
+      };
 
       this.__controller.setDelegate(delegate);
       this.__controller.setTarget(this.__list);
@@ -993,11 +992,11 @@ qx.Class.define("qx.test.data.controller.List",
       var delegate = {};
       delegate.createItem = function() {
         return new qx.ui.form.CheckBox();
-      }
+      };
 
       delegate.bindItem = function(controller, item, id) {
         controller.bindProperty(null, "enabled", null, item, id);
-      }
+      };
 
       this.__controller.setDelegate(delegate);
 
@@ -1018,7 +1017,7 @@ qx.Class.define("qx.test.data.controller.List",
       var delegate = {};
       delegate.bindItem = function(controller, item, id) {
         controller.bindDefaultProperties(item, id);
-      }
+      };
       this.__controller.setDelegate(delegate);
 
       this.__controller.setModel(this.__model);
@@ -1038,12 +1037,12 @@ qx.Class.define("qx.test.data.controller.List",
       var delegate = {};
       delegate.bindItem = function(controller, item, id) {
         controller.bindDefaultProperties(item, id);
-      }
+      };
       this.__controller.setDelegate(delegate);
 
       // check the binding
       for (var i = 0; i < this.__data.length; i++) {
-        this.__model.setItem(i, i + "")
+        this.__model.setItem(i, i + "");
         var label = this.__list.getChildren()[i].getLabel();
         this.assertEquals(i + "", label, "Binding " + i + " is wrong!");
       }
@@ -1131,7 +1130,7 @@ qx.Class.define("qx.test.data.controller.List",
     testScrollBySelection : function()
     {
       this.__setUpString();
-      // set a smal hight (list hast to scroll)
+      // set a smal hight (list has to scroll)
       this.__list.setHeight(40);
       this.getRoot().add(this.__list);
       var selectables = this.__list.getSelectables();
@@ -1150,7 +1149,7 @@ qx.Class.define("qx.test.data.controller.List",
     testScrollBySelectionMulti : function()
     {
       this.__setUpString();
-      // set a smal hight (list hast to scroll)
+      // set a smal hight (list has to scroll)
       this.__list.setHeight(40);
       this.__list.setSelectionMode("multi");
       this.getRoot().add(this.__list);
@@ -1209,7 +1208,7 @@ qx.Class.define("qx.test.data.controller.List",
         }
       });
 
-      var parentA = new qx.demo.Parent()
+      var parentA = new qx.demo.Parent();
       parentA.setName("parentA");
       parentA.getKid().setName("kidA");
       var parentB = new qx.demo.Parent();
@@ -1282,7 +1281,7 @@ qx.Class.define("qx.test.data.controller.List",
         }
       });
 
-      var parentA = new qx.demo.Parent()
+      var parentA = new qx.demo.Parent();
       parentA.setName("parentA");
       parentA.getKid().setName("kidA");
 
@@ -1320,6 +1319,13 @@ qx.Class.define("qx.test.data.controller.List",
       ctrl.dispose();
       label.dispose();
       parents.dispose();
+    },
+
+
+    testSpliceAll : function() {
+      this.__setUpString();
+      this.__model.splice(0, 5, "A", "B", "C", "D", "E");
+      this.assertEquals("E", this.__list.getChildren()[4].getLabel());
     }
   }
 });

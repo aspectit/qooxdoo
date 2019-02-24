@@ -11,8 +11,7 @@
 #    2006-2010 1&1 Internet AG, Germany, http://www.1und1.de
 #
 #  License:
-#    LGPL: http://www.gnu.org/licenses/lgpl.html
-#    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+#    MIT: https://opensource.org/licenses/MIT
 #    See the LICENSE file in the project's top-level directory for details.
 #
 #  Authors:
@@ -59,6 +58,7 @@ class Key(object):
                 "clean-files"   : types.DictType,
                 "collect-environment-info"  : types.DictType,
                 "combine-images": types.DictType,
+                "font-map"      : types.DictType,
                 "compile"       : types.DictType,
                 "compile-options"  : types.DictType,
                 CONFIG_WARNINGS : types.DictType,
@@ -84,7 +84,6 @@ class Key(object):
                 "settings"      : types.DictType,
                 "shell"         : types.DictType,
                 "slice-images"  : types.DictType,
-                "simulate"      : types.DictType,
                 "translate"     : types.DictType,
                 "use"           : types.DictType,
                 "variants"      : types.DictType,

@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -91,6 +90,13 @@ qx.Class.define("demobrowser.demo.table.Table",
       part = new qx.ui.toolbar.Part();
       bar.add(part);
 
+      checkbox = new qx.ui.toolbar.CheckBox("Show ID column");
+      checkbox.setValue(true);
+      checkbox.addListener("execute", function() {
+          table.getTableColumnModel().setColumnVisible(0, this.getValue());
+      }, checkbox);
+      part.add(checkbox);
+
       button = new qx.ui.toolbar.Button("Change row with ID 10", "icon/22/actions/edit-undo.png");
       button.addListener("execute", function(evt) {
         var rowData = this.createRandomRows(1);
@@ -157,10 +163,10 @@ qx.Class.define("demobrowser.demo.table.Table",
       {
         if (evt.getData())
         {
-          var ascending = function(row1, row2)
+          var ascending = function(row1, row2, columnIndex)
           {
-            var obj1 = row1[arguments.callee.columnIndex];
-            var obj2 = row2[arguments.callee.columnIndex];
+            var obj1 = row1[columnIndex];
+            var obj2 = row2[columnIndex];
             if (obj1 % 2 == 1 && obj2 % 2 == 0)
             {
               return 1;
@@ -172,10 +178,10 @@ qx.Class.define("demobrowser.demo.table.Table",
             return (obj1 > obj2) ? 1 : ((obj1 == obj2) ? 0 : -1);
           };
 
-          var descending = function(row1, row2)
+          var descending = function(row1, row2, columnIndex)
           {
-            var obj1 = row1[arguments.callee.columnIndex];
-            var obj2 = row2[arguments.callee.columnIndex];
+            var obj1 = row1[columnIndex];
+            var obj2 = row2[columnIndex];
             if (obj1 % 2 == 1 && obj2 % 2 == 0)
             {
               return -1;

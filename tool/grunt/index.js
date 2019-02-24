@@ -8,8 +8,7 @@
      2014 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -19,6 +18,19 @@
 
 // qooxdoo init needed before running grunt
 'use strict';
+
+// native
+var fs = require('fs');
+var path = require('path');
+
+// exit early
+if (!fs.existsSync(path.join(__dirname, "/node_modules"))) {
+  console.log("Aborted due to missing setup.\n" +
+              "Go to '" + path.join(__dirname, "/../..") + "' and run those commands:\n" +
+              "npm install\n" +
+              "grunt setup");
+  process.exit();
+}
 
 var config = require('./config/application.js');
 var task = require('./task/task.js');

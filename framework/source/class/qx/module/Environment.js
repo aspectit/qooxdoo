@@ -8,8 +8,7 @@
      2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -19,10 +18,6 @@
 /**
  * Module for querying information about the environment / runtime.
  * It adds a static key <code>env</code> to qxWeb and offers the given methods.
- *
- * <pre class="javascript">
- * q.env.get("engine.name"); // return "webkit" e.g.
- * </pre>
  *
  * The following values are predefined:
  *
@@ -87,8 +82,6 @@ qx.Bootstrap.define("qx.module.Environment", {
     qx.core.Environment.get("event.touch");
     qx.core.Environment.get("event.mspointer");
 
-    qxWeb.$attachStatic({
-      "env" : {get: statics.get, add: statics.add}
-    });
+    qxWeb.$attachAll(this, "env");
   }
 });

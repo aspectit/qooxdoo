@@ -8,8 +8,7 @@
      2004-2011 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -18,7 +17,7 @@
 ************************************************************************ */
 
 /**
- * The class is responsible for device detection. This is specially usefull
+ * The class is responsible for device detection. This is specially useful
  * if you are on a mobile device.
  *
  * This class is used by {@link qx.core.Environment} and should not be used
@@ -32,6 +31,7 @@ qx.Bootstrap.define("qx.bom.client.Device",
   {
     /** Maps user agent names to device IDs */
     __ids : {
+      "Windows Phone": "iemobile",
       "iPod" : "ipod",
       "iPad" : "ipad",
       "iPhone" : "iphone",

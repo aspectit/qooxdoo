@@ -8,8 +8,7 @@
      2011-2012 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -45,6 +44,223 @@ qx.Bootstrap.define("qx.module.Event", {
       off : {}
     },
 
+
+
+    __isReady : false,
+
+
+    /**
+     * Executes the given function once the document is ready.
+     *
+     * @attachStatic {qxWeb}
+     * @param callback {Function} callback function
+     */
+    ready : function(callback) {
+      // DOM is already ready
+      if (document.readyState === "complete") {
+        window.setTimeout(callback, 1);
+        return;
+      }
+
+      // listen for the load event so the callback is executed no matter what
+      var onWindowLoad = function()
+      {
+        qx.module.Event.__isReady = true;
+        callback();
+      };
+
+      qxWeb(window).on("load", onWindowLoad);
+
+      var wrappedCallback = function() {
+        qxWeb(window).off("load", onWindowLoad);
+        callback();
+      };
+
+      // Listen for DOMContentLoaded event if available (no way to reliably detect
+      // support)
+      if (qxWeb.env.get("engine.name") !== "mshtml" || qxWeb.env.get("browser.documentmode") > 8) {
+        qx.bom.Event.addNativeListener(document, "DOMContentLoaded", wrappedCallback);
+      }
+      else {
+        // Continually check to see if the document is ready
+        var timer = function() {
+          // onWindowLoad already executed
+          if (qx.module.Event.__isReady) {
+            return;
+          }
+          try {
+            // If DOMContentLoaded is unavailable, use the trick by Diego Perini
+            // http://javascript.nwbox.com/IEContentLoaded/
+            document.documentElement.doScroll("left");
+            if (document.body) {
+              wrappedCallback();
+            }
+          }
+          catch(error) {
+            window.setTimeout(timer, 100);
+          }
+        };
+
+        timer();
+      }
+    },
+
+
+    /**
+     * Registers a normalization function for the given event types. Listener
+     * callbacks for these types will be called with the return value of the
+     * normalization function instead of the regular event object.
+     *
+     * The normalizer will be called with two arguments: The original event
+     * object and the element on which the event was triggered
+     *
+     * @attachStatic {qxWeb, $registerEventNormalization}
+     * @param types {String[]} List of event types to be normalized. Use an
+     * asterisk (<code>*</code>) to normalize all event types
+     * @param normalizer {Function} Normalizer function
+     */
+    $registerEventNormalization : function(types, normalizer)
+    {
+      if (!qx.lang.Type.isArray(types)) {
+        types = [types];
+      }
+      var registry = qx.module.Event.__normalizations;
+      for (var i=0,l=types.length; i<l; i++) {
+        var type = types[i];
+        if (qx.lang.Type.isFunction(normalizer)) {
+          if (!registry[type]) {
+            registry[type] = [];
+          }
+          registry[type].push(normalizer);
+        }
+      }
+    },
+
+
+    /**
+     * Unregisters a normalization function from the given event types.
+     *
+     * @attachStatic {qxWeb, $unregisterEventNormalization}
+     * @param types {String[]} List of event types
+     * @param normalizer {Function} Normalizer function
+     */
+    $unregisterEventNormalization : function(types, normalizer)
+    {
+      if (!qx.lang.Type.isArray(types)) {
+        types = [types];
+      }
+      var registry = qx.module.Event.__normalizations;
+      for (var i=0,l=types.length; i<l; i++) {
+        var type = types[i];
+        if (registry[type]) {
+          qx.lang.Array.remove(registry[type], normalizer);
+        }
+      }
+    },
+
+
+    /**
+     * Returns all registered event normalizers
+     *
+     * @attachStatic {qxWeb, $getEventNormalizationRegistry}
+     * @return {Map} Map of event types/normalizer functions
+     */
+    $getEventNormalizationRegistry : function()
+    {
+      return qx.module.Event.__normalizations;
+    },
+
+
+    /**
+     * Registers an event hook for the given event types.
+     *
+     * @attachStatic {qxWeb, $registerEventHook}
+     * @param types {String[]} List of event types
+     * @param registerHook {Function} Hook function to be called on event registration
+     * @param unregisterHook {Function?} Hook function to be called on event deregistration
+     * @internal
+     */
+    $registerEventHook : function(types, registerHook, unregisterHook)
+    {
+      if (!qx.lang.Type.isArray(types)) {
+        types = [types];
+      }
+      var onHooks = qx.module.Event.__hooks.on;
+      for (var i=0,l=types.length; i<l; i++) {
+        var type = types[i];
+        if (qx.lang.Type.isFunction(registerHook)) {
+          if (!onHooks[type]) {
+            onHooks[type] = [];
+          }
+          onHooks[type].push(registerHook);
+        }
+      }
+      if (!unregisterHook) {
+        return;
+      }
+      var offHooks = qx.module.Event.__hooks.off;
+      for (var i=0,l=types.length; i<l; i++) {
+        var type = types[i];
+        if (qx.lang.Type.isFunction(unregisterHook)) {
+          if (!offHooks[type]) {
+            offHooks[type] = [];
+          }
+          offHooks[type].push(unregisterHook);
+        }
+      }
+    },
+
+
+    /**
+     * Unregisters a hook from the given event types.
+     *
+     * @attachStatic {qxWeb, $unregisterEventHooks}
+     * @param types {String[]} List of event types
+     * @param registerHook {Function} Hook function to be called on event registration
+     * @param unregisterHook {Function?} Hook function to be called on event deregistration
+     * @internal
+     */
+    $unregisterEventHook : function(types, registerHook, unregisterHook)
+    {
+      if (!qx.lang.Type.isArray(types)) {
+        types = [types];
+      }
+      var onHooks = qx.module.Event.__hooks.on;
+      for (var i=0,l=types.length; i<l; i++) {
+        var type = types[i];
+        if (onHooks[type]) {
+          qx.lang.Array.remove(onHooks[type], registerHook);
+        }
+      }
+      if (!unregisterHook) {
+        return;
+      }
+      var offHooks = qx.module.Event.__hooks.off;
+      for (var i=0,l=types.length; i<l; i++) {
+        var type = types[i];
+        if (offHooks[type]) {
+          qx.lang.Array.remove(offHooks[type], unregisterHook);
+        }
+      }
+    },
+
+
+    /**
+     * Returns all registered event hooks
+     *
+     * @attachStatic {qxWeb, $getEventHookRegistry}
+     * @return {Map} Map of event types/registration hook functions
+     * @internal
+     */
+    $getEventHookRegistry : function()
+    {
+      return qx.module.Event.__hooks;
+    }
+  },
+
+
+  members :
+  {
     /**
      * Registers a listener for the given event type on each item in the
      * collection. This can be either native or custom events.
@@ -94,9 +310,8 @@ qx.Bootstrap.define("qx.module.Event", {
         bound.original = listener;
 
         // add native listener
-        if (qx.bom.Event.supportsEvent(el, type)) {
-          qx.bom.Event.addNativeListener(el, type, bound, useCapture);
-        }
+        qx.bom.Event.addNativeListener(el, type, bound, useCapture);
+
         // create an emitter if necessary
         if (!el.$$emitter) {
           el.$$emitter = new qx.event.Emitter();
@@ -171,7 +386,7 @@ qx.Bootstrap.define("qx.module.Event", {
                 storedContext = el.__ctx[id];
               }
               // remove the listener from the emitter
-              el.$$emitter.off(types[i], storedListener, storedContext || context);
+              var result = el.$$emitter.off(types[i], storedListener, storedContext || context);
 
               // check if it's a bound listener which means it was a native event
               if (removeAll || storedListener.original == listener) {
@@ -179,7 +394,11 @@ qx.Bootstrap.define("qx.module.Event", {
                 qx.bom.Event.removeNativeListener(el, types[i], storedListener, useCapture);
               }
 
-              delete el.__listener[types[i]][id];
+              // BUG #9184
+              // only if the emitter was successfully removed also delete the key in the data structure
+              if (result !== null) {
+                delete el.__listener[types[i]][id];
+              }
 
               if (hasStoredContext) {
                 delete el.__ctx[id];
@@ -274,7 +493,6 @@ qx.Bootstrap.define("qx.module.Event", {
      *
      * *Important:* Make sure you are handing in the *identical* context object to get
      * the correct result. Especially when using a collection instance this is a common pitfall.
-     * Check out the corresponding code sample below to get it right.
      *
      * @attach {qxWeb}
      * @param type {String} Event type, e.g. <code>mousedown</code>
@@ -369,65 +587,6 @@ qx.Bootstrap.define("qx.module.Event", {
     },
 
 
-    __isReady : false,
-
-
-    /**
-     * Executes the given function once the document is ready.
-     *
-     * @attachStatic {qxWeb}
-     * @param callback {Function} callback function
-     */
-    ready : function(callback) {
-      // DOM is already ready
-      if (document.readyState === "complete") {
-        window.setTimeout(callback, 1);
-        return;
-      }
-
-      // listen for the load event so the callback is executed no matter what
-      var onWindowLoad = function()
-      {
-        qx.module.Event.__isReady = true;
-        callback();
-      };
-
-      qxWeb(window).on("load", onWindowLoad);
-
-      var wrappedCallback = function() {
-        qxWeb(window).off("load", onWindowLoad);
-        callback();
-      };
-
-      // Listen for DOMContentLoaded event if available (no way to reliably detect
-      // support)
-      if (qxWeb.env.get("engine.name") !== "mshtml" || qxWeb.env.get("browser.documentmode") > 8) {
-        qx.bom.Event.addNativeListener(document, "DOMContentLoaded", wrappedCallback);
-      }
-      else {
-        // Continually check to see if the document is ready
-        var timer = function() {
-          // onWindowLoad already executed
-          if (qx.module.Event.__isReady) {
-            return;
-          }
-          try {
-            // If DOMContentLoaded is unavailable, use the trick by Diego Perini
-            // http://javascript.nwbox.com/IEContentLoaded/
-            document.documentElement.doScroll("left");
-            if (document.body) {
-              wrappedCallback();
-            }
-          }
-          catch(error) {
-            window.setTimeout(timer, 100);
-          }
-        };
-
-        timer();
-      }
-    },
-
 
     /**
      * Bind one or two callbacks to the collection.
@@ -470,11 +629,19 @@ qx.Bootstrap.define("qx.module.Event", {
 
       context = context !== undefined ? context : this;
 
-      var listener = function(e) {
-        var eventTarget = qxWeb(e.getTarget());
+      var listener = function(e){
 
+        var eventTarget = qxWeb(e.getTarget());
         if (eventTarget.is(target)) {
           callback.call(context, eventTarget, qxWeb.object.clone(e));
+        } else {
+          var targetToMatch = typeof target == "string" ? this.find(target) : qxWeb(target);
+          for(var i = 0, l = targetToMatch.length; i < l; i++) {
+            if(eventTarget.isChildOf(qxWeb(targetToMatch[i]))) {
+              callback.call(context, eventTarget, qxWeb.object.clone(e));
+              break;
+            }
+          }
         }
       };
 
@@ -542,186 +709,20 @@ qx.Bootstrap.define("qx.module.Event", {
       }, this);
 
       return this;
-    },
-
-
-    /**
-     * Registers a normalization function for the given event types. Listener
-     * callbacks for these types will be called with the return value of the
-     * normalization function instead of the regular event object.
-     *
-     * The normalizer will be called with two arguments: The original event
-     * object and the element on which the event was triggered
-     *
-     * @attachStatic {qxWeb, $registerEventNormalization}
-     * @param types {String[]} List of event types to be normalized. Use an
-     * asterisk (<code>*</code>) to normalize all event types
-     * @param normalizer {Function} Normalizer function
-     */
-    $registerNormalization : function(types, normalizer)
-    {
-      if (!qx.lang.Type.isArray(types)) {
-        types = [types];
-      }
-      var registry = qx.module.Event.__normalizations;
-      for (var i=0,l=types.length; i<l; i++) {
-        var type = types[i];
-        if (qx.lang.Type.isFunction(normalizer)) {
-          if (!registry[type]) {
-            registry[type] = [];
-          }
-          registry[type].push(normalizer);
-        }
-      }
-    },
-
-
-    /**
-     * Unregisters a normalization function from the given event types.
-     *
-     * @attachStatic {qxWeb, $unregisterEventNormalization}
-     * @param types {String[]} List of event types
-     * @param normalizer {Function} Normalizer function
-     */
-    $unregisterNormalization : function(types, normalizer)
-    {
-      if (!qx.lang.Type.isArray(types)) {
-        types = [types];
-      }
-      var registry = qx.module.Event.__normalizations;
-      for (var i=0,l=types.length; i<l; i++) {
-        var type = types[i];
-        if (registry[type]) {
-          qx.lang.Array.remove(registry[type], normalizer);
-        }
-      }
-    },
-
-
-    /**
-     * Returns all registered event normalizers
-     *
-     * @attachStatic {qxWeb, $getEventNormalizationRegistry}
-     * @return {Map} Map of event types/normalizer functions
-     */
-    $getRegistry : function()
-    {
-      return qx.module.Event.__normalizations;
-    },
-
-
-    /**
-     * Registers an event hook for the given event types.
-     *
-     * @attachStatic {qxWeb, $registerEventHook}
-     * @param types {String[]} List of event types
-     * @param registerHook {Function} Hook function to be called on event registration
-     * @param unregisterHook {Function?} Hook function to be called on event deregistration
-     * @internal
-     */
-    $registerEventHook : function(types, registerHook, unregisterHook)
-    {
-      if (!qx.lang.Type.isArray(types)) {
-        types = [types];
-      }
-      var onHooks = qx.module.Event.__hooks.on;
-      for (var i=0,l=types.length; i<l; i++) {
-        var type = types[i];
-        if (qx.lang.Type.isFunction(registerHook)) {
-          if (!onHooks[type]) {
-            onHooks[type] = [];
-          }
-          onHooks[type].push(registerHook);
-        }
-      }
-      if (!unregisterHook) {
-        return;
-      }
-      var offHooks = qx.module.Event.__hooks.off;
-      for (var i=0,l=types.length; i<l; i++) {
-        var type = types[i];
-        if (qx.lang.Type.isFunction(unregisterHook)) {
-          if (!offHooks[type]) {
-            offHooks[type] = [];
-          }
-          offHooks[type].push(unregisterHook);
-        }
-      }
-    },
-
-
-    /**
-     * Unregisters a hook from the given event types.
-     *
-     * @attachStatic {qxWeb, $unregisterEventHooks}
-     * @param types {String[]} List of event types
-     * @param registerHook {Function} Hook function to be called on event registration
-     * @param unregisterHook {Function?} Hook function to be called on event deregistration
-     * @internal
-     */
-    $unregisterEventHook : function(types, registerHook, unregisterHook)
-    {
-      if (!qx.lang.Type.isArray(types)) {
-        types = [types];
-      }
-      var onHooks = qx.module.Event.__hooks.on;
-      for (var i=0,l=types.length; i<l; i++) {
-        var type = types[i];
-        if (onHooks[type]) {
-          qx.lang.Array.remove(onHooks[type], registerHook);
-        }
-      }
-      if (!unregisterHook) {
-        return;
-      }
-      var offHooks = qx.module.Event.__hooks.off;
-      for (var i=0,l=types.length; i<l; i++) {
-        var type = types[i];
-        if (offHooks[type]) {
-          qx.lang.Array.remove(offHooks[type], unregisterHook);
-        }
-      }
-    },
-
-
-    /**
-     * Returns all registered event hooks
-     *
-     * @attachStatic {qxWeb, $getEventHookRegistry}
-     * @return {Map} Map of event types/registration hook functions
-     * @internal
-     */
-    $getHookRegistry : function()
-    {
-      return qx.module.Event.__hooks;
     }
   },
 
 
   defer : function(statics) {
-    qxWeb.$attach({
-      "on" : statics.on,
-      "off" : statics.off,
-      "allOff" : statics.allOff,
-      "offById" : statics.offById,
-      "once" : statics.once,
-      "emit" : statics.emit,
-      "hasListener" : statics.hasListener,
-      "copyEventsTo" : statics.copyEventsTo,
-      "hover" : statics.hover,
-      "onMatchTarget" : statics.onMatchTarget,
-      "offMatchTarget" : statics.offMatchTarget
-    });
-
+    qxWeb.$attachAll(this);
+    // manually attach internal $-methods as they are ignored by the previous method-call
     qxWeb.$attachStatic({
-      "ready": statics.ready,
-      "$registerEventNormalization" : statics.$registerNormalization,
-      "$unregisterEventNormalization" : statics.$unregisterNormalization,
-      "$getEventNormalizationRegistry" : statics.$getRegistry,
-
+      "$registerEventNormalization" : statics.$registerEventNormalization,
+      "$unregisterEventNormalization" : statics.$unregisterEventNormalization,
+      "$getEventNormalizationRegistry" : statics.$getEventNormalizationRegistry,
       "$registerEventHook" : statics.$registerEventHook,
       "$unregisterEventHook" : statics.$unregisterEventHook,
-      "$getEventHookRegistry" : statics.$getHookRegistry
+      "$getEventHookRegistry" : statics.$getEventHookRegistry
     });
   }
 });

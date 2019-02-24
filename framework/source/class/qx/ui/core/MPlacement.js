@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -221,7 +220,7 @@ qx.Mixin.define("qx.ui.core.MPlacement",
      * box.
      *
      * @param widget {qx.ui.core.Widget} Any widget
-     * @return {Map} Returns a map with <code>left</code>, <code>top</code>,
+     * @return {Map|null} Returns a map with <code>left</code>, <code>top</code>,
      *   <code>right</code> and <code>bottom</code> which contains the distance
      *   of the widget relative coords the document.
      */
@@ -263,7 +262,7 @@ qx.Mixin.define("qx.ui.core.MPlacement",
       }
 
       // Add the rendered location of the root widget
-      if (widget.isRootWidget())
+      if (widget && widget.isRootWidget())
       {
         var rootCoords = widget.getContentLocation();
         if (rootCoords)
@@ -374,7 +373,7 @@ qx.Mixin.define("qx.ui.core.MPlacement",
         this.__ptwLiveUpdateDisappearListener = function()
         {
           this.__cleanupFromLastPlaceToWidgetLiveUpdate();
-        }
+        };
 
         this.addListener("disappear", this.__ptwLiveUpdateDisappearListener, this);
 
@@ -506,7 +505,7 @@ qx.Mixin.define("qx.ui.core.MPlacement",
         top : this.getOffsetTop(),
         right : this.getOffsetRight(),
         bottom : this.getOffsetBottom()
-      }
+      };
     },
 
 

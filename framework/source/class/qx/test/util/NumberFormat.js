@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -37,8 +36,8 @@ qx.Class.define("qx.test.util.NumberFormat",
 
 
     tearDown : function() {
-      qx.locale.Manager.getInstance().setLocale(this.__oldLocale);
       this.__nf.dispose();
+      qx.locale.Manager.getInstance().setLocale(this.__oldLocale);
     },
 
     testNumberFormatConstructor: function() {
@@ -51,12 +50,22 @@ qx.Class.define("qx.test.util.NumberFormat",
       } catch (e) {
         this.fail("Failed on an empty arguments list");
       }
+      try {
+        nf.dispose();
+      }
+      catch(e) {
+      }
 
       try {
         nf = new qx.util.format.NumberFormat("de_DE", true);
         this.fail("Did not fail on wrong arguments number");
       } catch (e) {
 
+      }
+      try {
+        nf.dispose();
+      }
+      catch(e) {
       }
 
       for (i = 0, len= wrongArgs.length; i < len; i += 1) {
@@ -66,6 +75,11 @@ qx.Class.define("qx.test.util.NumberFormat",
         } catch (e) {
 
         }
+        try {
+          nf.dispose();
+        }
+        catch(e) {
+        }
       }
 
       for (i = 0, len= correctArgs.length; i < len; i += 1) {
@@ -73,6 +87,11 @@ qx.Class.define("qx.test.util.NumberFormat",
           nf = new qx.util.format.NumberFormat(correctArgs[i]);
         } catch (e) {
           this.fail("A correct argument did raise an error: " + correctArgs[i]);
+        }
+        try {
+          nf.dispose();
+        }
+        catch(e) {
         }
       }
     },
@@ -189,7 +208,27 @@ qx.Class.define("qx.test.util.NumberFormat",
       nf.setPostfix(" Percent");
       this.assertEquals(5, nf.parse(numberStr),
         "parsing failed after number format change");
-    }
+    },
 
+    testParseWithPrefixOrPostfix : function()
+    {
+      var spinner = new qx.ui.form.Spinner();
+      var prefix = "$ ";
+      var postfix = " €";
+      var numberFormat = new qx.util.format.NumberFormat("de").set({
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 2,
+        prefix: prefix,
+        postfix: postfix
+      });
+
+      spinner.setNumberFormat(numberFormat);
+      spinner.getChildControl("textfield").setValue("$ 1,23 €");
+
+      this.assertEquals(prefix + "1,23" + postfix, spinner.getChildControl("textfield").getValue());
+      
+      spinner.destroy();
+      numberFormat.dispose();
+    }
   }
 });

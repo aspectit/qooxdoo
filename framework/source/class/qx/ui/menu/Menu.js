@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -462,7 +461,7 @@ qx.Class.define("qx.ui.menu.Menu",
      * Get the parent menu. Returns <code>null</code> if the menu doesn't have a
      * parent menu.
      *
-     * @return {Menu|null} The parent menu.
+     * @return {qx.ui.core.Widget|null} The parent menu.
      */
     getParentMenu : function()
     {
@@ -569,7 +568,7 @@ qx.Class.define("qx.ui.menu.Menu",
     /**
      * Get the menu layout manager
      *
-     * @return {Layout} The menu layout manager
+     * @return {qx.ui.layout.Abstract} The menu layout manager
      */
     _getMenuLayout : function()
     {
@@ -615,7 +614,7 @@ qx.Class.define("qx.ui.menu.Menu",
       var menuBounds = this._getMenuBounds();
       if (!menuBounds)
       {
-        this.addListenerOnce("resize", this.__updateSlideBar, this)
+        this.addListenerOnce("resize", this.__updateSlideBar, this);
         return;
       }
 
@@ -632,19 +631,6 @@ qx.Class.define("qx.ui.menu.Menu",
           this.setHeight(menuBounds.height + top);
           this.moveTo(left, 0);
         });
-      }
-      else if (top === 0)
-      {
-        // Target can be an object with top and left. That happens when a menu
-        // opens as a contextmenu.
-        // Target is a widget when a menu opens with help of an other widget
-        // like a button. In that case getBounds returns an object with top and left.
-        var target = this._placementTarget;
-        var height = target.top || target.getBounds().top;
-        this._assertSlideBar(function() {
-          this.setHeight(height);
-        });
-        this.moveTo(left, 0);
       }
       else if (top + menuBounds.height > rootHeight)
       {

@@ -8,8 +8,7 @@
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -117,8 +116,8 @@ qx.Class.define("qx.test.data.controller.Tree",
 
     setUp : function()
     {
-      // prevent the icon laod error with this stub
-      this.stub(qx.io.ImageLoader, "load")
+      // prevent the icon load error with this stub
+      this.stub(qx.io.ImageLoader, "load");
 
       this.__tree = new qx.ui.tree.Tree();
 
@@ -317,7 +316,7 @@ qx.Class.define("qx.test.data.controller.Tree",
       this.__model.getChildren().pop();
       this.__model.getChildren().pop();
 
-      // create a staight tree
+      // create a straight tree
       // this.__model
       //      \
       //    this.__a
@@ -926,7 +925,7 @@ qx.Class.define("qx.test.data.controller.Tree",
       // invoke a removing and setting of the bindings with the new bindItem
       delegate.bindItem = function(controller, item, id) {
         controller.bindProperty("name", "appearance", null, item, id);
-      }
+      };
       this.__controller.setDelegate(null);
       this.__controller.setDelegate(delegate);
 

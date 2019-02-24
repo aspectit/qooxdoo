@@ -8,8 +8,7 @@
      2007-2009 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -54,6 +53,12 @@ qx.Class.define("qx.test.util.ColorUtil",
     {
       this.assertEquals("#FFFFFF", qx.util.ColorUtil.rgbToHexString([255, 255, 255]));
       this.assertEquals("#000000", qx.util.ColorUtil.rgbToHexString([0, 0, 0]));
+    },
+
+    testStringToRgbString : function()
+    {
+      this.assertEquals("rgb(0,0,0)", qx.util.ColorUtil.stringToRgbString("rgba(0,0,0,0.5)"));
+      this.assertEquals("rgb(-1,-1,-1)", qx.util.ColorUtil.stringToRgbString("rgba(0,0,0,0)"));
     }
   }
 });

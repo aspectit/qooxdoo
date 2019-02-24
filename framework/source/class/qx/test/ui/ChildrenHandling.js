@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -185,7 +184,7 @@ qx.Class.define("qx.test.ui.ChildrenHandling",
 
 
       parent.addBefore(w1, c1);
-      this.assertArrayEquals([w1, c1, c2, c3], parent.getChildren(), "add new widget at begin")
+      this.assertArrayEquals([w1, c1, c2, c3], parent.getChildren(), "add new widget at begin");
       this._setChildren(parent, children);
 
       parent.addBefore(w1, c3);
@@ -247,7 +246,7 @@ qx.Class.define("qx.test.ui.ChildrenHandling",
 
 
       parent.addAfter(w1, c3);
-      this.assertArrayEquals([c1, c2, c3, w1], parent.getChildren(), "add new widget ar end")
+      this.assertArrayEquals([c1, c2, c3, w1], parent.getChildren(), "add new widget ar end");
       this._setChildren(parent, children);
 
       parent.addAfter(w1, c1);

@@ -8,8 +8,7 @@
      2007-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -138,9 +137,9 @@ qx.Bootstrap.define("qx.dev.Profile",
       this.stop();
       this.normalizeProfileData();
 
-      var data = qx.lang.Object.getValues(this.__profileData);
+      var data = Object.values(this.__profileData);
       data = data.sort(function(a,b) {
-        return a.calibratedOwnTime<b.calibratedOwnTime ? 1: -1
+        return a.calibratedOwnTime<b.calibratedOwnTime ? 1: -1;
       });
 
       data = data.slice(0, maxLength || 100);

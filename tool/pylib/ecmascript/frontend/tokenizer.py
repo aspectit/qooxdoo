@@ -10,8 +10,7 @@
 #    2006-2010 1&1 Internet AG, Germany, http://www.1und1.de
 #
 #  License:
-#    LGPL: http://www.gnu.org/licenses/lgpl.html
-#    EPL: http://www.eclipse.org/org/documents/epl-v10.php
+#    MIT: https://opensource.org/licenses/MIT
 #    See the LICENSE file in the project's top-level directory for details.
 #
 #  Authors:
@@ -127,6 +126,13 @@ class Tokenizer(object):
 
     def parseToken(self):
         for tok in self.scanner:
+
+            hasNoPreviousDot = True
+            try:
+                hasNoPreviousDot = self.out_stream[-1]['detail'] != "DOT"
+            except (IndexError):
+                pass
+
             # some inital values (tok isinstanceof Scanner.Token())
             token = {
                 "source" : tok.value,
@@ -268,7 +274,7 @@ class Tokenizer(object):
                         token['detail'] = lang.TOKENS[tok.value]
 
                 # JS keywords
-                elif tok.value in lang.RESERVED:
+                elif tok.value in lang.RESERVED and hasNoPreviousDot:
                     # valid syntax:
                     #   a.import            // following if condition checks for this
                     #   a = { import: 1 }   // Note: Generator will still (incorrectly) grumble about that

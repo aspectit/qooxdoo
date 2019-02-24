@@ -8,8 +8,7 @@
      2004-2008 1&1 Internet AG, Germany, http://www.1und1.de
 
    License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
+     MIT: https://opensource.org/licenses/MIT
      See the LICENSE file in the project's top-level directory for details.
 
    Authors:
@@ -26,11 +25,14 @@
  * Creates a hidden iFrame and uses document.write to store entries in the
  * history browser's stack.
  *
+ * This class must be disposed of after use
+ *
  * @internal
  */
 qx.Class.define("qx.bom.IframeHistory",
 {
   extend : qx.bom.History,
+  implement: [ qx.core.IDisposable ],
 
 
   construct : function()
@@ -262,7 +264,7 @@ qx.Class.define("qx.bom.IframeHistory",
      * Setting the source before adding the iframe to the document.
      * Otherwise IE will bring up a "Unsecure items ..." warning in SSL mode
      *
-     * @return {Iframe}
+     * @return {qx.bom.Iframe}
      */
     __createIframe : function ()
     {
